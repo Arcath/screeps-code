@@ -15,7 +15,11 @@ var roleBuilder = {
 	    }
 
 	    if(creep.memory.healing) {
-	        var targets = creep.room.find(FIND_STRUCTURES, {filter: function(structure){ return structure.hits < structure.hitsMax }})
+	        var targets = creep.room.find(FIND_STRUCTURES, {
+	            filter: function(structure){
+	                return (structure.hits < structure.hitsMax) && (structure.structureType != STRUCTURE_WALL) && (structure.structureType != STRUCTURE_RAMPART)
+	            }
+	        })
             if(targets.length) {
                 target = creep.pos.findClosestByRange(targets)
                 if(creep.repair(target) == ERR_NOT_IN_RANGE) {
