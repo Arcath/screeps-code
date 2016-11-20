@@ -23,7 +23,7 @@ var roleUpgrader = {
                     return (structure.structureType == STRUCTURE_CONTAINER && structure.store[RESOURCE_ENERGY] > creep.carryCapacity);
                 }
             });
-
+            
             if(spawns.length){
                 target = creep.pos.findClosestByRange(spawns)
                 if(!(creep.pos.isNearTo(target))){

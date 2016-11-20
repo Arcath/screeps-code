@@ -1,4 +1,5 @@
 roleHealer = require('role.healer')
+roleharvester = require('role.harvester')
 
 var roleBuilder = {
   run: function(creep) {
@@ -26,9 +27,13 @@ var roleBuilder = {
 	  }else{
 	    spawns = creep.room.find(FIND_STRUCTURES, {
         filter: (structure) => {
-          return (structure.structureType == STRUCTURE_CONTAINER && structure.store[RESOURCE_ENERGY] > creep.carryCapacity);
+          return (structure.structureType == STRUCTURE_CONTAINER && structure.store[RESOURCE_ENERGY] > creep.carryCapacity * 5);
         }
       });
+
+      if(spawns.length == 0){
+        roleharvester.run(creep)
+      }
 
       if(spawns.length){
         target = creep.pos.findClosestByRange(spawns)

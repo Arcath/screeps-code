@@ -21,39 +21,52 @@ module.exports = {
               &&
               (structure.energy < structure.energyCapacity)
             )
-            ||
-            (
-                structure.structureType == STRUCTURE_TOWER
-                &&
-                (structure.energy < structure.energyCapacity - 200)
-            )
-            ||
-            (
-              structure.structureType == STRUCTURE_CONTAINER
-              &&
-              _.sum(structure.store) < structure.storeCapacity
-              &&
-              structure.pos.findInRange(FIND_SOURCES, 2).length == 0
-            )
           )
         }
       });
-
-      targets.sort(function(a,b){
-        if(a.structureType == STRUCTURE_SPAWN){
-          return -1;
-        }else{
-          if(a.structureType == STRUCTURE_CONTAINER){
-            return 1;
-          }else{
-            return 0;
-          }
-        }
-      });
-
+      
+      if(targets.length == 0){
+          var targets = creep.room.find(FIND_STRUCTURES, {
+              filter: (structure) => {
+                return (
+                    structure.structureType == STRUCTURE_TOWER
+                    &&
+                    (structure.energy < structure.energyCapacity - 200)
+                )
+              }
+          });
+      }
+      
+      if(targets.length == 0){
+          var targets = creep.room.find(FIND_STRUCTURES, {
+              filter: (structure) => {
+                  return (
+                    structure.structureType == STRUCTURE_CONTAINER
+                    &&
+                    _.sum(structure.store) < (structure.storeCapacity - creep.carry.energy)
+                    &&
+                    structure.pos.findInRange(FIND_SOURCES, 2).length == 0
+                )
+              }
+          });
+      }
+      
+      if(targets.length == 0){
+          var targets = creep.room.find(FIND_STRUCTURES, {
+              filter: (structure) => {
+                  return (
+                    structure.structureType == STRUCTURE_STORAGE
+                    &&
+                    _.sum(structure.store) < structure.storeCapacity
+                )
+              }
+          });
+      }
+      
       if(targets.length > 0) {
-        if(creep.transfer(targets[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-          creep.moveTo(targets[0]);
+        target = creep.pos.findClosestByRange(targets)
+        if(creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+          creep.moveTo(target);
           }
         }
 	    }else{

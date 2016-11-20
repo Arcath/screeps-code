@@ -2,7 +2,7 @@ module.exports.harvesters = function(){
     var harvesters = _.filter(Game.creeps, (creep) => creep.memory.role == 'harvester');
 
     if(harvesters.length < 2) {
-        var newName = Game.spawns['Spawn1'].createCreep([WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE], undefined, {role: 'harvester'});
+        var newName = Game.spawns['Spawn1'].createCreep([WORK,WORK,CARRY,MOVE], undefined, {role: 'harvester'});
         console.log('Spawning new harvester: ' + newName);
     }
 }
@@ -19,8 +19,8 @@ module.exports.upgraders = function(){
 module.exports.builders = function(){
     var upgraders = _.filter(Game.creeps, (creep) => creep.memory.role == 'builder');
 
-    if(upgraders.length < 2){
-        var newName = Game.spawns['Spawn1'].createCreep([WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE], undefined, {role: 'builder'});
+    if(upgraders.length < 3){
+        var newName = Game.spawns['Spawn1'].createCreep([WORK,WORK,CARRY,MOVE], undefined, {role: 'builder'});
         console.log('Spawning new Builder: ' + newName);
     }
 }
@@ -40,5 +40,16 @@ module.exports.haulers = function(){
     if(haulers.length < 2){
         var newName = Game.spawns['Spawn1'].createCreep([CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE], undefined, {role: 'hauler'});
         console.log('Spawning new Hauler: ' + newName);
+    }
+}
+
+module.exports.interHaulers = function(interHaulers){
+    for(var hauler in interHaulers){
+        var interHauler = _.filter(Game.creeps, (creep) => creep.memory.role == 'interHauler' && creep.memory.sourceRoom == interHaulers[hauler].from && creep.memory.destRoom == interHaulers[hauler].to);
+        
+        if(interHauler.length < 1){
+            var newName = Game.spawns['Spawn1'].createCreep([CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE], undefined, {role: 'interHauler', sourceRoom: interHaulers[hauler].from, destRoom: interHaulers[hauler].to});
+            console.log('Spawning new Inter Hauler: ' + newName);
+        }
     }
 }

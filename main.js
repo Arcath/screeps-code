@@ -1,13 +1,8 @@
 var targetRooms = {
-    W46S69: {
-        hold: true,
-        tool: true,
-        tools: 1
-    },
-    W48S69: {
-        hold: false
-    }
 }
+
+var interHaulers = [
+]
 
 var roles = {
     builder: require('role.builder'),
@@ -16,7 +11,9 @@ var roles = {
     upgrader: require('role.upgrader'),
     healer: require('role.healer'),
     hauler: require('role.hauler'),
-    multiTool: require('role.multiTool')
+    multiTool: require('role.multiTool'),
+    ranger: require('role.ranger'),
+    interHauler: require('role.interHauler')
 }
 
 var structure = {
@@ -41,16 +38,17 @@ module.exports.loop = function () {
     ai.numbers.builders();
     ai.numbers.healers();
     ai.numbers.haulers();
-
+    ai.numbers.interHaulers(interHaulers);
+    
     ai.targetedRooms.process(targetRooms);
-
-
+    
+    
     for(var name in Game.creeps){
         var creep = Game.creeps[name];
-
+        
         roles[creep.memory.role].run(creep);
     }
-
+    
     for(var id in Game.structures){
         if(Game.structures[id].structureType == STRUCTURE_TOWER){
             structure.tower.run(Game.structures[id])
