@@ -1,3 +1,5 @@
+roleHarvester = require('role.harvester');
+
 var roleUpgrader = {
 
     /** @param {Creep} creep **/
@@ -23,7 +25,11 @@ var roleUpgrader = {
                     return (structure.structureType == STRUCTURE_CONTAINER && structure.store[RESOURCE_ENERGY] > creep.carryCapacity);
                 }
             });
-            
+
+            if(spawns.length == 0){
+              roleHarvester.run(creep)
+            }
+
             if(spawns.length){
                 target = creep.pos.findClosestByRange(spawns)
                 if(!(creep.pos.isNearTo(target))){

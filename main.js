@@ -33,22 +33,23 @@ module.exports.loop = function () {
         }
     }
 
+
     ai.numbers.harvesters();
     ai.numbers.upgraders();
     ai.numbers.builders();
     ai.numbers.healers();
     ai.numbers.haulers();
     ai.numbers.interHaulers(interHaulers);
-    
+
     ai.targetedRooms.process(targetRooms);
-    
-    
+
+
     for(var name in Game.creeps){
         var creep = Game.creeps[name];
-        
+
         roles[creep.memory.role].run(creep);
     }
-    
+
     for(var id in Game.structures){
         if(Game.structures[id].structureType == STRUCTURE_TOWER){
             structure.tower.run(Game.structures[id])

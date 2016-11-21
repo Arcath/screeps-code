@@ -3,7 +3,6 @@ roleharvester = require('role.harvester')
 
 var roleBuilder = {
   run: function(creep) {
-
 	  if(creep.memory.building && creep.carry.energy == 0) {
       creep.memory.building = false;
       creep.say('harvesting');
@@ -27,7 +26,7 @@ var roleBuilder = {
 	  }else{
 	    spawns = creep.room.find(FIND_STRUCTURES, {
         filter: (structure) => {
-          return (structure.structureType == STRUCTURE_CONTAINER && structure.store[RESOURCE_ENERGY] > creep.carryCapacity * 5);
+          return (structure.structureType == STRUCTURE_CONTAINER && structure.store[RESOURCE_ENERGY] > creep.carryCapacity * 3);
         }
       });
 
