@@ -17,7 +17,11 @@ module.exports = {
                 var exit = creep.pos.findClosestByRange(exits)
                 creep.moveTo(exit)
             }else{
-                roleHauler.run(creep)
+                if(creep.pos.findInRange(FIND_EXIT_TOP, 1).length != 0){
+                    creep.move(BOTTOM)
+                }else{
+                    roleHauler.run(creep)
+                }
             }
 	    }else{
 	        if(creep.memory.sourceRoom != creep.room.name){

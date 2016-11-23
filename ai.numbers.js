@@ -6,7 +6,8 @@ module.exports.harvesters = function(){
     if(harvesters.length < 2) {
         creep = creepBuilder.createCreep({
           base: [WORK,WORK,CARRY,MOVE],
-          spawn: Game.spawns['Spawn1']
+          spawn: Game.spawns['Spawn1'],
+          canAffordOnly: true
         })
 
         var newName = Game.spawns['Spawn1'].createCreep(creep, undefined, {role: 'harvester'});
@@ -58,7 +59,8 @@ module.exports.haulers = function(){
     if(haulers.length < 2){
       creep = creepBuilder.createCreep({
         base: [CARRY, CARRY, CARRY, CARRY, MOVE, MOVE],
-        spawn: Game.spawns['Spawn1']
+        spawn: Game.spawns['Spawn1'],
+        canAffordOnly: true
       })
 
         var newName = Game.spawns['Spawn1'].createCreep(creep, undefined, {role: 'hauler'});
@@ -71,7 +73,11 @@ module.exports.interHaulers = function(interHaulers){
         var interHauler = _.filter(Game.creeps, (creep) => creep.memory.role == 'interHauler' && creep.memory.sourceRoom == interHaulers[hauler].from && creep.memory.destRoom == interHaulers[hauler].to);
 
         if(interHauler.length < 1){
-            var newName = Game.spawns['Spawn1'].createCreep([CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE], undefined, {role: 'interHauler', sourceRoom: interHaulers[hauler].from, destRoom: interHaulers[hauler].to});
+            creep = creepBuilder.createCreep({
+                base: [CARRY, CARRY, CARRY, CARRY, MOVE, MOVE],
+                spawn: Game.spawns['Spawn1']
+            })
+            var newName = Game.spawns['Spawn1'].createCreep(creep, undefined, {role: 'interHauler', sourceRoom: interHaulers[hauler].from, destRoom: interHaulers[hauler].to});
             console.log('Spawning new Inter Hauler: ' + newName);
         }
     }

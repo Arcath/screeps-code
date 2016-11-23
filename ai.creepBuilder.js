@@ -9,8 +9,16 @@ module.exports = {
           return (structure.structureType == STRUCTURE_EXTENSION)
         }
     })
-
-    var canSpend = 300 + (50 * targets.length)
+    
+    if(options.canAffordOnly){
+        var canSpend = options.spawn.energy
+        for(target in targets){
+            canSpend += targets[target].energy
+        }
+        console.log(canSpend)
+    }else{
+        var canSpend = 300 + (50 * targets.length)
+    }
 
     var creep = options.base
     var add = true

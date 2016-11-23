@@ -1,7 +1,16 @@
 var targetRooms = {
+    W26N68: {
+        hold: true,
+        tool: true,
+        tools: 1
+    }
 }
 
 var interHaulers = [
+    {
+        from: 'W26N68',
+        to: 'W26N67'
+    }
 ]
 
 var roles = {
