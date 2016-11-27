@@ -51,19 +51,18 @@ module.exports.healers = function(){
     }
 }
 
-module.exports.haulers = function(){
-    var haulers = _.filter(Game.creeps, (creep) => creep.memory.role == 'hauler');
+module.exports.haulers = function(spawn){
+    var haulers = _.filter(Game.creeps, (creep) => creep.memory.role == 'hauler' && creep.room.name == spawn.room.name);
+    var sources = spawn.room.find(FIND_SOURCES)
 
-
-
-    if(haulers.length < 2){
+    if(haulers.length < sources.length){
       creep = creepBuilder.createCreep({
         base: [CARRY, CARRY, CARRY, CARRY, MOVE, MOVE],
-        spawn: Game.spawns['Spawn1'],
+        spawn: spawn,
         canAffordOnly: true
       })
 
-        var newName = Game.spawns['Spawn1'].createCreep(creep, undefined, {role: 'hauler'});
+        var newName = spawn.createCreep(creep, undefined, {role: 'hauler'});
         console.log('Spawning new Hauler: ' + newName);
     }
 }

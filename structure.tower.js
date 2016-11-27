@@ -6,7 +6,7 @@ module.exports = {
             tower.attack(closestHostile);
         }else{
 
-            var repairTargets = tower.pos.findInRange(FIND_STRUCTURES, 30, {
+            var repairTargets = tower.pos.findInRange(FIND_STRUCTURES, 40, {
                 filter: function(structure){
                     if(structure.structureType == STRUCTURE_WALL || structure.structureType == STRUCTURE_RAMPART){
                         return (structure.hits < 50000)
@@ -19,7 +19,7 @@ module.exports = {
                 repairTargets.sort(function(a, b){
                     return a.hits - b.hits
                 })
-    
+
                 tower.repair(repairTargets[0])
             }
         }

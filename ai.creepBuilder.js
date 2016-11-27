@@ -6,7 +6,7 @@ module.exports = {
 
     var targets = options.spawn.room.find(FIND_STRUCTURES, {
         filter: (structure) => {
-          return (structure.structureType == STRUCTURE_EXTENSION)
+          return (structure.structureType == STRUCTURE_EXTENSION && structure.isActive())
         }
     })
     

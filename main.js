@@ -1,28 +1,16 @@
 var targetRooms = {
-    W26N68: {
-        hold: true,
-        tool: true,
-        tools: 1
-    }
 }
 
 var interHaulers = [
-    {
-        from: 'W26N68',
-        to: 'W26N67'
-    }
 ]
 
 var roles = {
-    builder: require('role.builder'),
     claimer: require('role.claimer'),
-    harvester: require('role.harvester'),
-    upgrader: require('role.upgrader'),
-    healer: require('role.healer'),
     hauler: require('role.hauler'),
     multiTool: require('role.multiTool'),
     ranger: require('role.ranger'),
-    interHauler: require('role.interHauler')
+    interHauler: require('role.interHauler'),
+    utility: require('creeps')
 }
 
 var structure = {
@@ -42,12 +30,12 @@ module.exports.loop = function () {
         }
     }
 
+    for(sp in Game.spawns){
+        var spawn = Game.spawns[sp]
+        roles.utility.loop(spawn)
+        ai.numbers.haulers(spawn)
+    }
 
-    ai.numbers.harvesters();
-    ai.numbers.upgraders();
-    ai.numbers.builders();
-    ai.numbers.healers();
-    ai.numbers.haulers();
     ai.numbers.interHaulers(interHaulers);
 
     ai.targetedRooms.process(targetRooms);
@@ -56,7 +44,17 @@ module.exports.loop = function () {
     for(var name in Game.creeps){
         var creep = Game.creeps[name];
 
-        roles[creep.memory.role].run(creep);
+        if(creep.memory.recycle){
+            var spawn = creep.pos.findInRange(FIND_STRUCTURES, 1, {
+                filter: (structure) =>{
+                    return (structure.structureType == STRUCTURE_SPAWN)
+                }
+            })
+
+            spawn[0].recycleCreep(creep)
+        }else{
+            roles[creep.memory.role].run(creep);
+        }
     }
 
     for(var id in Game.structures){

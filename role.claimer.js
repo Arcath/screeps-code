@@ -7,9 +7,15 @@ module.exports = {
             creep.moveTo(exit)
         }else{
             if(creep.room.controller) {
-                if(creep.reserveController(creep.room.controller) == ERR_NOT_IN_RANGE) {
-                    creep.memory.expiresAt += 1
-                    creep.moveTo(creep.room.controller);    
+                if(creep.memory.claim){
+                  if(creep.claimController(creep.room.controller) == ERR_NOT_IN_RANGE){
+                    creep.moveTo(creep.room.controller)
+                  }
+                }else{
+                  if(creep.reserveController(creep.room.controller) == ERR_NOT_IN_RANGE) {
+                      creep.memory.expiresAt += 1
+                      creep.moveTo(creep.room.controller);
+                  }
                 }
             }
         }
