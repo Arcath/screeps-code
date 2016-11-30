@@ -1,4 +1,7 @@
 var targetRooms = {
+    W26N66:{
+        attack: false
+    }
 }
 
 var interHaulers = [
@@ -10,7 +13,8 @@ var roles = {
     multiTool: require('role.multiTool'),
     ranger: require('role.ranger'),
     interHauler: require('role.interHauler'),
-    utility: require('creeps')
+    utility: require('creeps'),
+    thug: require('role.thug')
 }
 
 var structure = {

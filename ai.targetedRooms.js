@@ -10,7 +10,7 @@ module.exports = {
             }
 
             if(targetedRooms[targetRoom].attack){
-                this.sendRanger(targetRoom)
+                this.sendThug(targetRoom)
             }
 
             if(targetedRooms[targetRoom].claim){
@@ -48,6 +48,15 @@ module.exports = {
         if(rangers.length < 1){
             var newName = Game.spawns['Spawn1'].createCreep([RANGED_ATTACK,RANGED_ATTACK,MOVE,MOVE,MOVE,MOVE], undefined, {role: 'ranger', targetRoom: room});
             console.log('Spawning new Ranger: ' + newName);
+        }
+    },
+    
+    sendThug: function(room){
+        var thugs = _.filter(Game.creeps, (creep) => creep.memory.role == 'thug' && creep.memory.targetRoom == room);
+        
+        if(thugs.length < 2){
+            var newName = Game.spawns['Spawn1'].createCreep([TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,HEAL], undefined, {role: 'thug', targetRoom: room});
+            console.log('Spawning new Thug: ' + newName);
         }
     },
 

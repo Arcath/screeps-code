@@ -29,7 +29,7 @@ module.exports = {
     
     var needHeal = creep.room.find(FIND_STRUCTURES, {
 	   filter: function(structure){
-	        return (structure.hits < structure.hitsMax) && (structure.structureType != STRUCTURE_WALL) && (structure.structureType != STRUCTURE_RAMPART)
+	        return (structure.hits < (structure.hitsMax - 2000)) && (structure.structureType != STRUCTURE_WALL) && (structure.structureType != STRUCTURE_RAMPART)
 	   }
 	})
 
