@@ -4,20 +4,14 @@ module.exports = {
       options.extend = options.base
     }
 
-    var targets = options.spawn.room.find(FIND_STRUCTURES, {
-        filter: (structure) => {
-          return (structure.structureType == STRUCTURE_EXTENSION && structure.isActive())
-        }
-    })
-    
     if(options.canAffordOnly){
-        var canSpend = options.spawn.energy
-        for(target in targets){
-            canSpend += targets[target].energy
-        }
-        console.log(canSpend)
+      var canSpend = options.room.energyAvailable
     }else{
-        var canSpend = 300 + (50 * targets.length)
+      var canSpend = options.room.energyCapacityAvailable
+    }
+
+    if(canSpend > options.cap){
+      var canSpend = options.cap
     }
 
     var creep = options.base
@@ -46,10 +40,28 @@ module.exports = {
   creepCost: function(creep){
     var cost = 0
 
-    for(part in creep){
+    for(var part in creep){
       cost += BODYPART_COST[creep[part]]
     }
 
     return cost
+  },
+
+  baseDesign: {
+    harvest: [WORK, WORK, CARRY, MOVE],
+    upgrade: [WORK, CARRY, MOVE],
+    haul: [CARRY, CARRY, MOVE],
+    build: [WORK, WORK, CARRY, MOVE],
+    mineralHarvest: [WORK, WORK, CARRY, MOVE],
+    supply: [CARRY, CARRY, MOVE]
+  },
+
+  caps: {
+    harvest: 1200,
+    upgrade: 800,
+    haul: 750,
+    build: 1200,
+    mineralHarvest: 1200,
+    supply: 750
   }
 }
