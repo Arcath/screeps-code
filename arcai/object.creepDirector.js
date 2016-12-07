@@ -22,58 +22,82 @@ module.exports = class{
         creep.memory.action = 'recycle'
       }
 
-      if(this.room.room.controller.my){
+      if(this.room.room.controller.my && !this.room.constructMode()){
         var roads = creep.pos.findInRange(FIND_STRUCTURES, 0, {filter: (s)=>s.structureType==STRUCTURE_ROAD})
         if(roads.length == 0){
           this.room.room.createConstructionSite(creep.pos, STRUCTURE_ROAD)
         }
       }
 
-      if(creep.memory.working){
-        switch(creep.memory.action){
-          case 'supply':
-            this.deliverSupply(creep)
-            break
-          case 'recycle':
-            this.recycle(creep)
-            break
-          case 'mineralHarvest':
-            this.deliverMinerals(creep)
-            break
-          case 'harvest':
-            this.deliverHarvest(creep)
-            break
-          case 'upgrade':
-            this.upgrade(creep)
-            break
-          case 'build':
-            this.build(creep)
-            break
-          case 'haul':
-            this.deliverHaul(creep)
-            break
-          default:
+      if(creep.memory.goToRoom){
+        if(creep.memory.goToRoom != creep.room.name){
+          this.sendToRoom(creep)
+        }else{
+          this.work(creep)
         }
       }else{
-        switch(creep.memory.action){
-          case 'supply':
-            this.collectSupply(creep)
-            break
-          case 'recycle':
-            this.recycle(creep)
-            break
-          case 'mineralHarvest':
-            this.mineralHarvest(creep)
-            break
-          case 'harvest':
-            this.harvest(creep)
-            break
-          case 'haul':
-            this.collectHaul(creep)
-            break
-          default:
-            this.collect(creep)
-        }
+        this.work(creep)
+      }
+    }
+  }
+
+  sendToRoom(creep){
+    var route = Game.map.findRoute(this.room.room, creep.memory.goToRoom)
+    if(route.length > 0) {
+      var exit = creep.pos.findClosestByRange(route[0].exit)
+      creep.moveTo(exit)
+    }
+  }
+
+  work(creep){
+    if(creep.memory.working){
+      switch(creep.memory.action){
+        case 'construct':
+          this.construct(creep)
+          break
+        case 'supply':
+          this.deliverSupply(creep)
+          break
+        case 'recycle':
+          this.recycle(creep)
+          break
+        case 'mineralHarvest':
+          this.deliverMinerals(creep)
+          break
+        case 'harvest':
+          this.deliverHarvest(creep)
+          break
+        case 'upgrade':
+          this.upgrade(creep)
+          break
+        case 'build':
+          this.build(creep)
+          break
+        case 'haul':
+          this.deliverHaul(creep)
+          break
+        default:
+      }
+    }else{
+      switch(creep.memory.action){
+        case 'supply':
+          this.collectSupply(creep)
+          break
+        case 'recycle':
+          this.recycle(creep)
+          break
+        case 'mineralHarvest':
+          this.mineralHarvest(creep)
+          break
+        case 'construct':
+        case 'harvest':
+          this.harvest(creep)
+          break
+        case 'haul':
+          this.collectHaul(creep)
+          break
+        default:
+          this.collect(creep)
       }
     }
   }
@@ -83,7 +107,7 @@ module.exports = class{
     var availableSources = _.filter(room.sources, function(source){
       return (
         _.filter(room.creeps, function(cr){
-          return (cr.memory.source == source.id)
+          return (cr.memory.source == source.id && cr.memory.action == 'harvest')
         }).length == 0
       )
     })
@@ -143,6 +167,18 @@ module.exports = class{
         if(!creep.memory.collectFrom && target){
           creep.memory.collectFrom = target.id
         }
+      }
+    }
+  }
+
+  construct(creep){
+    if(this.room.room.controller.ticksToDowngrade < 500){
+      this.upgrade(creep)
+    }else{
+      if(this.room.sites.length){
+        this.build(creep)
+      }else{
+        this.deliverHaul(creep)
       }
     }
   }

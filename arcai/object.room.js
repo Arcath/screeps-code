@@ -50,7 +50,7 @@ module.exports = class{
           (creep.room.name == room.name)
         )
       })
-    }, Memory.arc[this.name].newCreep)
+    }, true)
 
     // List all source containers
     //
@@ -95,22 +95,30 @@ module.exports = class{
 
     // Filter for spawns that are full
     this.fullSpawns = _.filter(this.spawns, function(spawn){
-      return (spawn.energy == spawn.energyCapacity)
+      if(spawn){
+        return (spawn.energy == spawn.energyCapacity)
+      }
     })
 
     // Filter for spawns that need energy
     this.notFullSpawns = _.filter(this.spawns, function(spawn){
-      return (spawn.energy < spawn.energyCapacity)
+      if(spawn){
+        return (spawn.energy < spawn.energyCapacity)
+      }
     })
 
     // Filter for extensions that are full
     this.fullExtensions = _.filter(this.extensions, function(extension){
-      return (extension.energy == extension.energyCapacity)
+      if(extension){
+        return (extension.energy == extension.energyCapacity)
+      }
     })
 
     // Filter for extensions that need energy
     this.notFullExtensions = _.filter(this.extensions, function(extension){
-      return (extension.energy < extension.energyCapacity)
+      if(extension){
+        return (extension.energy < extension.energyCapacity)
+      }
     })
 
     // List containers that normal creeps can use
@@ -149,7 +157,9 @@ module.exports = class{
 
     // Filter towers for those that need energy
     this.notFullTowers = _.filter(this.towers, function(tower){
-      return (tower.energy < (tower.energyCapacity - 200))
+      if(tower){
+        return (tower.energy < (tower.energyCapacity - 200))
+      }
     })
 
     // Find all storages
@@ -221,6 +231,7 @@ module.exports = class{
 
     // Work out the required creep numbers
     this.required.recycle = 0
+    this.required.construct = 0
 
     if(Memory.arc[this.name].supplyJobs.length){
       this.required.supply = 1
@@ -240,6 +251,12 @@ module.exports = class{
 
     this.required.harvest = this.sources.length
 
+    if(this.constructMode()){
+      this.required = {
+        construct: this.required.build
+      }
+    }
+
     this.actions = Object.keys(this.required)
     for(var i in this.actions){
       var action = this.actions[i]
@@ -255,7 +272,9 @@ module.exports = class{
     for(var i in this.towers){
       var tower = this.towers[i]
 
-      this.runTower(tower)
+      if(tower){
+        this.runTower(tower)
+      }
     }
   }
 
@@ -287,8 +306,10 @@ module.exports = class{
 
   getSpawn(){
     for(var i in this.spawns){
-      if(!this.spawns[i].spawning){
-        return this.spawns[i]
+      if(this.spawns[i]){
+        if(!this.spawns[i].spawning){
+          return this.spawns[i]
+        }
       }
     }
 
@@ -328,6 +349,18 @@ module.exports = class{
           dest: this.room.terminal.id,
           resource: resource
         })
+      }
+    }
+
+    if(this.recycleContainers[0]){
+      for(var resource in this.recycleContainers[0].store){
+        if(resource != RESOURCE_ENERGY){
+          this.createSupplyJob({
+            source: this.recycleContainers[0].id,
+            dest: this.room.storage.id,
+            resource: resource
+          })
+        }
       }
     }
 
@@ -384,5 +417,24 @@ module.exports = class{
 
   removeSupplyJob(){
     Memory.arc[this.name].supplyJobs.shift()
+  }
+
+  constructMode(){
+    if(this.room.energyAvailable < 300){
+      return true
+    }
+    
+    return false
+  }
+
+  needsSupport(){
+    if(this.spawns.length == 0){
+      return true
+    }
+    return false
+  }
+
+  canSupport(){
+    return (this.room.energyAvailable == this.room.energyCapacityAvailable)
   }
 }

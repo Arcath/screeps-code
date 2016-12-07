@@ -7,10 +7,15 @@ module.exports = function(rooms){
   console.log('<span style="color:rgba(52, 152, 219,1.0)">        \\/       \\/        \\/         \\/     </span>')
   console.log('Running ' + Object.keys(rooms).length + ' Room(s)')
   for(var rm in rooms){
-    console.log('<span style="color:rgba(142, 68, 173,1.0);">' + rm + '</span>')
-    console.log('<span style="color:rgba(142, 68, 173,1.0);">##################################################</span>')
-
     var room = rooms[rm]
+    if(room.needsSupport()){
+      var msg = '<span style="color:rgba(231, 76, 60,1.0);">NEEDS SUPPORT</span>'
+    }else{
+      var msg = ''
+    }
+
+    console.log('<span style="color:rgba(142, 68, 173,1.0);">' + rm + '</span> ' + msg)
+    console.log('<span style="color:rgba(142, 68, 173,1.0);">##################################################</span>')
 
     console.log(room.room.energyAvailable + ' Energy for spawning ' + room.room.energyCapacityAvailable + ' Total spawning capacity')
 
