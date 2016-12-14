@@ -52,6 +52,9 @@ module.exports = class{
   work(creep){
     if(creep.memory.working){
       switch(creep.memory.action){
+        case 'defend':
+          this.defend(creep)
+          break
         case 'construct':
           this.construct(creep)
           break
@@ -76,10 +79,16 @@ module.exports = class{
         case 'haul':
           this.deliverHaul(creep)
           break
+        case 'interHaul':
+          this.interHaul(creep)
+          break
         default:
       }
     }else{
       switch(creep.memory.action){
+        case 'defend':
+          this.defend(creep)
+          break
         case 'supply':
           this.collectSupply(creep)
           break
@@ -96,6 +105,9 @@ module.exports = class{
         case 'haul':
           this.collectHaul(creep)
           break
+        case 'interHaul':
+          this.collectInterHaul(creep)
+          break
         default:
           this.collect(creep)
       }
@@ -107,7 +119,7 @@ module.exports = class{
     var availableSources = _.filter(room.sources, function(source){
       return (
         _.filter(room.creeps, function(cr){
-          return (cr.memory.source == source.id && cr.memory.action == 'harvest')
+          return (cr.memory.source == source.id && cr.memory.action == 'harvest' && creep.memory.action != 'construct')
         }).length == 0
       )
     })
@@ -287,9 +299,9 @@ module.exports = class{
           creep.memory.deliverTo = undefined
       }
     }else{
-      var deliverTo = ['notFullSpawns', 'notFullExtensions', 'notFullTowers', 'lowTerminals', 'generalUseContainers', 'storages']
+      var deliverTo = ['notFullSpawns', 'notFullExtensions', 'notFullTowers', 'lowCoreLinks', 'lowTerminals', 'generalUseContainers', 'storages']
 
-      if(this.room.room.find(FIND_HOSTILE_CREEPS).length != 0){
+      if(Memory.arc[this.room.name].defcon > 0){
         var deliverTo = ['notFullTowers']
       }
 
@@ -360,6 +372,42 @@ module.exports = class{
       var target = Game.getObjectById(Memory.arc[creep.room.name].supplyJobs[0].dest)
 
       if(creep.transfer(target, Memory.arc[creep.room.name].supplyJobs[0].resource) == ERR_NOT_IN_RANGE){
+        creep.moveTo(target)
+      }
+    }
+  }
+
+  interHaul(creep){
+    if(creep.room.name != creep.memory.to){
+      creep.memory.goToRoom = creep.memory.to
+    }else{
+      this.deliverHaul(creep)
+    }
+  }
+
+  collectInterHaul(creep){
+    if(creep.room.name != creep.memory.from){
+      creep.memory.goToRoom = creep.memory.from
+    }else{
+      if(creep.memory.collectFrom){
+        this.collect(creep)
+      }else{
+        if(this.room.remoteLinksByRoom[creep.memory.to]){
+          creep.memory.collectFrom = this.room.remoteLinksByRoom[creep.memory.to].id
+        }else{
+          this.collect(creep)
+        }
+      }
+    }
+  }
+
+  defend(creep){
+    var hostiles = this.room.room.find(FIND_HOSTILE_CREEPS)
+
+    if(hostiles.length){
+      var target = creep.pos.findClosestByRange(hostiles)
+
+      if(creep.attack(target) == ERR_NOT_IN_RANGE){
         creep.moveTo(target)
       }
     }

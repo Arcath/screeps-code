@@ -61,7 +61,7 @@ module.exports = {
   shouldDeliverTo: function(creep, structure){
     var energy = this.energyAfterDeliveries(structure)
 
-    if(structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN || structure.structureType == STRUCTURE_TOWER){
+    if(structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN || structure.structureType == STRUCTURE_TOWER || structure.structureType == STRUCTURE_LINK){
       var max = structure.energyCapacity
     }else{
       var max = structure.storeCapacity

@@ -54,7 +54,8 @@ module.exports = {
     build: [WORK, WORK, CARRY, MOVE],
     mineralHarvest: [WORK, WORK, CARRY, MOVE],
     supply: [CARRY, CARRY, MOVE],
-    construct: [WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE]
+    construct: [WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE],
+    defend: [TOUGH, MOVE, ATTACK, ATTACK]
   },
 
   caps: {
@@ -64,6 +65,7 @@ module.exports = {
     build: 1200,
     mineralHarvest: 1200,
     supply: 750,
-    construct: 1400
+    construct: 1400,
+    defend: 1200
   }
 }

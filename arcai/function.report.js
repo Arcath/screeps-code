@@ -14,16 +14,25 @@ module.exports = function(rooms){
       var msg = ''
     }
 
-    console.log('<span style="color:rgba(142, 68, 173,1.0);">' + rm + '</span> ' + msg)
+    if(room.sendEnergy()){
+      msg2 = ' <span style="color:rgba(230, 126, 34,1.0);">Send Energy</span>'
+    }else{
+      msg2 = ''
+    }
+
+    console.log('<span style="color:rgba(142, 68, 173,1.0);">' + rm + '</span> ' + msg + msg2)
     console.log('<span style="color:rgba(142, 68, 173,1.0);">##################################################</span>')
 
-    console.log(room.room.energyAvailable + ' Energy for spawning ' + room.room.energyCapacityAvailable + ' Total spawning capacity')
+    var averageEnergy = _.sum(Memory.arc[room.name].energyAverage) / Memory.arc[room.name].energyAverage.length
+
+    console.log(room.room.energyAvailable + ' Energy for spawning ' + room.room.energyCapacityAvailable + ' Total spawning capacity ' + averageEnergy + ' average energy in room')
 
     console.log('<span style="color:rgba(39, 174, 96,1.0);">Structures</span>')
     console.log(room.extractors.length + ' Extractor(s) ' + room.extractorContainers.length + ' with a Container')
     console.log(room.sources.length + ' Source(s) ' + room.sourceContainers.length + ' with a Container')
     console.log(room.spawns.length + ' Spawn(s) ' + room.extensions.length + ' Extension(s)')
     console.log(room.towers.length + ' Tower(s) ' + room.notFullTowers.length + ' Need(s) Energy')
+    console.log(room.coreLinks.length + ' Core Link(s) ' + room.remoteLinks.length + ' Remote Link(s)')
 
     console.log('<span style="color:rgba(39, 174, 96,1.0);">Creeps</span>')
 

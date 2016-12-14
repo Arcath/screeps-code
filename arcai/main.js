@@ -1,5 +1,6 @@
 var ARCRoom = require('object.room')
 var report = require('function.report')
+var CreepDesigner = require('function.creepDesigner')
 
 module.exports.loop = function(){
   for(var name in Memory.creeps){
@@ -34,6 +35,7 @@ module.exports.loop = function(){
 
   var needsSupport = []
   var canSupport = []
+  var sendEnergy = []
 
   for(var rm in rooms){
     if(rooms[rm].needsSupport()){
@@ -42,6 +44,10 @@ module.exports.loop = function(){
       if(rooms[rm].canSupport()){
         canSupport.push(rm)
       }
+    }
+
+    if(rooms[rm].sendEnergy()){
+      sendEnergy.push(rm)
     }
   }
 
@@ -61,6 +67,29 @@ module.exports.loop = function(){
             if(rooms[canSupport[crm]].creepsByAction[t][0]){
               rooms[canSupport[crm]].creepsByAction[t][0].memory.goToRoom = needsSupport[rm]
             }
+          }
+        }
+      }
+    }
+  }
+
+  if(sendEnergy.length){
+    for(var rm in sendEnergy){
+      for(var crm in canSupport){
+        var room = rooms[canSupport[crm]]
+
+        if(!room.creepsByAction.interHaul.length){
+          var creep = CreepDesigner.createCreep({
+            base: CreepDesigner.baseDesign.haul,
+            room: room.room,
+            cap: CreepDesigner.caps.haul
+          })
+
+          var spawn = room.getSpawn()
+
+          if(spawn){
+            spawn.createCreep(creep, undefined, {action: 'interHaul',  from: canSupport[crm], to: sendEnergy[rm]})
+            Memory.arc[room.name].newCreep = true
           }
         }
       }

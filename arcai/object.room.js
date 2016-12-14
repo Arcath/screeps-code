@@ -12,6 +12,12 @@ module.exports = class{
       Memory.arc[this.name].supplyJobs = []
     }
 
+    if(!Memory.arc[this.name].purchasedResources){
+      Memory.arc[this.name].purchasedResources = []
+    }
+
+    this.hostileCreeps = this.room.find(FIND_HOSTILE_CREEPS)
+
     // List all the sources in the room.
     //
     // Has no force key as it should never change outside of the simulator
@@ -29,6 +35,11 @@ module.exports = class{
         }
       })
     }, Memory.arc[this.name].newBuilding)
+
+    // List all minerals
+    this.minerals = Utils.inflate(this.room, 'minerals', function(room){
+      return room.find(FIND_MINERALS)
+    })
 
     // List all the spawns in the room
     //
@@ -203,6 +214,63 @@ module.exports = class{
       })
     }, Memory.arc[this.name].newBuilding)
 
+    this.coreLinks = Utils.inflate(this.room, 'coreLinks', function(room){
+      return room.find(FIND_STRUCTURES, {
+        filter: (structure) => {
+          return (
+            structure.structureType == STRUCTURE_LINK
+            &&
+            structure.pos.findInRange(FIND_EXIT, 3).length == 0
+          )
+        }
+      })
+    }, Memory.arc[this.name].newBuilding)
+
+    this.lowCoreLinks = _.filter(this.coreLinks, function(link){
+      return (link.energy < link.energyCapacity)
+    })
+
+    this.remoteLinks = Utils.inflate(this.room, 'remoteLinks', function(room){
+      return room.find(FIND_STRUCTURES, {
+        filter: (structure) => {
+          return (
+            structure.structureType == STRUCTURE_LINK
+            &&
+            structure.pos.findInRange(FIND_EXIT, 3).length != 0
+          )
+        }
+      })
+    }, Memory.arc[this.name].newBuilding)
+
+    this.lowRemoteLinks = _.filter(this.remoteLinks, function(link){
+      return (link.energy < link.energyCapacity - 10)
+    })
+
+    this.remoteLinksByRoom = {}
+
+    for(var i in this.remoteLinks){
+      var link = this.remoteLinks[i]
+
+      var exitFinds = [
+        FIND_EXIT_TOP,
+        FIND_EXIT_RIGHT,
+        FIND_EXIT_BOTTOM,
+        FIND_EXIT_LEFT
+      ]
+
+      var direction = 0
+
+      for(var j in exitFinds){
+        var exits = link.pos.findInRange(exitFinds[j], 3)
+
+        if(exits.length){
+          direction = exitFinds[j]
+        }
+      }
+
+      this.remoteLinksByRoom[Game.map.describeExits(this.name)[direction]] = link
+    }
+
     if(this.room.terminal){
       this.terminals = [this.room.terminal]
     }else{
@@ -241,6 +309,7 @@ module.exports = class{
     this.required.mineralHarvest = this.extractors.length
     this.required.upgrade = 2
     this.required.haul = this.sourceContainers.length
+    this.required.interHaul = 0
 
     this.required.build = 0
     for(var i in this.sites){
@@ -255,6 +324,19 @@ module.exports = class{
       this.required = {
         construct: this.required.build
       }
+    }
+
+    // Run the DEFCON system
+    this.defcon()
+
+    this.required.defend = 0
+
+    if(Memory.arc[this.name].defcon >= 2){
+      this.required.defend = 2
+    }
+
+    if(Memory.arc[this.name].defcon >= 4){
+      this.required.defend = 4
     }
 
     this.actions = Object.keys(this.required)
@@ -274,6 +356,14 @@ module.exports = class{
 
       if(tower){
         this.runTower(tower)
+      }
+    }
+
+    for(var i in this.coreLinks){
+      var link = this.coreLinks[i]
+
+      if(link){
+        this.runLink(link)
       }
     }
   }
@@ -365,8 +455,40 @@ module.exports = class{
     }
 
     for(var resource in this.room.terminal.store){
-      if(resource != RESOURCE_ENERGY){
+      if(resource != RESOURCE_ENERGY && !Memory.arc[this.name].purchasedResources.includes(resource)){
         this.marketDeal(resource)
+      }
+    }
+  }
+
+  buyResource(resource, total){
+    if(this.room.terminal){
+      if(this.room.terminal.store[resource] < total){
+        var order = {price: 10000}
+        var orders = Game.market.getAllOrders({resourceType: resource, type: ORDER_SELL})
+        for(var i in orders){
+          var cost = Game.market.calcTransactionCost(
+            500,
+            this.name,
+            orders[i].roomName
+          )
+
+          if(cost < 2500 && orders[i].price < order.price){
+            order = orders[i]
+            order.cost = cost
+          }
+        }
+
+        if(order.cost < 2500){
+          if(this.room.terminal.store[RESOURCE_ENERGY] > order.cost){
+            console.log('buy 500 ' + resource + ' from ' + order.roomName + ' costing ' + (order.price * 500))
+            var response = Game.market.deal(order.id, 500, this.name)
+            console.log(response)
+            if(!Memory.arc[this.name].purchasedResources.includes(resource)){
+              Memory.arc[this.name].purchasedResources.push(resource)
+            }
+          }
+        }
       }
     }
   }
@@ -423,7 +545,7 @@ module.exports = class{
     if(this.room.energyAvailable < 300){
       return true
     }
-    
+
     return false
   }
 
@@ -431,10 +553,95 @@ module.exports = class{
     if(this.spawns.length == 0){
       return true
     }
+
     return false
   }
 
   canSupport(){
     return (this.room.energyAvailable == this.room.energyCapacityAvailable)
+  }
+
+  sendEnergy(){
+    if(!Memory.arc[this.name].energyAverage){
+      Memory.arc[this.name].energyAverage = []
+    }
+
+    Memory.arc[this.name].energyAverage.push(this.room.energyAvailable)
+
+    if(Memory.arc[this.name].energyAverage.length > 50){
+      Memory.arc[this.name].energyAverage.shift()
+    }
+
+    var averageEnergy = _.sum(Memory.arc[this.name].energyAverage) / Memory.arc[this.name].energyAverage.length
+
+    if(this.room.energyCapacityAvailable < 1000 || averageEnergy < 500){
+      return true
+    }
+
+    return false
+  }
+
+  runLink(link){
+     if(link.cooldown == 0 && link.energy > 0 && this.lowRemoteLinks.length > 0){
+       var toSend = this.lowRemoteLinks[0].energyCapacity - this.lowRemoteLinks[0].energy
+       if(toSend > link.energy){
+         var toSend = link.energy
+       }
+
+       link.transferEnergy(this.lowRemoteLinks[0], toSend)
+     }
+  }
+
+  defcon(){
+    if(!Memory.arc[this.name].defcon){
+      Memory.arc[this.name].defcon = 0
+      Memory.arc[this.name].atDefcon = 0
+    }
+
+    if(this.hostileCreeps.length == 0){
+      Memory.arc[this.name].defcon = 0
+      Memory.arc[this.name].atDefcon = 0
+    }
+
+    if(this.hostileCreeps.length > 0 && this.hostileCreeps.length < 4){
+      Memory.arc[this.name].defcon = 1
+    }
+
+    if(this.hostileCreeps.length > 4){
+      Memory.arc[this.name].defcon = 3
+    }
+
+    if(this.hostileCreeps.length > 10){
+      Memory.arc[this.name].defcon = 4
+    }
+
+    if(Memory.arc[this.name].defcon == 0){
+      Memory.arc[this.name].atDefcon = 0
+    }else{
+      Memory.arc[this.name].atDefcon += 1
+    }
+
+    if(Memory.arc[this.name].atDefcon == 50 && Memory.arc[this.name].defcon == 1){
+      Memory.arc[this.name].defcon = 2
+      Memory.arc[this.name].atDefcon = 0
+    }
+
+    if(Memory.arc[this.name].atDefcon == 50){
+      this.room.controller.activateSafeMode()
+    }else{
+      if(!Memory.arc[this.name].structureCount){
+        Memory.arc[this.name].structureCount = 0
+      }
+
+      if(Memory.arc[this.name].defcon > 0){
+        var newCount = this.room.find(FIND_STRUCTURES).length
+
+        if(newCount < Memory.arc[this.name].structureCount){
+          this.room.controller.activateSafeMode()
+        }else{
+          Memory.arc[this.name].structureCount = newCount
+        }
+      }
+    }
   }
 }
