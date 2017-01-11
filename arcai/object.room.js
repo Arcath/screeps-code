@@ -645,6 +645,7 @@ module.exports = class{
     }
 
     if(Memory.arc[this.name].atDefcon == 50){
+      Memory.arc[this.name].newBuilding = true
       this.room.controller.activateSafeMode()
     }else{
       if(!Memory.arc[this.name].structureCount){
