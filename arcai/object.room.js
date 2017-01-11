@@ -8,6 +8,10 @@ module.exports = class{
     this.name = roomName
     this.room = Game.rooms[roomName]
 
+    if(!Memory.arc[this.name]){
+      Memory.arc[this.name] = {}
+    }
+
     if(!Memory.arc[this.name].supplyJobs){
       Memory.arc[this.name].supplyJobs = []
     }
@@ -227,7 +231,11 @@ module.exports = class{
     }, Memory.arc[this.name].newBuilding)
 
     this.lowCoreLinks = _.filter(this.coreLinks, function(link){
-      return (link.energy < link.energyCapacity)
+      if(link){
+          return (link.energy < link.energyCapacity)
+      }else{
+          return false
+      }
     })
 
     this.remoteLinks = Utils.inflate(this.room, 'remoteLinks', function(room){
@@ -243,7 +251,11 @@ module.exports = class{
     }, Memory.arc[this.name].newBuilding)
 
     this.lowRemoteLinks = _.filter(this.remoteLinks, function(link){
-      return (link.energy < link.energyCapacity - 10)
+        if(link){
+            return (link.energy < link.energyCapacity - 10)
+        }else{
+            return false
+        }
     })
 
     this.remoteLinksByRoom = {}
@@ -251,24 +263,26 @@ module.exports = class{
     for(var i in this.remoteLinks){
       var link = this.remoteLinks[i]
 
-      var exitFinds = [
-        FIND_EXIT_TOP,
-        FIND_EXIT_RIGHT,
-        FIND_EXIT_BOTTOM,
-        FIND_EXIT_LEFT
-      ]
+        if(link){
+            var exitFinds = [
+                FIND_EXIT_TOP,
+                FIND_EXIT_RIGHT,
+                FIND_EXIT_BOTTOM,
+                FIND_EXIT_LEFT
+              ]
 
-      var direction = 0
+              var direction = 0
 
-      for(var j in exitFinds){
-        var exits = link.pos.findInRange(exitFinds[j], 3)
+              for(var j in exitFinds){
+                var exits = link.pos.findInRange(exitFinds[j], 3)
 
-        if(exits.length){
-          direction = exitFinds[j]
-        }
-      }
+                if(exits.length){
+                  direction = exitFinds[j]
+                }
+              }
 
       this.remoteLinksByRoom[Game.map.describeExits(this.name)[direction]] = link
+        }
     }
 
     if(this.room.terminal){
@@ -313,7 +327,7 @@ module.exports = class{
 
     this.required.build = 0
     for(var i in this.sites){
-      if(i % 10 === 0){
+      if(i % 10 === 0 && this.required.build < 4){
         this.required.build += 1
       }
     }
@@ -414,7 +428,7 @@ module.exports = class{
       var repairTargets = tower.pos.findInRange(FIND_STRUCTURES, 40, {
         filter: function(structure){
           if(structure.structureType == STRUCTURE_WALL || structure.structureType == STRUCTURE_RAMPART){
-            return (structure.hits < 50000)
+            return (structure.hits < 100000)
           }else{
             return (structure.hits < structure.hitsMax)
           }
@@ -550,7 +564,11 @@ module.exports = class{
   }
 
   needsSupport(){
-    if(this.spawns.length == 0){
+    if(this.spawns.length == 0 && this.room.controller.my){
+      return true
+    }
+
+    if(this.room.energyCapacityAvailable < 400 && this.room.controller.my){
       return true
     }
 
@@ -574,7 +592,7 @@ module.exports = class{
 
     var averageEnergy = _.sum(Memory.arc[this.name].energyAverage) / Memory.arc[this.name].energyAverage.length
 
-    if(this.room.energyCapacityAvailable < 1000 || averageEnergy < 500){
+    if((this.room.energyCapacityAvailable < 1000 || averageEnergy < 500) && this.room.controller.my){
       return true
     }
 

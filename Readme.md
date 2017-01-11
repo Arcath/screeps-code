@@ -2,6 +2,6 @@
 
 My Code for [screeps](https://screeps.com).
 
-I don't recomend using it at the moment. Its for a single room with some names hard coded. In the future it will handle multiple room levels and building up a room.
+Should be able to run any given room(s). But it is obvously only tested against mine.
 
 Read My Story [here](https://arcath.net/category/screeps/)

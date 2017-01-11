@@ -31,6 +31,8 @@ module.exports = class{
 
       if(creep.memory.goToRoom){
         if(creep.memory.goToRoom != creep.room.name){
+          creep.memory.source = undefined
+          creep.memory.site = undefined
           this.sendToRoom(creep)
         }else{
           this.work(creep)
@@ -43,17 +45,30 @@ module.exports = class{
 
   sendToRoom(creep){
     var route = Game.map.findRoute(this.room.room, creep.memory.goToRoom)
-    if(route.length > 0) {
-      var exit = creep.pos.findClosestByRange(route[0].exit)
-      creep.moveTo(exit)
+    if(creep.memory.action == 'defend' && this.room.hostileCreeps.length){
+      this.defend(creep)
+    }else{
+      if(route.length > 0){
+        var exit = creep.pos.findClosestByRange(route[0].exit)
+        creep.moveTo(exit)
+      }
     }
   }
 
   work(creep){
     if(creep.memory.working){
       switch(creep.memory.action){
+        case 'hold':
+          this.hold(creep)
+          break
+        case 'claim':
+          this.claim(creep)
+          break
         case 'defend':
           this.defend(creep)
+          break
+        case 'attack':
+          this.attack(creep)
           break
         case 'construct':
           this.construct(creep)
@@ -79,6 +94,7 @@ module.exports = class{
         case 'haul':
           this.deliverHaul(creep)
           break
+        case 'remoteHarvest':
         case 'interHaul':
           this.interHaul(creep)
           break
@@ -86,8 +102,17 @@ module.exports = class{
       }
     }else{
       switch(creep.memory.action){
+        case 'remoteHarvest':
+          this.remoteHarvest(creep)
+          break
+        case 'claim':
+          this.claim(creep)
+          break
         case 'defend':
           this.defend(creep)
+          break
+        case 'attack':
+          this.attack(creep)
           break
         case 'supply':
           this.collectSupply(creep)
@@ -184,7 +209,7 @@ module.exports = class{
   }
 
   construct(creep){
-    if(this.room.room.controller.ticksToDowngrade < 500){
+    if(this.room.room.controller.ticksToDowngrade < 500 || this.room.room.controller.level < 2){
       this.upgrade(creep)
     }else{
       if(this.room.sites.length){
@@ -324,7 +349,7 @@ module.exports = class{
       var collectFrom = ['generalUseContainers', 'storages', 'recycleContainers']
 
       if(this.room.generalUseContainers.length == 0){
-        var collectFrom = ['generalUseContainers', 'storages', 'fullExtensions', 'fullSpawns']
+        var collectFrom = ['generalUseContainers', 'storages', 'recycleContainers', 'fullExtensions', 'fullSpawns']
       }
 
       this.assignCollection(creep, collectFrom)
@@ -410,6 +435,93 @@ module.exports = class{
       if(creep.attack(target) == ERR_NOT_IN_RANGE){
         creep.moveTo(target)
       }
+    }else{
+      creep.moveTo(this.room.room.controller)
+    }
+  }
+
+  attack(creep){
+    if(creep.room.name != creep.memory.to){
+      creep.memory.goToRoom = creep.memory.to
+    }else{
+      var towers = creep.room.find(FIND_STRUCTURES, {
+        filter: (structure) => {
+          return (structure.structureType == STRUCTURE_TOWER && structure.my == false)
+        }
+      })
+
+      var creepsNearby = creep.pos.findInRange(FIND_HOSTILE_CREEPS, 5)
+      if(creepsNearby.length){
+        var crp = creep.pos.findClosestByRange(creepsNearby)
+
+        if(creep.attack(crp) == ERR_NOT_IN_RANGE){
+          creep.moveTo(crp)
+        }
+      }else{
+        if(towers.length){
+          var tower = creep.pos.findClosestByRange(towers)
+
+          if(creep.attack(tower) == ERR_NOT_IN_RANGE){
+            creep.moveTo(tower)
+          }
+        }else{
+          var spawns = creep.room.find(FIND_STRUCTURES, {
+            filter: (structure) => {
+              return (structure.structureType == STRUCTURE_SPAWN && structure.my == false)
+            }
+          })
+
+          if(spawns.length){
+            var spawn = creep.pos.findClosestByRange(spawns)
+
+            if(creep.attack(spawn) == ERR_NOT_IN_RANGE){
+              creep.moveTo(spawn)
+            }
+          }else{
+            var hostileStructures = creep.room.find(FIND_STRUCTURES, {
+              filter: (structure) => {
+                return (structure.my == false)
+              }
+            })
+
+            if(hostileStructures.length){
+              var structure = creep.pos.findClosestByRange(hostileStructures)
+
+              if(creep.attack(structure) == ERR_NOT_IN_RANGE){
+                creep.moveTo(structure)
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  claim(creep){
+    if(creep.room.name != creep.memory.to){
+      creep.memory.goToRoom = creep.memory.to
+    }else{
+      if(creep.claimController(creep.room.controller) == ERR_NOT_IN_RANGE){
+        creep.moveTo(creep.room.controller)
+      }
+    }
+  }
+
+  hold(creep){
+    if(creep.room.name != creep.memory.to){
+      creep.memory.goToRoom = creep.memory.to
+    }else{
+      if(creep.reserveController(creep.room.controller) == ERR_NOT_IN_RANGE){
+        creep.moveTo(creep.room.controller)
+      }
+    }
+  }
+
+  remoteHarvest(creep){
+    if(creep.room.name != creep.memory.mine){
+      creep.memory.goToRoom = creep.memory.mine
+    }else{
+      this.harvest(creep)
     }
   }
 }

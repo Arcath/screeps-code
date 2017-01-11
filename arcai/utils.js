@@ -59,14 +59,18 @@ module.exports = {
   },
 
   shouldDeliverTo: function(creep, structure){
-    var energy = this.energyAfterDeliveries(structure)
+    if(structure){
+        var energy = this.energyAfterDeliveries(structure)
 
-    if(structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN || structure.structureType == STRUCTURE_TOWER || structure.structureType == STRUCTURE_LINK){
-      var max = structure.energyCapacity
+        if(structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN || structure.structureType == STRUCTURE_TOWER || structure.structureType == STRUCTURE_LINK){
+          var max = structure.energyCapacity
+        }else{
+          var max = structure.storeCapacity
+        }
+
+        return (energy < max)
     }else{
-      var max = structure.storeCapacity
+        return false
     }
-
-    return (energy < max)
   }
 }
