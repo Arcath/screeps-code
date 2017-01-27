@@ -54,7 +54,7 @@ module.exports = {
     build: [WORK, WORK, CARRY, MOVE],
     mineralHarvest: [WORK, WORK, CARRY, MOVE],
     supply: [CARRY, CARRY, MOVE],
-    construct: [WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE],
+    construct: [WORK, WORK, CARRY, MOVE],
     defend: [TOUGH, MOVE, ATTACK, ATTACK]
   },
 

@@ -7,6 +7,7 @@ module.exports = class{
   constructor(roomName){
     this.name = roomName
     this.room = Game.rooms[roomName]
+    this.spawned = {}
 
     if(!Memory.arc[this.name]){
       Memory.arc[this.name] = {}
@@ -315,6 +316,8 @@ module.exports = class{
     this.required.recycle = 0
     this.required.construct = 0
 
+    this.required.harvest = this.sources.length
+
     if(Memory.arc[this.name].supplyJobs.length){
       this.required.supply = 1
     }else{
@@ -331,8 +334,6 @@ module.exports = class{
         this.required.build += 1
       }
     }
-
-    this.required.harvest = this.sources.length
 
     if(this.constructMode()){
       this.required = {
@@ -403,7 +404,9 @@ module.exports = class{
     var spawn = this.getSpawn()
 
     if(spawn){
-      spawn.createCreep(creepDesign, undefined, {action: action})
+      this.spawned[spawn.id] = true
+      var newName = spawn.createCreep(creepDesign, undefined, {action: action})
+      console.log('Adding ' + newName + ' (' + action + ') to the spawn queue in ' + this.name)
       Memory.arc[this.name].newCreep = true
     }
   }
@@ -411,7 +414,7 @@ module.exports = class{
   getSpawn(){
     for(var i in this.spawns){
       if(this.spawns[i]){
-        if(!this.spawns[i].spawning){
+        if(!this.spawns[i].spawning && !(this.spawned[this.spawns[i].id])){
           return this.spawns[i]
         }
       }
@@ -564,12 +567,14 @@ module.exports = class{
   }
 
   needsSupport(){
-    if(this.spawns.length == 0 && this.room.controller.my){
-      return true
-    }
+    if(this.room.controller){
+      if(this.spawns.length == 0 && this.room.controller.my){
+        return true
+      }
 
-    if(this.room.energyCapacityAvailable < 400 && this.room.controller.my){
-      return true
+      if(this.room.energyCapacityAvailable < 400 && this.room.controller.my){
+        return true
+      }
     }
 
     return false
@@ -580,20 +585,22 @@ module.exports = class{
   }
 
   sendEnergy(){
-    if(!Memory.arc[this.name].energyAverage){
-      Memory.arc[this.name].energyAverage = []
-    }
+    if(this.room.controller){
+      if(!Memory.arc[this.name].energyAverage){
+        Memory.arc[this.name].energyAverage = []
+      }
 
-    Memory.arc[this.name].energyAverage.push(this.room.energyAvailable)
+      Memory.arc[this.name].energyAverage.push(this.room.energyAvailable)
 
-    if(Memory.arc[this.name].energyAverage.length > 50){
-      Memory.arc[this.name].energyAverage.shift()
-    }
+      if(Memory.arc[this.name].energyAverage.length > 50){
+        Memory.arc[this.name].energyAverage.shift()
+      }
 
-    var averageEnergy = _.sum(Memory.arc[this.name].energyAverage) / Memory.arc[this.name].energyAverage.length
+      var averageEnergy = _.sum(Memory.arc[this.name].energyAverage) / Memory.arc[this.name].energyAverage.length
 
-    if((this.room.energyCapacityAvailable < 1000 || averageEnergy < 500) && this.room.controller.my){
-      return true
+      if((this.room.energyCapacityAvailable < 1000 || averageEnergy < 500) && this.room.controller.my){
+        return true
+      }
     }
 
     return false

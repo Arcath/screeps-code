@@ -22,10 +22,12 @@ module.exports = class{
         creep.memory.action = 'recycle'
       }
 
-      if(this.room.room.controller.my && !this.room.constructMode()){
-        var roads = creep.pos.findInRange(FIND_STRUCTURES, 0, {filter: (s)=>s.structureType==STRUCTURE_ROAD})
-        if(roads.length == 0){
-          this.room.room.createConstructionSite(creep.pos, STRUCTURE_ROAD)
+      if(this.room.room.controller){
+        if(this.room.room.controller.my && !this.room.constructMode()){
+          var roads = creep.pos.findInRange(FIND_STRUCTURES, 0, {filter: (s)=>s.structureType==STRUCTURE_ROAD})
+          if(roads.length == 0){
+            this.room.room.createConstructionSite(creep.pos, STRUCTURE_ROAD)
+          }
         }
       }
 

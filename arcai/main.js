@@ -12,9 +12,6 @@ var mineRooms = {
 }
 
 var claimRooms = {
-  'E63S74': {
-    from: 'E63S73'
-  }
 }
 
 var holdRooms = {
