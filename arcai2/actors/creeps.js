@@ -38,6 +38,8 @@ var CreepsActor = {
             if(_.sum(creep.carry) == 0){
               creep.memory.act = false
               creep.memory.actJobHash = undefined
+              console.log(creep.name + ' act job undefined')
+              console.log(creep.memory.actJobHash)
             }
 
             if(creep.memory.actJobHash){
@@ -129,7 +131,7 @@ var CreepsActor = {
     var openJobs = jobs.order({act: {func: function(field, objects){
       return _.filter(objects, function(object){
         if(object){
-          return (object.collect != undefined)
+          return (object.collect != undefined && object.collect != 'harvest' && object.collect != 'distribute')
         }else{
           return false
         }

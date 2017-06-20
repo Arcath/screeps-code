@@ -40,12 +40,21 @@ module.exports = {
 
       _.forEach(distroJobs, function(job){
         var creep = Utils.findCreepForJob(job)
+        var creepsInRoom = _.filter(Game.creeps, function(cr){
+          return (cr.room.name == roomObject.name && cr.memory.actFilter == 'deliver')
+        })
+
+        if(creepsInRoom.length == 0){
+          var cap = 300
+        }else{
+          var cap = CreepDesigner.caps.move
+        }
 
         if(!creep){
           spawnQueue.add({
             creep: CreepDesigner.createCreep({
               base: CreepDesigner.baseDesign.move,
-              cap: CreepDesigner.caps.move,
+              cap: cap,
               room: Game.rooms[roomObject.name]
             }),
             memory: {

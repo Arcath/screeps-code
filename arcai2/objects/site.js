@@ -11,6 +11,8 @@ module.exports = function(site){
     }else{
       var priority = 40
     }
+  }else if(site.structureType == STRUCTURE_TOWER){
+    var priority = 50
   }else{
     var priority = 30
   }

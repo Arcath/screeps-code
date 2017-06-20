@@ -56,31 +56,25 @@ var JobsController = {
       var spawns = Utils.inflate(room.spawns)
 
       _.forEach(spawns, function(spawn){
-        if(room.rcl < 3){
-          var priority = 120
-        }else{
-          var priority = 50
-        }
-
-        JobsController.energyJobForBuilding(spawn, priority, jobs, room.name)
+        JobsController.energyJobForBuilding(spawn, 120, jobs, room.name)
       })
 
       var extensions = Utils.inflate(room.extensions)
 
       _.forEach(extensions, function(extension){
-        if(room.rcl < 3){
-          var priority = 120
-        }else{
-          var priority = 50
-        }
-
-        JobsController.energyJobForBuilding(extension, priority, jobs, room.name)
+        JobsController.energyJobForBuilding(extension, 120, jobs, room.name)
       })
 
       var generalContainers = Utils.inflate(room.generalContainers)
 
       _.forEach(generalContainers, function(container){
         JobsController.energyJobForBuilding(container, 90, jobs, room.name)
+      })
+
+      var towers = Utils.inflate(room.towers)
+
+      _.forEach(towers, function(tower){
+        JobsController.energyJobForBuilding(tower, 100, jobs, room.name)
       })
     })
   },
@@ -92,6 +86,10 @@ var JobsController = {
     }else{
       var energy = _.sum(building.store)
       var capacity = building.storeCapacity
+    }
+
+    if(building.structureType == STRUCTURE_TOWER){
+      capacity = capacity * 0.8
     }
 
     var job = {

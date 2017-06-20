@@ -10,6 +10,10 @@ var BuildingsController = {
       if(room.rcl > 0){
         BuildingsController.createPaths(room, roomFlags, flags)
       }
+
+      if(room.towers.length > 0){
+        BuildingsController.runTowers(room, room.towers)
+      }
     })
   },
 
@@ -20,6 +24,8 @@ var BuildingsController = {
       var flag = Game.flags[flagObject.name]
 
       flag.memory = {}
+
+      var remove = true
 
       if(!flag.memory.sites){
         flag.memory.sites = []
@@ -34,8 +40,41 @@ var BuildingsController = {
         _.forEach(flag.memory.sites, function(point){
           var pos = new RoomPosition(point[0], point[1], point[2])
 
-          Game.rooms[point[2]].createConstructionSite(pos, STRUCTURE_ROAD)
+          if(Game.rooms[point[2]].createConstructionSite(pos, STRUCTURE_ROAD) != ERR_INVALID_TARGET){
+            remove = false
+          }
         })
+      }
+
+      if(remove){
+        flag.remove()
+      }
+    })
+  },
+
+  runTowers: function(room, towers){
+    _.forEach(Utils.inflate(towers), function(tower){
+      var closestHostile = tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS)
+      if(closestHostile){
+        tower.attack(closestHostile)
+      }else{
+        var repairTargets = tower.pos.findInRange(FIND_STRUCTURES, 40, {
+          filter: function(structure){
+            if(structure.structureType == STRUCTURE_WALL || structure.structureType == STRUCTURE_RAMPART){
+              return (structure.hits < 100000)
+            }else{
+              return (structure.hits < structure.hitsMax)
+            }
+          }
+        })
+
+        if(repairTargets.length){
+          repairTargets.sort(function(a, b){
+            return a.hits - b.hits
+          })
+
+          tower.repair(repairTargets[0])
+        }
       }
     })
   }

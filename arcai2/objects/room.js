@@ -51,6 +51,10 @@ module.exports = function(room){
     return (structure.structureType == STRUCTURE_EXTENSION)
   })
 
+  var towers = _.filter(structures, function(structure){
+    return (structure.structureType == STRUCTURE_TOWER)
+  })
+
   return {
     energyAvailable: room.energyAvailable,
     energyCapacityAvailable: room.energyCapacityAvailable,
@@ -65,6 +69,7 @@ module.exports = function(room){
     sourceContainers: Utils.deflate(sourceContainers),
     sourceContainerMaps: sourceContainerMaps,
     spawns: Utils.deflate(spawns),
-    structures: Utils.deflate(structures)
+    structures: Utils.deflate(structures),
+    towers: Utils.deflate(towers)
   }
 }

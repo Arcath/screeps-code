@@ -37,7 +37,7 @@ _.forEach(Game.rooms, function(room){
 })
 // Use object-hash to check if anything in the game has changed
 var hashCheck = {
-  codeRevision: 1,
+  codeRevision: 0,
   rooms: Object.keys(Game.rooms).length,
   creeps: Object.keys(Game.creeps).length,
   spawns: Object.keys(Game.spawns).length,
