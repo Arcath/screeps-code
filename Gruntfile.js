@@ -9,11 +9,11 @@ module.exports = function(grunt) {
             options: {
                 email: data.email,
                 password: data.password,
-                branch: 'arcai2',
+                branch: 'arcai3',
                 ptr: false
             },
             dist: {
-                src: ['arcai/*.js']
+                src: ['dist/main.js']
             }
         }
     });
