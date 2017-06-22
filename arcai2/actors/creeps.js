@@ -21,11 +21,10 @@ var CreepsActor = {
         recycle = true
       }
 
-      if(creep.ticksToLive <= 150 || recycle){
-        var room = rooms.findOne({name: creep.room.name})
+      var room = rooms.findOne({name: creep.room.name})
 
+      if(creep.ticksToLive <= 150 || recycle && room.recycleContainers.length > 0){
         var target = creep.pos.findClosestByRange(Utils.inflate(room.recycleContainers))
-        console.log(target.id)
         if(creep.pos.getRangeTo(target) != 0){
           creep.moveTo(target)
         }else{
@@ -38,8 +37,6 @@ var CreepsActor = {
             if(_.sum(creep.carry) == 0){
               creep.memory.act = false
               creep.memory.actJobHash = undefined
-              console.log(creep.name + ' act job undefined')
-              console.log(creep.memory.actJobHash)
             }
 
             if(creep.memory.actJobHash){
@@ -54,7 +51,7 @@ var CreepsActor = {
               CreepsActor.act(creep, job, rooms, jobs)
             }
           }else{
-            if(_.sum(creep.carry) == creep.carryCapacity){
+            if(_.sum(creep.carry) == creep.carryCapacity && creep.carryCapacity != 0){
               creep.memory.actJobHash = undefined
               creep.memory.act = true
             }
@@ -98,6 +95,9 @@ var CreepsActor = {
       case 'lowCollect':
         this.lowCollect(creep, job, rooms)
         break
+      case 'claim':
+        this.claim(creep, job)
+        break
     }
   },
 
@@ -105,7 +105,7 @@ var CreepsActor = {
     var actJobs = jobs.order({act: {func: function(field, objects){
       return _.filter(objects, function(object){
         if(object){
-          return (object.act != undefined && object.collect != 'harvest')
+          return (object.act != undefined && object.collect != 'harvest' && object.room == creep.room.name)
         }else{
           return false
         }
@@ -116,14 +116,33 @@ var CreepsActor = {
       actJobs = jobs.refineSearch(actJobs, {act: creep.memory.actFilter})
     }
 
-    console.log('== Act Jobs ==')
-    _.forEach(actJobs, function(job){
-      console.log(job.priority + ' - ' + job.act)
-    })
-
     if(actJobs[0]){
-      console.log('Assigning ' + creep.name + ' to ' + actJobs[0].act)
-      creep.memory.actJobHash = actJobs[0].hash
+      var pJobs = jobs.refineSearch(actJobs, {priority: actJobs[0].priority})
+
+      if(pJobs[0].target){
+        var targets = []
+        var targetMaps = {}
+
+        _.forEach(pJobs, function(pj){
+          targets.push(Game.getObjectById(pj.target))
+          targetMaps[pj.target] = pj
+        })
+
+        var target = creep.pos.findClosestByRange(targets)
+
+        if(target){
+          var job = targetMaps[target.id]
+        }else{
+          console.log(creep.name + ' ' + targets.length)
+        }
+      }else{
+        var job = pJobs[0]
+      }
+
+      if(job){
+        console.log('Assigning ' + creep.name + ' to ' + job.act)
+        creep.memory.actJobHash = job.hash
+      }
     }
   },
 
@@ -131,12 +150,24 @@ var CreepsActor = {
     var openJobs = jobs.order({act: {func: function(field, objects){
       return _.filter(objects, function(object){
         if(object){
-          return (object.collect != undefined && object.collect != 'harvest' && object.collect != 'distribute')
+          return (
+            object.collect != undefined
+            &&
+            object.collect != 'harvest'
+            &&
+            object.collect != 'distribute'
+            &&
+            object.room == creep.room.name
+          )
         }else{
           return false
         }
       })
     }}}, 'priority').reverse()
+
+    if(creep.memory.actFilter){
+      openJobs = jobs.refineSearch(openJobs, {act: creep.memory.actFilter})
+    }
 
     if(openJobs[0]){
       creep.memory.jobHash = openJobs[0].hash
@@ -211,6 +242,7 @@ var CreepsActor = {
   },
 
   sourceCollect: function(creep, job){
+    creep.memory.actJobHash = undefined
     var container = Game.getObjectById(job.from)
     if(container){
       if(creep.withdraw(container, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
@@ -236,7 +268,6 @@ var CreepsActor = {
 
     if(container){
       if(creep.withdraw(container, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
-        console.log('not in range')
         creep.moveTo(container, {
           visualizePathStyle: {
             fill: 'transparent',
@@ -247,6 +278,23 @@ var CreepsActor = {
           }
         })
       }
+    }
+  },
+
+  claim: function(creep, job){
+    if(!creep.pos.isNearTo(Game.flags[job.flag])){
+      creep.moveTo(Game.flags[job.flag], {
+        visualizePathStyle: {
+          fill: 'transparent',
+          stroke: '#8e44ad',
+          lineStyle: 'dashed',
+          strokeWidth: .15,
+          opacity: .1
+        }
+      })
+    }else{
+      creep.claimController(creep.room.controller)
+      Game.flags[job.flag].remove()
     }
   }
 }

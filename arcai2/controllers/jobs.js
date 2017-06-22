@@ -33,18 +33,12 @@ var JobsController = {
       })
 
       // Create the permermant upgrade job
-      if(roomObject.rcl < 3){
-        var upgradePriority = 100
-      }else{
-        var upgradePriority = 10
-      }
-
       Utils.addWithHash({
         collect: 'lowCollect',
         act: 'upgrade',
         creepType: 'fastWork',
         room: roomObject.name,
-        priority: upgradePriority
+        priority: 10
       }, jobs)
     }
   },
@@ -80,6 +74,10 @@ var JobsController = {
   },
 
   energyJobForBuilding: function(building, priority, jobs, roomName){
+    if(!building){
+      return
+    }
+
     if(building.energy >= 0){
       var energy = building.energy
       var capacity = building.energyCapacity

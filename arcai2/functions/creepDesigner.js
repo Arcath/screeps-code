@@ -51,13 +51,15 @@ module.exports = {
     slowWork: [WORK, WORK, CARRY, MOVE],
     fastWork: [WORK, CARRY, MOVE],
     move: [CARRY, CARRY, MOVE],
-    damage: [TOUGH, MOVE, ATTACK, ATTACK]
+    damage: [TOUGH, MOVE, ATTACK, ATTACK],
+    claim: [CLAIM, MOVE, MOVE, MOVE, MOVE]
   },
 
   caps: {
     slowWork: 1200,
     fastWork: 1200,
     move: 750,
-    damage: 1200
+    damage: 1200,
+    claim: 800
   }
 }

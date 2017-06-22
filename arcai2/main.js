@@ -4,6 +4,7 @@ var BuildingsController = require('./controllers/buildings')
 var CreepsActor = require('./actors/creeps')
 var CreepsController = require('./controllers/creeps')
 var FlagObject = require('./objects/flag')
+var FlagsController = require('./controllers/flags')
 var JobsController = require('./controllers/jobs')
 var RoomObject = require('./objects/room')
 var SiteObject = require('./objects/site')
@@ -37,7 +38,7 @@ _.forEach(Game.rooms, function(room){
 })
 // Use object-hash to check if anything in the game has changed
 var hashCheck = {
-  codeRevision: 0,
+  codeRevision: 1,
   rooms: Object.keys(Game.rooms).length,
   creeps: Object.keys(Game.creeps).length,
   spawns: Object.keys(Game.spawns).length,
@@ -69,12 +70,6 @@ if(Memory.stateCheck != newHash){
     flags.add(flagObject)
   })
 
-  _.forEach(Game.constructionSites, function(site){
-    var siteObject = SiteObject(site)
-
-    sites.add(siteObject)
-  })
-
   // Build data
   for(var roomName in Game.rooms){
     var roomObject = RoomObject(Game.rooms[roomName])
@@ -82,6 +77,12 @@ if(Memory.stateCheck != newHash){
 
     JobsController.jobsForRoom(roomObject, jobs)
   }
+
+  _.forEach(Game.constructionSites, function(site){
+    var siteObject = SiteObject(site)
+
+    sites.add(siteObject)
+  })
 }else{
   // The Game state has not changed, restore the objects
   var rooms = SODB.buildFromJSON(Memory.state.rooms, {cache: true})
@@ -99,10 +100,16 @@ JobsController.siteJobs(sites, jobs)
 // Run the Buildings Controller
 BuildingsController.run(rooms, jobs, flags)
 
+// Run the flags Controller
+FlagsController.run(rooms, jobs, flags, spawnQueue)
+
 // Run the Creeps Controller
+console.log('creeps-controller')
 CreepsController.run(rooms, jobs, spawnQueue)
 
 // Run creep actions
+console.log('creeps-actor')
+
 CreepsActor.run(rooms, jobs)
 
 // Process the spawn queue
@@ -112,7 +119,7 @@ for(var roomName in Game.rooms){
 
   _.forEach(spawns, function(spawn){
     if(!spawn.spawning){
-      var queue = spawnQueue.order({room: roomName}, {spawned: false}, 'priority')[0]
+      var queue = spawnQueue.order({room: roomName}, {spawned: false}, 'priority').reverse()[0]
 
       if(queue){
         spawn.createCreep(queue.creep, undefined, queue.memory)

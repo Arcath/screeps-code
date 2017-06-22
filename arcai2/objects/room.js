@@ -38,6 +38,10 @@ module.exports = function(room){
     return (matched.length == 0)
   })
 
+  if(room.storage){
+    generalContainers.push(room.storage)
+  }
+
 
   if(recycleContainers.length == 0 && room.controller.my && spawns.length != 0){
     var firstSpawn = spawns[0]
@@ -69,6 +73,7 @@ module.exports = function(room){
     sourceContainers: Utils.deflate(sourceContainers),
     sourceContainerMaps: sourceContainerMaps,
     spawns: Utils.deflate(spawns),
+    spawnable: (spawns.length > 0),
     structures: Utils.deflate(structures),
     towers: Utils.deflate(towers)
   }

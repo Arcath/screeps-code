@@ -41,6 +41,10 @@ module.exports = {
     return this.findCreepsForJob(job)[0]
   },
 
+  jobForTarget: function(target, jobs){
+    return jobs.findOne({target: target.id})
+  },
+
   workRate: function(creeps){
     var workRate = 0
 
@@ -53,5 +57,24 @@ module.exports = {
     })
 
     return workRate
+  },
+
+  myNearestRoom: function(roomName, rooms){
+    var myRooms = rooms.where({mine: true}, {spawnable: true})
+
+    var nearestRoom
+    var nearestRoomDistance = 999
+
+    _.forEach(myRooms, function(room){
+      var distance = Game.map.getRoomLinearDistance(roomName, room.name)
+
+
+      if(distance < nearestRoomDistance){
+        nearestRoomDistance = distance
+        nearestRoom = room.name
+      }
+    })
+
+    return nearestRoom
   }
 }

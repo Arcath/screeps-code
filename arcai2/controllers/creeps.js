@@ -72,12 +72,12 @@ module.exports = {
         var numBuilders = parseInt((siteJobs.length / 10) + 1)
 
         var builderCreeps = _.filter(Game.creeps, function(creep){
-          return (creep.memory.actFilter == 'build')
+          return (creep.memory.actFilter == 'build' && creep.room.name == roomObject.name)
         })
 
         var siteJob = _.sortBy(siteJobs, 'priority').reverse()[0]
 
-        if(builderCreeps.length < numBuilders){
+        if(builderCreeps.length < numBuilders && roomObject.generalContainers.length > 0){
           spawnQueue.add({
             creep: CreepDesigner.createCreep({
               base: CreepDesigner.baseDesign.fastWork,
@@ -99,7 +99,7 @@ module.exports = {
         return (creep.memory.actFilter == 'upgrade')
       })
 
-      if(upgraderCreeps.length < 2){
+      if(upgraderCreeps.length < 2 && roomObject.generalContainers.length > 0){
         var upgradeJob = jobs.refineSearch(roomJobs, {act: 'upgrade'})[0]
 
         spawnQueue.add({
