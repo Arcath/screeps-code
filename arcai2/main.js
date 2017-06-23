@@ -104,12 +104,9 @@ BuildingsController.run(rooms, jobs, flags)
 FlagsController.run(rooms, jobs, flags, spawnQueue)
 
 // Run the Creeps Controller
-console.log('creeps-controller')
 CreepsController.run(rooms, jobs, spawnQueue)
 
 // Run creep actions
-console.log('creeps-actor')
-
 CreepsActor.run(rooms, jobs)
 
 // Process the spawn queue

@@ -55,6 +55,10 @@ module.exports = {
     claim: [CLAIM, MOVE, MOVE, MOVE, MOVE]
   },
 
+  extend: {
+    slowWork: [WORK]
+  },
+
   caps: {
     slowWork: 1200,
     fastWork: 1200,

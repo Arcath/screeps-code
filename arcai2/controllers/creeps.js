@@ -61,7 +61,7 @@ module.exports = {
               jobHash: job.hash,
               actFilter: 'deliver'
             },
-            priority: job.priority,
+            priority: 120,
             spawned: false,
             room: roomObject.name
           })
@@ -96,7 +96,7 @@ module.exports = {
       }
 
       var upgraderCreeps = _.filter(Game.creeps, function(creep){
-        return (creep.memory.actFilter == 'upgrade')
+        return (creep.memory.actFilter == 'upgrade' && creep.room.name == roomObject.name)
       })
 
       if(upgraderCreeps.length < 2 && roomObject.generalContainers.length > 0){

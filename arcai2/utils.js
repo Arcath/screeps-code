@@ -27,6 +27,9 @@ module.exports = {
     // Assign the hash to the object
     object.hash = hash
 
+    var jobs = database.where({hash: hash})
+    console.log(jobs.length + ' entries with hash ' + hash)
+
     // Add the object to the database
     database.add(object)
   },

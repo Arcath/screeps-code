@@ -23,7 +23,7 @@ module.exports = function(room){
   console.log(containers.length + ' containers, ' + sourceContainers.length + ' source containers')
 
   var recycleContainers = _.filter(containers, function(container){
-    var spawns = container.pos.findInRange(FIND_MY_SPAWNS, 2)
+    var spawns = container.pos.findInRange(FIND_MY_SPAWNS, 1)
 
     return (spawns.length != 0)
   })

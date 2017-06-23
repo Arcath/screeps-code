@@ -32,7 +32,7 @@ var JobsController = {
         Utils.addWithHash(job, jobs)
       })
 
-      // Create the permermant upgrade job
+      // Create the permermant upgrade job    
       Utils.addWithHash({
         collect: 'lowCollect',
         act: 'upgrade',

@@ -102,19 +102,18 @@ var CreepsActor = {
   },
 
   assignActJob: function(creep, job, rooms, jobs){
-    var actJobs = jobs.order({act: {func: function(field, objects){
-      return _.filter(objects, function(object){
-        if(object){
-          return (object.act != undefined && object.collect != 'harvest' && object.room == creep.room.name)
-        }else{
-          return false
-        }
-      })
-    }}}, {priority: {gte: job.priority}}, 'priority').reverse()
+    var actJobs = jobs.order(
+      {room: creep.room.name},
+      {act: {defined: true}},
+      {collect: {isnot: 'harvest'}},
+      'priority'
+    ).reverse()
 
     if(creep.memory.actFilter){
       actJobs = jobs.refineSearch(actJobs, {act: creep.memory.actFilter})
     }
+
+    console.log(actJobs.length + ' jobs for ' + creep.name)
 
     if(actJobs[0]){
       var pJobs = jobs.refineSearch(actJobs, {priority: actJobs[0].priority})
@@ -133,7 +132,7 @@ var CreepsActor = {
         if(target){
           var job = targetMaps[target.id]
         }else{
-          console.log(creep.name + ' ' + targets.length)
+          var job = actJobs[0]
         }
       }else{
         var job = pJobs[0]
