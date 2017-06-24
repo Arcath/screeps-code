@@ -40,6 +40,9 @@ module.exports = function(room){
 
   if(room.storage){
     generalContainers.push(room.storage)
+    var storageId = room.storage.id
+  }else{
+    var storageId = undefined
   }
 
 
@@ -59,10 +62,17 @@ module.exports = function(room){
     return (structure.structureType == STRUCTURE_TOWER)
   })
 
+  var extractors = _.filter(structures, function(structure){
+    return(structure.structureType == STRUCTURE_EXTRACTOR)
+  })
+
+  console.log('Extractors: ' + extractors.length)
+
   return {
     energyAvailable: room.energyAvailable,
     energyCapacityAvailable: room.energyCapacityAvailable,
     extensions: Utils.deflate(extensions),
+    extractors: Utils.deflate(extractors),
     generalContainers: Utils.deflate(generalContainers),
     minerals: Utils.deflate(room.find(FIND_MINERALS)),
     mine: room.controller.my,
@@ -74,6 +84,7 @@ module.exports = function(room){
     sourceContainerMaps: sourceContainerMaps,
     spawns: Utils.deflate(spawns),
     spawnable: (spawns.length > 0),
+    storage: storageId,
     structures: Utils.deflate(structures),
     towers: Utils.deflate(towers)
   }

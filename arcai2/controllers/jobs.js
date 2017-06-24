@@ -32,7 +32,7 @@ var JobsController = {
         Utils.addWithHash(job, jobs)
       })
 
-      // Create the permermant upgrade job    
+      // Create the permermant upgrade job
       Utils.addWithHash({
         collect: 'lowCollect',
         act: 'upgrade',
@@ -131,6 +131,29 @@ var JobsController = {
       if(!foundJob){
         jobs.add(job)
       }
+    })
+  },
+
+  extractorJobs: function(rooms, jobs){
+    var myRooms = rooms.where({mine: true}, {storage: {defined: true}})
+
+    _.forEach(myRooms, function(room){
+      if(room.extractors.length == 0){
+        return
+      }
+
+      _.forEach(Utils.inflate(room.extractors), function(extractor){
+        var job = {
+          collect: 'extract',
+          priority: 70,
+          room: room.name,
+          act: 'deliverAll',
+          target: room.storage,
+          mineral: room.minerals[0]
+        }
+
+        Utils.addWithHash(job, jobs)
+      })
     })
   }
 }

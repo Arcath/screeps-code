@@ -96,6 +96,7 @@ var spawnQueue = new SODB()
 // Add dynamic jobs
 JobsController.energyJobs(rooms, jobs)
 JobsController.siteJobs(sites, jobs)
+JobsController.extractorJobs(rooms, jobs)
 
 // Run the Buildings Controller
 BuildingsController.run(rooms, jobs, flags)

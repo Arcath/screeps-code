@@ -77,6 +77,9 @@ var CreepsActor = {
         case 'build':
           this.build(creep, job)
           break
+        case 'deliverAll':
+          this.deliverAll(creep, job)
+          break
       }
     }else{
       // Assign an acting job
@@ -97,6 +100,9 @@ var CreepsActor = {
         break
       case 'claim':
         this.claim(creep, job)
+        break
+      case 'extract':
+        this.extract(creep, job)
         break
     }
   },
@@ -295,6 +301,39 @@ var CreepsActor = {
       creep.claimController(creep.room.controller)
       Game.flags[job.flag].remove()
     }
+  },
+
+  extract: function(creep, job){
+    var mineral = Game.getObjectById(job.mineral)
+    if(creep.harvest(mineral) == ERR_NOT_IN_RANGE){
+      creep.moveTo(mineral, {
+        visualizePathStyle: {
+          fill: 'transparent',
+          stroke: '#95a5a6',
+          lineStyle: 'dashed',
+          strokeWidth: .15,
+          opacity: .1
+        }
+      })
+    }
+  },
+
+  deliverAll: function(creep, job){
+    var target = Game.getObjectById(job.target)
+
+    _.forEach(Object.keys(creep.carry), function(resource){
+      if(creep.transfer(target, resource) == ERR_NOT_IN_RANGE){
+        creep.moveTo(target, {
+          visualizePathStyle: {
+            fill: 'transparent',
+            stroke: '#a9b7c6',
+            lineStyle: 'dashed',
+            strokeWidth: .15,
+            opacity: .1
+          }
+        })
+      }
+    })
   }
 }
 

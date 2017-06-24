@@ -13,6 +13,7 @@ module.exports = {
       var distroJobs = jobs.refineSearch(roomJobs, {collect: 'distribute'})
       var harvestJobs = jobs.refineSearch(roomJobs, {collect: 'harvest'})
       var siteJobs = jobs.refineSearch(roomJobs, {act: 'build'})
+      var extractJobs = jobs.refineSearch(roomJobs, {collect: 'extract'})
 
       _.forEach(harvestJobs, function(job){
         var creeps = Utils.findCreepsForJob(job)
@@ -115,6 +116,28 @@ module.exports = {
           priority: upgradeJob.priority,
           spawned: false,
           room: roomObject.name
+        })
+      }
+
+      if(extractJobs.length > 0){
+        _.forEach(extractJobs, function(job){
+          var creep = Utils.findCreepForJob(job)
+
+          if(!creep){
+            spawnQueue.add({
+              creep: CreepDesigner.createCreep({
+                base: CreepDesigner.baseDesign.fastWork,
+                cap: CreepDesigner.caps.fastWork,
+                room: Game.rooms[roomObject.name]
+              }),
+              memory: {
+                jobHash: job.hash
+              },
+              priority: job.priority,
+              spawned: false,
+              room: roomObject.name
+            })
+          }
         })
       }
     })
