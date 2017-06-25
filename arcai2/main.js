@@ -3,6 +3,8 @@ var SODB = require('sodb')
 var BuildingsController = require('./controllers/buildings')
 var CreepsActor = require('./actors/creeps')
 var CreepsController = require('./controllers/creeps')
+var CreepDesigner = require('./functions/creepDesigner')
+var Defcon = require('./functions/defcon')
 var FlagObject = require('./objects/flag')
 var FlagsController = require('./controllers/flags')
 var JobsController = require('./controllers/jobs')
@@ -106,6 +108,9 @@ FlagsController.run(rooms, jobs, flags, spawnQueue)
 
 // Run the Creeps Controller
 CreepsController.run(rooms, jobs, spawnQueue)
+
+// Set room Defcon Levels
+Defcon.run(rooms)
 
 // Run creep actions
 CreepsActor.run(rooms, jobs)
