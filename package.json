@@ -1,6 +1,7 @@
 {
   "private": true,
   "dependencies": {
+    "colors": "^1.1.2",
     "commander": "^2.10.0",
     "console.table": "^0.8.0",
     "grunt": "^1.0.1",
@@ -8,6 +9,7 @@
     "grunt-shell": "^2.1.0",
     "screeps-api": "^0.2.10",
     "sodb": "^1.2.3",
+    "table": "^4.0.1",
     "webpack": "^2.6.1"
   }
 }

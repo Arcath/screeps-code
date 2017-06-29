@@ -23,7 +23,7 @@ var CreepsActor = {
 
       var room = rooms.findOne({name: creep.room.name})
 
-      if(creep.ticksToLive <= 150 || recycle && room.recycleContainers.length > 0){
+      if((creep.ticksToLive <= 150 || recycle) && room.recycleContainers.length > 0){
         var target = creep.pos.findClosestByRange(Utils.inflate(room.recycleContainers))
         if(creep.pos.getRangeTo(target) != 0){
           creep.moveTo(target)
@@ -55,7 +55,7 @@ var CreepsActor = {
               creep.memory.actJobHash = undefined
               creep.memory.act = true
             }
-            CreepsActor.collect(creep, job, rooms)
+            CreepsActor.collect(creep, job, rooms, jobs)
           }
         }else{
           creep.memory.jobHash = undefined
@@ -80,6 +80,12 @@ var CreepsActor = {
         case 'deliverAll':
           this.deliverAll(creep, job)
           break
+        case 'remoteWorker':
+          this.remoteWorker(creep, job)
+          break
+        case 'deliverResource':
+          this.deliverResource(creep, job)
+          break
       }
     }else{
       // Assign an acting job
@@ -87,7 +93,7 @@ var CreepsActor = {
     }
   },
 
-  collect: function(creep, job, rooms){
+  collect: function(creep, job, rooms, jobs){
     switch(job.collect){
       case 'harvest':
         this.harvest(creep, job)
@@ -104,6 +110,15 @@ var CreepsActor = {
       case 'extract':
         this.extract(creep, job)
         break
+      case 'defend':
+        this.defend(creep, job)
+        break
+      case 'reserve':
+        this.reserve(creep, job)
+        break
+      case 'supply':
+        this.supply(creep, job, jobs)
+        break
     }
   },
 
@@ -118,8 +133,6 @@ var CreepsActor = {
     if(creep.memory.actFilter){
       actJobs = jobs.refineSearch(actJobs, {act: creep.memory.actFilter})
     }
-
-    console.log(actJobs.length + ' jobs for ' + creep.name)
 
     if(actJobs[0]){
       var pJobs = jobs.refineSearch(actJobs, {priority: actJobs[0].priority})
@@ -145,7 +158,6 @@ var CreepsActor = {
       }
 
       if(job){
-        console.log('Assigning ' + creep.name + ' to ' + job.act)
         creep.memory.actJobHash = job.hash
       }
     }
@@ -334,6 +346,101 @@ var CreepsActor = {
         })
       }
     })
+  },
+
+  defend: function(creep, job){
+    var room = Game.rooms[job.room]
+
+    if(room){
+      if(creep.room.name != job.room){
+        creep.moveTo(room.controller)
+      }else{
+        var hostile = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS)
+
+        if(creep.attack(hostile) == ERR_NOT_IN_RANGE){
+          creep.moveTo(hostile)
+        }
+      }
+    }
+  },
+
+  reserve: function(creep, job){
+    if(!creep.pos.isNearTo(Game.flags[job.flag])){
+      creep.moveTo(Game.flags[job.flag], {
+        visualizePathStyle: {
+          fill: 'transparent',
+          stroke: '#8e44ad',
+          lineStyle: 'dashed',
+          strokeWidth: .15,
+          opacity: .1
+        }
+      })
+    }else{
+      creep.reserveController(creep.room.controller)
+    }
+  },
+
+  remoteWorker: function(creep, job){
+    var target = Game.rooms[job.targetRoom].storage
+
+    _.forEach(Object.keys(creep.carry), function(resource){
+      if(creep.transfer(target, resource) == ERR_NOT_IN_RANGE){
+        creep.moveTo(target, {
+          visualizePathStyle: {
+            fill: 'transparent',
+            stroke: '#a9b7c6',
+            lineStyle: 'dashed',
+            strokeWidth: .15,
+            opacity: .1
+          }
+        })
+      }
+    })
+  },
+
+  supply: function(creep, job, jobs){
+    var container = Game.getObjectById(job.from)
+
+    if(container){
+      switch(creep.withdraw(container, job.resource)){
+        case ERR_NOT_IN_RANGE:
+          creep.moveTo(container, {
+            visualizePathStyle: {
+              fill: 'transparent',
+              stroke: '#f1c40f',
+              lineStyle: 'dashed',
+              strokeWidth: .15,
+              opacity: .1
+            }
+          })
+          break
+        case ERR_NOT_ENOUGH_RESOURCES:
+          creep.memory.act = true
+          console.log(creep.name + ' would delete job')
+          break
+      }
+    }
+  },
+
+  deliverResource: function(creep, job){
+    var target = Game.getObjectById(job.target)
+    if(target){
+      switch(creep.transfer(target, job.resource)){
+        case ERR_NOT_IN_RANGE:
+          creep.moveTo(target, {
+            visualizePathStyle: {
+              fill: 'transparent',
+              stroke: '#a9b7c6',
+              lineStyle: 'dashed',
+              strokeWidth: .15,
+              opacity: .1
+            }
+          })
+          break
+        default:
+          creep.memory.act = false
+      }
+    }
   }
 }
 

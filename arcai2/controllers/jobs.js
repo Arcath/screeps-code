@@ -152,9 +152,15 @@ var JobsController = {
           mineral: room.minerals[0]
         }
 
-        Utils.addWithHash(job, jobs)
+        if(!jobs.findOne({collect: 'extract'}, {room: room.name})){
+          Utils.addWithHash(job, jobs)
+        }
       })
     })
+  },
+
+  mineralJobs: function(rooms, jobs){
+
   }
 }
 

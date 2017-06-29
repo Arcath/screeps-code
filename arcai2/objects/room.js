@@ -20,8 +20,6 @@ module.exports = function(room){
     return (sources.length != 0)
   })
 
-  console.log(containers.length + ' containers, ' + sourceContainers.length + ' source containers')
-
   var recycleContainers = _.filter(containers, function(container){
     var spawns = container.pos.findInRange(FIND_MY_SPAWNS, 1)
 
@@ -66,7 +64,10 @@ module.exports = function(room){
     return(structure.structureType == STRUCTURE_EXTRACTOR)
   })
 
-  console.log('Extractors: ' + extractors.length)
+  var terminalId
+  if(room.terminal){
+    terminalId = room.terminal.id
+  }
 
   return {
     energyAvailable: room.energyAvailable,
@@ -86,6 +87,7 @@ module.exports = function(room){
     spawnable: (spawns.length > 0),
     storage: storageId,
     structures: Utils.deflate(structures),
+    terminal: terminalId,
     towers: Utils.deflate(towers)
   }
 }

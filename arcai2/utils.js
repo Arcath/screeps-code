@@ -31,14 +31,32 @@ module.exports = {
     database.add(object)
   },
 
-  findCreepsForJob: function(job){
+  addIfNotExist: function(object, database){
+    var hash = this.hash(object)
+
+    if(!database.findOne({hash: hash})){
+      object.hash = hash
+
+      database.add(object)
+    }
+  },
+
+  findCreepsForJob: function(job, ttl = 0){
     return _.filter(Game.creeps, function(creep){
-      return (creep.memory.jobHash == job.hash)
+      if(creep.memory.jobHash == job.hash){
+        if(creep.ticksToLive){
+          return (creep.ticksToLive > ttl)
+        }else{
+          return true
+        }
+      }else{
+        return false
+      }
     })
   },
 
-  findCreepForJob: function(job){
-    return this.findCreepsForJob(job)[0]
+  findCreepForJob: function(job, ttl = 0){
+    return this.findCreepsForJob(job, ttl)[0]
   },
 
   jobForTarget: function(target, jobs){
