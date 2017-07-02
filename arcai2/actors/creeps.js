@@ -216,16 +216,45 @@ var CreepsActor = {
 
   harvest: function(creep, job){
     var source = Game.getObjectById(job.source)
-    if(creep.harvest(source) == ERR_NOT_IN_RANGE){
-      creep.moveTo(source, {
-        visualizePathStyle: {
-          fill: 'transparent',
-          stroke: '#c0392b',
-          lineStyle: 'dashed',
-          strokeWidth: .15,
-          opacity: .3
+
+    if(job.target){
+      var target = Game.getObjectById(job.target)
+      if(job.overflow){
+        var target = Game.getObjectById(job.overflow)
+      }
+      if(creep.pos.inRangeTo(target, 0)){
+        if(job.overflow){
+          if(target.store.energy > creep.carryCapacity){
+            creep.withdraw(target, RESOURCE_ENERGY)
+          }else{
+            creep.harvest(source)
+          }
+        }else{
+          creep.harvest(source)
         }
-      })
+      }else{
+        creep.moveTo(target, {
+          visualizePathStyle: {
+            fill: 'transparent',
+            stroke: '#c0392b',
+            lineStyle: 'dashed',
+            strokeWidth: .15,
+            opacity: .3
+          }
+        })
+      }
+    }else{
+      if(creep.harvest(source) == ERR_NOT_IN_RANGE){
+        creep.moveTo(source, {
+          visualizePathStyle: {
+            fill: 'transparent',
+            stroke: '#c0392b',
+            lineStyle: 'dashed',
+            strokeWidth: .15,
+            opacity: .3
+          }
+        })
+      }
     }
   },
 

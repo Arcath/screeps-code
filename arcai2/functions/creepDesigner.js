@@ -52,11 +52,13 @@ module.exports = {
     fastWork: [WORK, CARRY, MOVE],
     move: [CARRY, CARRY, MOVE],
     damage: [TOUGH, MOVE, ATTACK, ATTACK],
-    claim: [CLAIM, MOVE, MOVE, MOVE, MOVE]
+    claim: [CLAIM, MOVE, MOVE, MOVE, MOVE],
+    upgrader: [WORK, CARRY, MOVE, MOVE, MOVE]
   },
 
   extend: {
-    slowWork: [WORK]
+    slowWork: [WORK],
+    upgrader: [WORK]
   },
 
   caps: {
@@ -64,6 +66,7 @@ module.exports = {
     fastWork: 1200,
     move: 750,
     damage: 1200,
-    claim: 800
+    claim: 800,
+    upgrader: 1700
   }
 }

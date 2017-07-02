@@ -25,7 +25,13 @@ Promise.resolve()
   .then(() => api.connect())
   .then(() => api.memory.get())
   .then(memory => {
-    var database = SODB.buildFromJSON(memory.state.jobs, {cache: true})
+    var database = new SODB()
+
+    memory.state.jobObjects.forEach(function(entry){
+      if(entry != null){
+        database.objects[entry.___id] = entry
+      }
+    })
 
     var search = []
     if(program.room){ search.push({room: program.room}) }

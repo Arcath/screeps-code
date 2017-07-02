@@ -63,13 +63,13 @@ module.exports = {
     return jobs.findOne({target: target.id})
   },
 
-  workRate: function(creeps){
+  workRate: function(creeps, perWorkPart){
     var workRate = 0
 
     _.forEach(creeps, function(creep){
       _.forEach(creep.body, function(part){
         if(part.type == WORK){
-          workRate += 2
+          workRate += perWorkPart
         }
       })
     })

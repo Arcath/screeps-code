@@ -10,6 +10,7 @@ module.exports = {
     Memory.stats['cpu.getUsed'] = Game.cpu.getUsed()
     Memory.stats['cpu.limit'] = Game.cpu.limit
     Memory.stats['cpu.bucket'] = Game.cpu.bucket
+    Memory.stats['memory.size'] = RawMemory.get().length
 
 
     Memory.stats['jobs.count'] = jobs.count()

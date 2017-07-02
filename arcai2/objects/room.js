@@ -69,12 +69,36 @@ module.exports = function(room){
     terminalId = room.terminal.id
   }
 
+  var links = _.filter(structures, function(structure){
+    return (structure.structureType == STRUCTURE_LINK)
+  })
+
+  var sourceLinkMaps = {}
+
+  var sourceLinks = _.filter(links, function(link){
+    var sources = link.pos.findInRange(FIND_SOURCES, 2)
+
+    if(sources[0]){
+      sourceLinkMaps[sources[0].id] = link.id
+    }
+
+    return (sources.length != 0)
+  })
+
+  var coreLinks = _.filter(links, function(link){
+    var sources = link.pos.findInRange(FIND_SOURCES, 2)
+
+    return (sources.length == 0)
+  })
+
   return {
+    coreLinks: Utils.deflate(coreLinks),
     energyAvailable: room.energyAvailable,
     energyCapacityAvailable: room.energyCapacityAvailable,
     extensions: Utils.deflate(extensions),
     extractors: Utils.deflate(extractors),
     generalContainers: Utils.deflate(generalContainers),
+    links: Utils.deflate(links),
     minerals: Utils.deflate(room.find(FIND_MINERALS)),
     mine: room.controller.my,
     name: room.name,
@@ -83,6 +107,8 @@ module.exports = function(room){
     sources: Utils.deflate(room.find(FIND_SOURCES)),
     sourceContainers: Utils.deflate(sourceContainers),
     sourceContainerMaps: sourceContainerMaps,
+    sourceLinkMaps: sourceLinkMaps,
+    sourceLinks: Utils.deflate(sourceLinks),
     spawns: Utils.deflate(spawns),
     spawnable: (spawns.length > 0),
     storage: storageId,

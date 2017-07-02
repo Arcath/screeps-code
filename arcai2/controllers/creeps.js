@@ -38,12 +38,17 @@ module.exports = {
       var totalWorkRate = 0
       _.forEach(harvestJobs, function(job){
         var creeps = Utils.findCreepsForJob(job)
-        var workRate = Utils.workRate(creeps)
+        var workRate = Utils.workRate(creeps, 2)
         var source = Game.getObjectById(job.source)
 
         totalWorkRate += workRate
 
         if(workRate < (source.energyCapacity / 300)){
+          var check = []
+          _.forEach(harvestJobs, function(job){
+            check.concat(Utils.findCreepsForJob(job))
+          })
+
           spawnQueue.add(
             {
               creep: CreepDesigner.createCreep({
@@ -125,11 +130,13 @@ module.exports = {
         return (creep.memory.actFilter == 'upgrade' && creep.room.name == roomObject.name)
       })
 
+      Memory.stats['room.' + roomObject.name + '.upgradeRate'] = Utils.workRate(upgraderCreeps, 1)
+
       if(upgraderCreeps.length < 2 && roomObject.generalContainers.length > 0){
         var upgradeJob = jobs.refineSearch(roomJobs, {act: 'upgrade'})[0]
 
         spawnQueue.add({
-          creepType: 'fastWork',
+          creepType: 'upgrader',
           memory: {
             jobHash: upgradeJob.hash,
             actFilter: 'upgrade'

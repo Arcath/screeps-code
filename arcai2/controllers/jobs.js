@@ -17,7 +17,13 @@ var JobsController = {
           priority: 100
         }
 
-        if(roomObject.sourceContainerMaps[source]){
+        if(roomObject.sourceLinkMaps[source] && roomObject.coreLinks.length > 0){
+          job.act = 'deliver'
+          job.target = roomObject.sourceLinkMaps[source]
+          job.overflow = roomObject.sourceContainerMaps[source]
+        }
+
+        if(roomObject.sourceContainerMaps[source] && (!roomObject.sourceLinkMaps[source] || roomObject.coreLinks.length == 0)){
           job.act = 'deliver'
           job.target = roomObject.sourceContainerMaps[source]
 
@@ -30,6 +36,15 @@ var JobsController = {
         }
 
         Utils.addWithHash(job, jobs)
+      })
+
+      _.forEach(roomObject.coreLinks, function(link){
+        Utils.addWithHash({
+          collect: 'distribute',
+          from: link,
+          room: roomObject.name,
+          priority: 90
+        }, jobs)
       })
 
       // Create the permermant upgrade job
@@ -62,7 +77,12 @@ var JobsController = {
       var generalContainers = Utils.inflate(room.generalContainers)
 
       _.forEach(generalContainers, function(container){
-        JobsController.energyJobForBuilding(container, 90, jobs, room.name)
+        if(container.structureType == STRUCTURE_STORAGE){
+          var priority = 80
+        }else{
+          var priority = 90
+        }
+        JobsController.energyJobForBuilding(container, priority, jobs, room.name)
       })
 
       var towers = Utils.inflate(room.towers)
@@ -90,17 +110,23 @@ var JobsController = {
       capacity = capacity * 0.8
     }
 
-    var job = {
-      act: 'deliver',
-      priority: priority,
-      room: roomName,
-      target: building.id
+    if(Memory.jobPremades[building.id]){
+      var job = Memory.jobPremades[building.id]
+    }else{
+      var job = {
+        act: 'deliver',
+        priority: priority,
+        room: roomName,
+        target: building.id
+      }
+
+      var hash = Utils.hash(job)
+      job.hash = hash
+
+      Memory.jobPremades[building.id] = job
     }
 
-    var hash = Utils.hash(job)
-    job.hash = hash
-
-    var foundJob = jobs.findOne({hash: hash})
+    var foundJob = jobs.findOne({hash: job.hash})
 
     if(energy < capacity){
       if(!foundJob){
@@ -143,17 +169,21 @@ var JobsController = {
       }
 
       _.forEach(Utils.inflate(room.extractors), function(extractor){
-        var job = {
-          collect: 'extract',
-          priority: 70,
-          room: room.name,
-          act: 'deliverAll',
-          target: room.storage,
-          mineral: room.minerals[0]
-        }
+        var mineral = Game.getObjectById(room.minerals[0])
 
-        if(!jobs.findOne({collect: 'extract'}, {room: room.name})){
-          Utils.addWithHash(job, jobs)
+        if(mineral.mineralAmount > 0){
+          var job = {
+            collect: 'extract',
+            priority: 70,
+            room: room.name,
+            act: 'deliverAll',
+            target: room.storage,
+            mineral: room.minerals[0]
+          }
+
+          if(!jobs.findOne({collect: 'extract'}, {room: room.name})){
+            Utils.addWithHash(job, jobs)
+          }
         }
       })
     })

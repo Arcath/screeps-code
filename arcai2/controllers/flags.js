@@ -155,13 +155,19 @@ var FlagsController = {
 
     _.forEach(yellowFlags, function(flagObject){
       if(Game.rooms[flagObject.room]){
-        var source = Game.flags[flagObject.name].pos.lookFor(LOOK_SOURCES)[0]
+        if(Game.flags[flagObject.name].memory.source){
+          var sourceId = Game.flags[flagObject.name].memory.source
+        }else{
+          var source = Game.flags[flagObject.name].pos.lookFor(LOOK_SOURCES)[0]
+          var sourceId = source.id
+          Game.flags[flagObject.name].memory.source = source.id
+        }
 
         var roomName = flagObject.name.split('-')[0]
 
         var job = {
           collect: 'harvest',
-          source: source.id,
+          source: sourceId,
           act: 'remoteWorker',
           targetRoom: roomName
         }
