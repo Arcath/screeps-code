@@ -412,6 +412,10 @@ var CreepsActor = {
   remoteWorker: function(creep, job){
     var target = Game.rooms[job.targetRoom].storage
 
+    var sites = _.filter(creep.pos.lookFor(LOOK_CONSTRUCTION_SITES), function(site){
+      
+    })
+
     _.forEach(Object.keys(creep.carry), function(resource){
       if(creep.transfer(target, resource) == ERR_NOT_IN_RANGE){
         creep.moveTo(target, {

@@ -35,12 +35,12 @@ module.exports = {
         roomDefcon.count += 1
       }
 
-      if(roomDefcon.defcon == 50 && roomDefcon.defcon == 1){
+      if(roomDefcon.count == 50 && roomDefcon.defcon == 1){
         roomDefcon.defcon = 2
         roomDefcon.count = 0
       }
 
-      if(roomDefcon.defcon == 50){
+      if(roomDefcon.count == 50){
         room.controller.activateSafeMode()
       }
 

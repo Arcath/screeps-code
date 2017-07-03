@@ -108,6 +108,9 @@ var JobsController = {
 
     if(building.structureType == STRUCTURE_TOWER){
       capacity = capacity * 0.8
+      if(Memory.defcon[roomName].defcon != 0){
+        priority = 200
+      }
     }
 
     if(Memory.jobPremades[building.id]){
@@ -127,6 +130,18 @@ var JobsController = {
     }
 
     var foundJob = jobs.findOne({hash: job.hash})
+
+    if(Memory.defcon[roomName].defcon != 0 && building.structureType == STRUCTURE_TOWER && foundJob){
+      foundJob.priority = 200
+      if(foundJob.changed){ jobs.update(foundJob) }
+    }else if(building.structureType == STRUCTURE_TOWER && foundJob){
+      foundJob.priority = priority
+      if(foundJob.changed){ jobs.update(foundJob) }
+    }
+
+    if(building.structureType == STRUCTURE_TOWER && roomName == 'E63S74'){
+      console.log('job priority = ' + priority)
+    }
 
     if(energy < capacity){
       if(!foundJob){

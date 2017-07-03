@@ -1,4 +1,5 @@
 var SODB = require('sodb')
+var SODBEntry = require('../node_modules/sodb/lib/entry')
 
 var BuildingsController = require('./controllers/buildings')
 var CreepsActor = require('./actors/creeps')
@@ -59,7 +60,7 @@ _.forEach(Game.rooms, function(room){
 })
 // Use object-hash to check if anything in the game has changed
 var hashCheck = {
-  codeRevision: 0,
+  codeRevision: 1,
   rooms: Object.keys(Game.rooms).length,
   creeps: Object.keys(Game.creeps).length,
   spawns: Object.keys(Game.spawns).length,
@@ -127,7 +128,7 @@ if(Memory.stateCheck != newHash){
 
   _.forEach(Memory.state.jobObjects, function(entry){
     if(entry != null){
-      jobs.objects[entry.___id] = entry
+      jobs.objects[entry.___id] = new SODBEntry(entry.object, entry.___id)
     }
   })
 
@@ -211,7 +212,7 @@ for(var roomName in Game.rooms){
           if(CreepDesigner.extend[queue.creepType]){
             var extend = CreepDesigner.extend[queue.creepType]
           }else{
-            var extend =CreepDesigner.baseDesign[queue.creepType]
+            var extend = CreepDesigner.baseDesign[queue.creepType]
           }
           var creep = CreepDesigner.createCreep({
             base: CreepDesigner.baseDesign[queue.creepType],
@@ -223,16 +224,11 @@ for(var roomName in Game.rooms){
           var creep = queue.creep
         }
 
-        var canCreate = spawn.canCreateCreep(creep)
+        /*var canCreate = spawn.canCreateCreep(creep)
 
-        if(canCreate == ERR_NOT_ENOUGH_ENERGY && queue.room == 'E65S72'){
-          console.log('=== NOT ENOUGH ENERGY ===')
-          console.log(queue.room)
-          console.log(JSON.stringify(creep))
-          console.log(CreepDesigner.creepCost(creep))
-          console.log(JSON.stringify(queue.memory))
-          console.log(spawnQueue.where({room: roomName}, {spawned: false}).length)
-        }
+        if(canCreate == ERR_NOT_ENOUGH_ENERGY && roomName == 'E63S74'){
+
+        }*/
 
         spawn.createCreep(creep, undefined, queue.memory)
 

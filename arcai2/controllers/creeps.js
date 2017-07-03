@@ -67,6 +67,21 @@ module.exports = {
         }
       })
 
+      if(totalWorkRate == 0 && harvestJobs.length != 0){
+        console.log(roomObject.name + ' emergancy harvester spawn')
+        var entry = {
+          creep: CreepDesigner.baseDesign.slowWork,
+          memory: {
+            jobHash: harvestJobs[0].hash
+          },
+          priority: 500,
+          spawned: false,
+          room: roomObject.name
+        }
+
+        spawnQueue.add(entry)
+      }
+
       Memory.stats['room.' + roomObject.name + '.sourceWorkRate'] = totalWorkRate
 
       _.forEach(distroJobs, function(job){

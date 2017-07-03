@@ -14,7 +14,7 @@ module.exports = {
       var canSpend = options.cap
     }
 
-    var creep = options.base
+    var creep = [].concat(options.base)
     var add = true
     var extendIndex = 0
 
