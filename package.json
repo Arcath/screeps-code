@@ -2,14 +2,15 @@
   "private": true,
   "dependencies": {
     "colors": "^1.1.2",
-    "commander": "^2.10.0",
+    "commander": "^2.11.0",
     "console.table": "^0.8.0",
     "grunt": "^1.0.1",
     "grunt-screeps": "^1.3.0",
     "grunt-shell": "^2.1.0",
+    "lz-string": "^1.4.4",
     "screeps-api": "^0.2.10",
-    "sodb": "^1.2.3",
+    "sodb": "^1.2.5",
     "table": "^4.0.1",
-    "webpack": "^2.6.1"
+    "webpack": "^3.0.0"
   }
 }

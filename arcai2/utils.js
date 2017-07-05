@@ -33,8 +33,9 @@ module.exports = {
 
   addIfNotExist: function(object, database){
     var hash = this.hash(object)
+    object.hash = hash
 
-    if(!database.findOne({hash: hash})){
+    if(!database.findexLookup(hash)){
       object.hash = hash
 
       database.add(object)
@@ -82,14 +83,16 @@ module.exports = {
 
     var nearestRoom
     var nearestRoomDistance = 999
+    var nearestRCL = 0
 
     _.forEach(myRooms, function(room){
       var distance = Game.map.getRoomLinearDistance(roomName, room.name)
 
 
-      if(distance < nearestRoomDistance){
+      if(distance <= nearestRoomDistance && room.rcl > nearestRCL){
         nearestRoomDistance = distance
         nearestRoom = room.name
+        nearestRCL = room.rcl
       }
     })
 

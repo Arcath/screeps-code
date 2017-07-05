@@ -7,6 +7,7 @@ var FlagsController = {
     var purpleFlags = flags.where({color: COLOR_PURPLE})
     var yellowFlags = flags.where({color: COLOR_YELLOW})
     var redFlags = flags.where({color: COLOR_RED})
+    var blueFlags = flags.where({color: COLOR_BLUE})
 
     _.forEach(greenFlags, function(flagObject){
       var flag = Game.flags[flagObject.name]
@@ -169,12 +170,21 @@ var FlagsController = {
           collect: 'harvest',
           source: sourceId,
           act: 'remoteWorker',
-          targetRoom: roomName
+          targetRoom: roomName,
+          remoteRoom: Game.flags[flagObject.name].pos.roomName
         }
 
-        Utils.addWithHash(job, jobs)
+        Utils.addIfNotExist(job, jobs)
 
-        if(!Utils.findCreepForJob(job, 150)){
+        var creeps = Utils.findCreepsForJob(job, 150)
+
+        if(Memory.stats['remoteMining.' + job.remoteRoom + '.revenue'] > 1200){
+          var count = 2
+        }else{
+          var count = 1
+        }
+
+        if(creeps.length < count){
           spawnQueue.add({
             creep: CreepDesigner.createCreep({
               base: CreepDesigner.baseDesign.fastWork,
@@ -187,6 +197,42 @@ var FlagsController = {
             priority: job.priority,
             spawned: false,
             room: roomName
+          })
+        }
+      }
+    })
+
+    _.forEach(blueFlags, function(flagObject){
+      var destRoom = rooms.findOne({name: flagObject.room})
+
+      var sourceRoomName = flagObject.name.split('-')[0]
+
+      var sourceRoom = rooms.findOne({name: sourceRoomName})
+
+      if(destRoom.storage && sourceRoom.storage){
+        var job = {
+          collect: 'sourceCollect',
+          from: sourceRoom.storage,
+          act: 'deliver',
+          target: destRoom.storage,
+          priority: 80
+        }
+
+        Utils.addIfNotExist(job, jobs)
+
+        if(!Utils.findCreepForJob(job)){
+          spawnQueue.add({
+            creep: CreepDesigner.createCreep({
+              base: CreepDesigner.baseDesign.move,
+              cap: CreepDesigner.caps.move,
+              room: Game.rooms[sourceRoomName]
+            }),
+            memory: {
+              jobHash: job.hash
+            },
+            priority: job.priority,
+            spawned: false,
+            room: sourceRoomName
           })
         }
       }

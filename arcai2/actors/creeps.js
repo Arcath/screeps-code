@@ -1,4 +1,5 @@
 const Utils = require('../utils')
+const CreepDesigner = require('../functions/creepDesigner')
 
 var CreepsActor = {
   run: function(rooms, jobs){
@@ -6,7 +7,8 @@ var CreepsActor = {
       var recycle = false
 
       if(creep.memory.jobHash != undefined){
-        var job = jobs.findOne({hash: creep.memory.jobHash})
+        //var job = jobs.findOne({hash: creep.memory.jobHash})
+        var job = jobs.indexLookup(creep.memory.jobHash)
       }else{
         if(!creep.memory.recycle){
           CreepsActor.reAssign(creep, rooms, jobs)
@@ -81,10 +83,13 @@ var CreepsActor = {
           this.deliverAll(creep, job)
           break
         case 'remoteWorker':
-          this.remoteWorker(creep, job)
+          this.remoteWorker(creep, job, rooms)
           break
         case 'deliverResource':
           this.deliverResource(creep, job)
+          break
+        case 'repair':
+          this.repair(creep, job)
           break
       }
     }else{
@@ -98,6 +103,7 @@ var CreepsActor = {
       case 'harvest':
         this.harvest(creep, job)
         break
+      case 'sourceCollect':
       case 'distribute':
         this.sourceCollect(creep, job)
         break
@@ -133,6 +139,10 @@ var CreepsActor = {
     if(creep.memory.actFilter){
       actJobs = jobs.refineSearch(actJobs, {act: creep.memory.actFilter})
     }
+
+    actJobs.sort(function(a, b){
+      return (a.priority - b.priority)
+    }).reverse()
 
     if(actJobs[0]){
       var pJobs = jobs.refineSearch(actJobs, {priority: actJobs[0].priority})
@@ -215,6 +225,7 @@ var CreepsActor = {
   },
 
   harvest: function(creep, job){
+    creep.memory.actJobHash = undefined
     var source = Game.getObjectById(job.source)
 
     if(job.target){
@@ -409,15 +420,43 @@ var CreepsActor = {
     }
   },
 
-  remoteWorker: function(creep, job){
+  remoteWorker: function(creep, job, rooms){
     var target = Game.rooms[job.targetRoom].storage
 
+    var roomObject = rooms.findOne({name: job.targetRoom})
+
+    if(roomObject.exitLinkMaps[job.remoteRoom]){
+      target = Game.getObjectById(roomObject.exitLinkMaps[job.remoteRoom])
+    }
+
+    if(!Memory.stats['remoteMining.' + job.remoteRoom + '.revenue']){
+      Memory.stats['remoteMining.' + job.remoteRoom + '.revenue'] = 0
+    }
+
+    if(!creep.memory.costed){
+      var costArray = []
+      _.forEach(creep.body, function(part){
+        costArray.push(part.type)
+      })
+      Memory.stats['remoteMining.' + job.remoteRoom + '.revenue'] -= CreepDesigner.creepCost(costArray)
+      creep.memory.costed = true
+    }
+
     var sites = _.filter(creep.pos.lookFor(LOOK_CONSTRUCTION_SITES), function(site){
-      
+      return (site.structureType == STRUCTURE_ROAD)
     })
 
-    _.forEach(Object.keys(creep.carry), function(resource){
-      if(creep.transfer(target, resource) == ERR_NOT_IN_RANGE){
+    var roadsNeedingHealing = _.filter(creep.pos.lookFor(LOOK_STRUCTURES), function(road){
+      return (road.hits < road.hitsMax)
+    })
+
+    if(sites.length > 0){
+      creep.build(sites[0])
+    }else if(roadsNeedingHealing.length > 0){
+      creep.repair(roadsNeedingHealing[0])
+    }else{
+      var carry = creep.carry.energy
+      if(creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
         creep.moveTo(target, {
           visualizePathStyle: {
             fill: 'transparent',
@@ -427,8 +466,11 @@ var CreepsActor = {
             opacity: .1
           }
         })
+      }else{
+        console.log('delivered ' + (carry - creep.carry.energy) + ' to ' + job.targetRoom)
+        Memory.stats['remoteMining.' + job.remoteRoom + '.revenue'] += carry
       }
-    })
+    }
   },
 
   supply: function(creep, job, jobs){
@@ -473,6 +515,21 @@ var CreepsActor = {
         default:
           creep.memory.act = false
       }
+    }
+  },
+
+  repair: function(creep, job){
+    var building = Game.getObjectById(job.target)
+    if(creep.build(building) == ERR_NOT_IN_RANGE){
+      creep.moveTo(building, {
+        visualizePathStyle: {
+          fill: 'transparent',
+          stroke: '#9b59b6',
+          lineStyle: 'dashed',
+          strokeWidth: .15,
+          opacity: .1
+        }
+      })
     }
   }
 }

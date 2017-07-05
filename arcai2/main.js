@@ -1,3 +1,10 @@
+var profiler = {}
+
+if (Memory.stats == undefined) {
+  Memory.stats = {}
+}
+
+//var LZString = require('lz-string')
 var SODB = require('sodb')
 var SODBEntry = require('../node_modules/sodb/lib/entry')
 
@@ -16,12 +23,15 @@ var SiteObject = require('./objects/site')
 var Stats = require('./functions/stats')
 var Utils = require('./utils')
 
+profiler.require = Game.cpu.getUsed()
+
 if(global.lastTick && global.LastMemory && Game.time == (global.lastTick + 1)){
   delete global.Memory
   global.Memory = global.LastMemory
   RawMemory._parsed = global.LastMemory
 }else{
   Memory;
+  //var data = LZString.decompress(RawMemory.get())
   global.lastMemory = RawMemory._parsed
   global.lastTick = Game.time
 }
@@ -36,7 +46,7 @@ if(!Memory.state){
   Memory.stateCheck = 'new'
 }
 
-var profiler = {}
+profiler.memoryInit = Game.cpu.getUsed() - _.sum(profiler)
 
 // Clear dead creeps from memory
 for(var name in Memory.creeps){
@@ -83,7 +93,7 @@ if(Memory.stateCheck != newHash){
 
   // Create the SODBs
   var rooms = new SODB({cache: true})
-  var jobs = new SODB({cache: true})
+  var jobs = new SODB({cache: true, index: 'hash'})
   var sites = new SODB({cache: true})
   var flags = new SODB({cache: true})
 
@@ -107,6 +117,8 @@ if(Memory.stateCheck != newHash){
     sites.add(siteObject)
   })
 
+  JobsController.siteJobs(sites, jobs)
+
   var dbRevisions = {
     rooms: -1,
     jobs: -1,
@@ -123,7 +135,7 @@ if(Memory.stateCheck != newHash){
   rooms.cache.cache = Memory.state.roomCache
 
   //var jobs = SODB.buildFromJSON(Memory.state.jobs, {cache: true})
-  var jobs = new SODB({cache: true})
+  var jobs = new SODB({cache: true, index: 'hash'})
   //jobs.objects = Memory.state.jobObjects
 
   _.forEach(Memory.state.jobObjects, function(entry){
@@ -136,6 +148,7 @@ if(Memory.stateCheck != newHash){
 
   jobs.cache.cache = Memory.state.jobCache
   jobs.dbRevision = Memory.state.jobDbRevision
+  jobs.index = Memory.state.jobIndex
 
   //var sites = SODB.buildFromJSON(Memory.state.sites, {cache: true})
   var sites = new SODB({cache: true})
@@ -157,14 +170,19 @@ if(Memory.stateCheck != newHash){
 
 var spawnQueue = new SODB()
 
-profiler.prepare = Game.cpu.getUsed()
+profiler.prepare = Game.cpu.getUsed() - _.sum(profiler)
+
+// Set room Defcon Levels
+Defcon.run(rooms)
+
+profiler.defcon = Game.cpu.getUsed() - _.sum(profiler)
 
 // Add dynamic jobs
 JobsController.energyJobs(rooms, jobs)
-JobsController.siteJobs(sites, jobs)
+JobsController.repairJobs(rooms, jobs)
 JobsController.extractorJobs(rooms, jobs)
 
-profiler.jobsController = Game.cpu.getUsed() - profiler.prepare
+profiler.jobsController = Game.cpu.getUsed() - _.sum(profiler)
 
 // Run the Buildings Controller
 BuildingsController.run(rooms, jobs, flags)
@@ -184,11 +202,6 @@ profiler.creepsController = Game.cpu.getUsed() - _.sum(profiler)
 ResourceController.run(rooms, jobs)
 
 profiler.resourceController = Game.cpu.getUsed() - _.sum(profiler)
-
-// Set room Defcon Levels
-Defcon.run(rooms)
-
-profiler.defcon = Game.cpu.getUsed() - _.sum(profiler)
 
 // Run creep actions
 CreepsActor.run(rooms, jobs)
@@ -224,12 +237,6 @@ for(var roomName in Game.rooms){
           var creep = queue.creep
         }
 
-        /*var canCreate = spawn.canCreateCreep(creep)
-
-        if(canCreate == ERR_NOT_ENOUGH_ENERGY && roomName == 'E63S74'){
-
-        }*/
-
         spawn.createCreep(creep, undefined, queue.memory)
 
         queue.spawned = true
@@ -250,9 +257,10 @@ if(dbRevisions.rooms != rooms.dbRevision){
 }
 if(dbRevisions.jobs != jobs.dbRevision){
   Memory.state.jobObjects = jobs.objects
-  //Memory.state.jobCache = jobs.cache.cache
+  Memory.state.jobCache = jobs.cache.cache
   Memory.state.jobLastInsert = jobs.lastInsertId
   Memory.state.jobDbRevision = jobs.dbRevision
+  Memory.state.jobIndex = jobs.index
 }
 if(dbRevisions.sites != sites.dbRevision){
   Memory.state.siteObjects = sites.objects
@@ -274,5 +282,10 @@ Memory.stats['profile.resourceController'] = profiler.resourceController
 Memory.stats['profile.defcon'] = profiler.defcon
 Memory.stats['profile.creepsActor'] = profiler.creepsActor
 Memory.stats['profile.spawnQueue'] = profiler.spawnQueue
+Memory.stats['profile.memoryInit'] = profiler.memoryInit
+Memory.stats['profile.require'] = profiler.require
 
 Stats.run(rooms, jobs, sites, flags)
+
+/*var data = JSON.stringify(global.Memory)
+RawMemory.set(LZString.compress(data))*/

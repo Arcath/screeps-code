@@ -147,7 +147,16 @@ module.exports = {
 
       Memory.stats['room.' + roomObject.name + '.upgradeRate'] = Utils.workRate(upgraderCreeps, 1)
 
-      if(upgraderCreeps.length < 2 && roomObject.generalContainers.length > 0){
+      var upgraderCount = 2
+      if(roomObject.rcl > 3 && roomObject.rcl < 8){
+        var upgraderCount = 4
+      }
+
+      if(roomObject.rcl == 8){
+        var upgraderCount = 1
+      }
+
+      if(upgraderCreeps.length < upgraderCount && roomObject.recycleContainers.length > 0){
         var upgradeJob = jobs.refineSearch(roomJobs, {act: 'upgrade'})[0]
 
         spawnQueue.add({

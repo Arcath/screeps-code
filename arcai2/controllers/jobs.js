@@ -59,7 +59,11 @@ var JobsController = {
   },
 
   energyJobs: function(rooms, jobs){
+    var energyJobsProfiler = {base: Game.cpu.getUsed()}
     var myRooms = rooms.where({mine: true})
+
+    energyJobsProfiler.getRooms = Game.cpu.getUsed() - _.sum(energyJobsProfiler)
+    Memory.stats['methodProfiles.energyJobs.getRooms'] = energyJobsProfiler.getRooms
 
     _.forEach(myRooms, function(room){
       var spawns = Utils.inflate(room.spawns)
@@ -68,11 +72,17 @@ var JobsController = {
         JobsController.energyJobForBuilding(spawn, 120, jobs, room.name)
       })
 
+      energyJobsProfiler[room.name + 'spawns'] = Game.cpu.getUsed() - _.sum(energyJobsProfiler)
+      Memory.stats['methodProfiles.energyJobs.' + room.name + 'spawns'] = energyJobsProfiler[room.name + 'spawns']
+
       var extensions = Utils.inflate(room.extensions)
 
       _.forEach(extensions, function(extension){
         JobsController.energyJobForBuilding(extension, 120, jobs, room.name)
       })
+
+      energyJobsProfiler[room.name + 'extensions'] = Game.cpu.getUsed() - _.sum(energyJobsProfiler)
+      Memory.stats['methodProfiles.energyJobs.' + room.name + 'extensions'] = energyJobsProfiler[room.name + 'extensions']
 
       var generalContainers = Utils.inflate(room.generalContainers)
 
@@ -85,11 +95,33 @@ var JobsController = {
         JobsController.energyJobForBuilding(container, priority, jobs, room.name)
       })
 
+      energyJobsProfiler[room.name + 'containers'] = Game.cpu.getUsed() - _.sum(energyJobsProfiler)
+      Memory.stats['methodProfiles.energyJobs.' + room.name + 'containers'] = energyJobsProfiler[room.name + 'containers']
+
       var towers = Utils.inflate(room.towers)
 
       _.forEach(towers, function(tower){
         JobsController.energyJobForBuilding(tower, 100, jobs, room.name)
       })
+
+      energyJobsProfiler[room.name + 'towers'] = Game.cpu.getUsed() - _.sum(energyJobsProfiler)
+      Memory.stats['methodProfiles.energyJobs.' + room.name + 'towers'] = energyJobsProfiler[room.name + 'towers']
+
+      var storage = Game.getObjectById(room.storage)
+
+      if(storage){
+        if(storage.store.energy > 300000){
+          Utils.addIfNotExist({
+            collect: 'distribute',
+            from: room.storage,
+            room: room.name,
+            priority: 90
+          }, jobs)
+        }
+      }
+
+      energyJobsProfiler[room.name + 'storage'] = Game.cpu.getUsed() - _.sum(energyJobsProfiler)
+      Memory.stats['methodProfiles.energyJobs.' + room.name + 'storage'] = energyJobsProfiler[room.name + 'storage']
     })
   },
 
@@ -129,7 +161,8 @@ var JobsController = {
       Memory.jobPremades[building.id] = job
     }
 
-    var foundJob = jobs.findOne({hash: job.hash})
+    //var foundJob = jobs.findOne({hash: job.hash})
+    var foundJob = jobs.indexLookup(job.hash)
 
     if(Memory.defcon[roomName].defcon != 0 && building.structureType == STRUCTURE_TOWER && foundJob){
       foundJob.priority = 200
@@ -137,10 +170,6 @@ var JobsController = {
     }else if(building.structureType == STRUCTURE_TOWER && foundJob){
       foundJob.priority = priority
       if(foundJob.changed){ jobs.update(foundJob) }
-    }
-
-    if(building.structureType == STRUCTURE_TOWER && roomName == 'E63S74'){
-      console.log('job priority = ' + priority)
     }
 
     if(energy < capacity){
@@ -206,6 +235,40 @@ var JobsController = {
 
   mineralJobs: function(rooms, jobs){
 
+  },
+
+  repairJobs: function(rooms, jobs){
+    var myRooms = rooms.where({mine: true})
+
+    _.forEach(myRooms, function(roomObject){
+      if(roomObject.rcl < 4){
+        _.forEach(Utils.inflate(roomObject.recycleContainers), function(container){
+          if(container.hits < (container.hitsMax * 0.5)){
+            var job = {
+              act: 'repair',
+              target: container.id,
+              room: roomObject.name,
+              priority: 80
+            }
+
+            Utils.addIfNotExist(job, jobs)
+          }
+        })
+
+        _.forEach(Utils.inflate(roomObject.generalContainers), function(container){
+          if(container.hits < (container.hitsMax * 0.5)){
+            var job = {
+              act: 'repair',
+              target: container.id,
+              room: roomObject.name,
+              priority: 80
+            }
+
+            Utils.addIfNotExist(job, jobs)
+          }
+        })
+      }
+    })
   }
 }
 

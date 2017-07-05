@@ -8,6 +8,7 @@ module.exports = {
       if(room.coreLinks.length != 0 && room.sourceLinks.length != 0){
         var coreLinks = Utils.inflate(room.coreLinks)
         var sourceLinks = Utils.inflate(room.sourceLinks)
+        var exitLinks = Utils.inflate(room.exitLinks)
 
         _.forEach(coreLinks, function(coreLink){
           if(coreLink.energy < coreLink.energyCapacity){
@@ -17,6 +18,15 @@ module.exports = {
               if(needed > 0){
                 var energy = sourceLink.energy
                 sourceLink.transferEnergy(coreLink)
+
+                needed = needed - energy
+              }
+            })
+
+            _.forEach(exitLinks, function(exitLink){
+              if(needed > 0){
+                var energy = exitLink.energy
+                exitLink.transferEnergy(coreLink)
 
                 needed = needed - energy
               }

@@ -12,7 +12,7 @@ module.exports = {
 
       var hostileCreeps = room.find(FIND_HOSTILE_CREEPS)
 
-      if(hostileCreeps.length == 0){
+      if(hostileCreeps.length == 0){  
         roomDefcon.defcon = 0
         roomDefcon.count = 0
       }

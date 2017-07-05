@@ -87,14 +87,44 @@ module.exports = function(room){
 
   var coreLinks = _.filter(links, function(link){
     var sources = link.pos.findInRange(FIND_SOURCES, 2)
+    var exits = link.pos.findInRange(FIND_EXIT, 2)
 
-    return (sources.length == 0)
+    return (sources.length == 0 && exits.length == 0)
+  })
+
+  var exitLinks = _.filter(links, function(link){
+    var exits = link.pos.findInRange(FIND_EXIT, 2)
+
+    return (exits.length != 0)
+  })
+
+  var exitLinkMaps = {}
+  var exitFinds = [
+    FIND_EXIT_TOP,
+    FIND_EXIT_RIGHT,
+    FIND_EXIT_BOTTOM,
+    FIND_EXIT_LEFT
+  ]
+  _.forEach(exitLinks, function(link){
+    var direction = 0
+
+    for(var j in exitFinds){
+      var exits = link.pos.findInRange(exitFinds[j], 3)
+
+      if(exits.length){
+        direction = exitFinds[j]
+      }
+    }
+
+    exitLinkMaps[Game.map.describeExits(room.name)[direction]] = link.id
   })
 
   return {
     coreLinks: Utils.deflate(coreLinks),
     energyAvailable: room.energyAvailable,
     energyCapacityAvailable: room.energyCapacityAvailable,
+    exitLinks: Utils.deflate(exitLinks),
+    exitLinkMaps: exitLinkMaps,
     extensions: Utils.deflate(extensions),
     extractors: Utils.deflate(extractors),
     generalContainers: Utils.deflate(generalContainers),
