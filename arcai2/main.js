@@ -1,3 +1,5 @@
+global.SCRIPT_VERSION = require('./version')
+
 var profiler = {}
 
 if (Memory.stats == undefined) {
@@ -70,7 +72,7 @@ _.forEach(Game.rooms, function(room){
 })
 // Use object-hash to check if anything in the game has changed
 var hashCheck = {
-  codeRevision: 1,
+  codeRevision: global.SCRIPT_VERSION,
   rooms: Object.keys(Game.rooms).length,
   creeps: Object.keys(Game.creeps).length,
   spawns: Object.keys(Game.spawns).length,
