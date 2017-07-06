@@ -26,7 +26,7 @@ module.exports = {
       var roomJobs = jobs.where({room: room.name})
       Memory.stats['room.' + room.name + '.jobs'] = roomJobs.length
 
-      Memory.stats['room.' + room.name + '.job.deliver'] = jobs.where({room: room.name}, {act: 'deliver'}).length
+      Memory.stats['room.' + room.name + '.job.deliver'] = jobs.where({room: room.name}, {act: 'deliver'}, {collect: {isnot: 'harvest'}}).length
       Memory.stats['room.' + room.name + '.job.build'] = jobs.where({room: room.name}, {act: 'build'}).length
       Memory.stats['room.' + room.name + '.job.supply'] = jobs.where({room: room.name}, {collect: 'supply'}).length
 
