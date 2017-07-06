@@ -63,20 +63,23 @@ for(var name in Memory.creeps){
 
 // Get the total of all rcls added together (for state change on RCL up)
 var rclTotal = 0
+var structureTotal = {}
 _.forEach(Game.rooms, function(room){
   if(room.controller){
     if(room.controller.my){
       rclTotal += room.controller.level
+      structureTotal[room.name] = room.find(FIND_STRUCTURES).length
     }
   }
 })
+
 // Use object-hash to check if anything in the game has changed
 var hashCheck = {
   codeRevision: global.SCRIPT_VERSION,
   rooms: Object.keys(Game.rooms).length,
   creeps: Object.keys(Game.creeps).length,
   spawns: Object.keys(Game.spawns).length,
-  structures: Object.keys(Game.structures).length,
+  structures: _.sum(structureTotal),
   sites: Object.keys(Game.constructionSites).length,
   rclTotal: rclTotal,
   flags: Object.keys(Game.flags).length
@@ -175,7 +178,7 @@ var spawnQueue = new SODB()
 profiler.prepare = Game.cpu.getUsed() - _.sum(profiler)
 
 // Set room Defcon Levels
-Defcon.run(rooms)
+Defcon.run(rooms, structureTotal)
 
 profiler.defcon = Game.cpu.getUsed() - _.sum(profiler)
 
