@@ -405,6 +405,19 @@ var CreepsActor = {
   },
 
   reserve: function(creep, job){
+    if(!Memory.stats['remoteMining.' + job.remoteRoom + '.revenue']){
+      Memory.stats['remoteMining.' + job.remoteRoom + '.revenue'] = 0
+    }
+
+    if(!creep.memory.costed){
+      var costArray = []
+      _.forEach(creep.body, function(part){
+        costArray.push(part.type)
+      })
+      Memory.stats['remoteMining.' + job.remoteRoom + '.revenue'] -= CreepDesigner.creepCost(costArray)
+      creep.memory.costed = true
+    }
+
     if(!creep.pos.isNearTo(Game.flags[job.flag])){
       creep.moveTo(Game.flags[job.flag], {
         visualizePathStyle: {

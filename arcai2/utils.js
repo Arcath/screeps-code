@@ -35,7 +35,7 @@ module.exports = {
     var hash = this.hash(object)
     object.hash = hash
 
-    if(!database.findexLookup(hash)){
+    if(!database.indexLookup(hash)){
       object.hash = hash
 
       database.add(object)

@@ -123,7 +123,7 @@ module.exports = {
 
         var siteJob = _.sortBy(siteJobs, 'priority').reverse()[0]
 
-        if(builderCreeps.length < numBuilders && roomObject.generalContainers.length > 0){
+        if(builderCreeps.length < numBuilders && roomObject.generalContainers.length > 0 && roomObject.sourceContainers.length > 0){
           spawnQueue.add({
             creep: CreepDesigner.createCreep({
               base: CreepDesigner.baseDesign.fastWork,
@@ -153,6 +153,10 @@ module.exports = {
       }
 
       if(roomObject.rcl == 8){
+        var upgraderCount = 1
+      }
+
+      if(roomObject.generalContainers.length == 0){
         var upgraderCount = 1
       }
 

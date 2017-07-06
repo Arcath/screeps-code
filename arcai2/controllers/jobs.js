@@ -248,7 +248,7 @@ var JobsController = {
               act: 'repair',
               target: container.id,
               room: roomObject.name,
-              priority: 80
+              priority: 95
             }
 
             Utils.addIfNotExist(job, jobs)
@@ -261,7 +261,7 @@ var JobsController = {
               act: 'repair',
               target: container.id,
               room: roomObject.name,
-              priority: 80
+              priority: 95
             }
 
             Utils.addIfNotExist(job, jobs)
