@@ -533,7 +533,7 @@ var CreepsActor = {
 
   repair: function(creep, job){
     var building = Game.getObjectById(job.target)
-    if(creep.build(building) == ERR_NOT_IN_RANGE){
+    if(creep.repair(building) == ERR_NOT_IN_RANGE){
       creep.moveTo(building, {
         visualizePathStyle: {
           fill: 'transparent',
