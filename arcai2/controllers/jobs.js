@@ -242,20 +242,11 @@ var JobsController = {
 
     _.forEach(myRooms, function(roomObject){
       if(roomObject.rcl < 4){
-        _.forEach(Utils.inflate(roomObject.recycleContainers), function(container){
-          if(container.hits < (container.hitsMax * 0.5)){
-            var job = {
-              act: 'repair',
-              target: container.id,
-              room: roomObject.name,
-              priority: 95
-            }
-
-            Utils.addIfNotExist(job, jobs)
-          }
-        })
-
-        _.forEach(Utils.inflate(roomObject.generalContainers), function(container){
+        _.forEach([].concat(
+          Utils.inflate(roomObject.recycleContainers),
+          Utils.inflate(roomObject.generalContainers),
+          Utils.inflate(roomObject.sourceContainers)
+        ), function(container){
           if(container.hits < (container.hitsMax * 0.5)){
             var job = {
               act: 'repair',
