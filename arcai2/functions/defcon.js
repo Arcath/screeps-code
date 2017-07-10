@@ -10,7 +10,7 @@ module.exports = {
       var room = Game.rooms[roomObject.name]
       var roomDefcon = (Memory.defcon[room.name] || {defcon: 0, count: 0, structureCount: 0})
 
-      if(!roomDefcon.structureCount){
+      if(!roomDefcon.structureCount && Memory.defcon[room.name]){
         Memory.defcon[room.name].structureCount = structureTotal[roomObject.name]
       }
 

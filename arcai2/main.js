@@ -119,7 +119,9 @@ if(Memory.stateCheck != newHash){
   _.forEach(Game.constructionSites, function(site){
     var siteObject = SiteObject(site)
 
-    sites.add(siteObject)
+    if(siteObject){
+      sites.add(siteObject)
+    }
   })
 
   JobsController.siteJobs(sites, jobs)
@@ -218,38 +220,41 @@ LinksActor.run(rooms)
 // Process the spawn queue
 for(var roomName in Game.rooms){
   var room = rooms.findOne({name: roomName})
-  var spawns = Utils.inflate(room.spawns)
 
-  _.forEach(spawns, function(spawn){
-    if(!spawn.spawning){
-      var queue = spawnQueue.order({room: roomName}, {spawned: false}, 'priority').reverse()[0]
+  if(room){
+    var spawns = Utils.inflate(room.spawns)
 
-      if(queue){
-        if(queue.creepType){
-          console.log('Designing ' + queue.creepType + ' for ' + roomName)
-          if(CreepDesigner.extend[queue.creepType]){
-            var extend = CreepDesigner.extend[queue.creepType]
+    _.forEach(spawns, function(spawn){
+      if(!spawn.spawning){
+        var queue = spawnQueue.order({room: roomName}, {spawned: false}, 'priority').reverse()[0]
+
+        if(queue){
+          if(queue.creepType){
+            console.log('Designing ' + queue.creepType + ' for ' + roomName)
+            if(CreepDesigner.extend[queue.creepType]){
+              var extend = CreepDesigner.extend[queue.creepType]
+            }else{
+              var extend = CreepDesigner.baseDesign[queue.creepType]
+            }
+            var creep = CreepDesigner.createCreep({
+              base: CreepDesigner.baseDesign[queue.creepType],
+              cap: CreepDesigner.caps[queue.creepType],
+              room: Game.rooms[roomName],
+              extend: extend
+            })
           }else{
-            var extend = CreepDesigner.baseDesign[queue.creepType]
+            var creep = queue.creep
           }
-          var creep = CreepDesigner.createCreep({
-            base: CreepDesigner.baseDesign[queue.creepType],
-            cap: CreepDesigner.caps[queue.creepType],
-            room: Game.rooms[roomName],
-            extend: extend
-          })
-        }else{
-          var creep = queue.creep
+
+          spawn.createCreep(creep, undefined, queue.memory)
+
+          queue.spawned = true
+
+          spawnQueue.update(queue)
         }
-
-        spawn.createCreep(creep, undefined, queue.memory)
-
-        queue.spawned = true
-
-        spawnQueue.update(queue)
       }
-    }
-  })
+    })
+  }
 }
 
 profiler.spawnQueue = Game.cpu.getUsed() - _.sum(profiler)

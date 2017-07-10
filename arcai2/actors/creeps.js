@@ -25,7 +25,7 @@ var CreepsActor = {
 
       var room = rooms.findOne({name: creep.room.name})
 
-      if((creep.ticksToLive <= 150 || recycle) && room.recycleContainers.length > 0){
+      if((creep.ticksToLive <= 150 || recycle) && room && room.recycleContainers.length > 0){
         var target = creep.pos.findClosestByRange(Utils.inflate(room.recycleContainers))
         if(creep.pos.getRangeTo(target) != 0){
           creep.moveTo(target)
@@ -124,6 +124,9 @@ var CreepsActor = {
         break
       case 'supply':
         this.supply(creep, job, jobs)
+        break
+      case 'dismantle':
+        this.dismantle(creep, job)
         break
     }
   },
@@ -228,7 +231,7 @@ var CreepsActor = {
     creep.memory.actJobHash = undefined
     var source = Game.getObjectById(job.source)
 
-    if(job.target){
+    if(job.target && job.act == 'deliver'){
       var target = Game.getObjectById(job.target)
       if(job.overflow){
         var target = Game.getObjectById(job.overflow)
@@ -400,24 +403,17 @@ var CreepsActor = {
         if(creep.attack(hostile) == ERR_NOT_IN_RANGE){
           creep.moveTo(hostile)
         }
+
+        var hostileSite = creep.pos.findClosestByRange(FIND_HOSTILE_CONSTRUCTION_SITES)
+
+        if(hostileSite){
+          creep.moveTo(hostileSite)
+        }
       }
     }
   },
 
   reserve: function(creep, job){
-    if(!Memory.stats['remoteMining.' + job.remoteRoom + '.revenue']){
-      Memory.stats['remoteMining.' + job.remoteRoom + '.revenue'] = 0
-    }
-
-    if(!creep.memory.costed){
-      var costArray = []
-      _.forEach(creep.body, function(part){
-        costArray.push(part.type)
-      })
-      Memory.stats['remoteMining.' + job.remoteRoom + '.revenue'] -= CreepDesigner.creepCost(costArray)
-      creep.memory.costed = true
-    }
-
     if(!creep.pos.isNearTo(Game.flags[job.flag])){
       creep.moveTo(Game.flags[job.flag], {
         visualizePathStyle: {
@@ -429,17 +425,40 @@ var CreepsActor = {
         }
       })
     }else{
+      if(!Memory.stats['remoteMining.' + creep.room.name + '.revenue']){
+        Memory.stats['remoteMining.' + creep.room.name + '.revenue'] = 0
+      }
+
+      if(!creep.memory.costed){
+        var costArray = []
+        _.forEach(creep.body, function(part){
+          costArray.push(part.type)
+        })
+        Memory.stats['remoteMining.' + creep.room.name + '.revenue'] -= CreepDesigner.creepCost(costArray)
+        creep.memory.costed = true
+      }
+
       creep.reserveController(creep.room.controller)
     }
   },
 
   remoteWorker: function(creep, job, rooms){
-    var target = Game.rooms[job.targetRoom].storage
+    if(job.target){
+      var target = Game.getObjectById(job.target)
+    }else{
+      var roomObject = rooms.findOne({name: job.targetRoom})
 
-    var roomObject = rooms.findOne({name: job.targetRoom})
+      if(Game.rooms[job.targetRoom].storage){
+        var target = Game.rooms[job.targetRoom].storage
+      }else{
+        var target = _.filter(Utils.inflate(roomObject.generalContainers), function(container){
+          return (_.sum(container.store) < container.storeCapacity)
+        })[0]
+      }
 
-    if(roomObject.exitLinkMaps[job.remoteRoom]){
-      target = Game.getObjectById(roomObject.exitLinkMaps[job.remoteRoom])
+      if(roomObject.exitLinkMaps[job.remoteRoom]){
+        target = Game.getObjectById(roomObject.exitLinkMaps[job.remoteRoom])
+      }
     }
 
     if(!Memory.stats['remoteMining.' + job.remoteRoom + '.revenue']){
@@ -456,7 +475,7 @@ var CreepsActor = {
     }
 
     var sites = _.filter(creep.pos.lookFor(LOOK_CONSTRUCTION_SITES), function(site){
-      return (site.structureType == STRUCTURE_ROAD)
+      return (site.structureType == STRUCTURE_ROAD || site.structureType == STRUCTURE_CONTAINER)
     })
 
     var roadsNeedingHealing = _.filter(creep.pos.lookFor(LOOK_STRUCTURES), function(road){
@@ -480,8 +499,11 @@ var CreepsActor = {
           }
         })
       }else{
-        console.log('delivered ' + (carry - creep.carry.energy) + ' to ' + job.targetRoom)
-        Memory.stats['remoteMining.' + job.remoteRoom + '.revenue'] += carry
+        if(!job.target){
+          var trasfered = _.min([(target.storeCapacity - _.sum(target.store)), carry])
+
+          Memory.stats['remoteMining.' + job.remoteRoom + '.revenue'] += trasfered
+        }
       }
     }
   },
@@ -538,6 +560,21 @@ var CreepsActor = {
         visualizePathStyle: {
           fill: 'transparent',
           stroke: '#9b59b6',
+          lineStyle: 'dashed',
+          strokeWidth: .15,
+          opacity: .1
+        }
+      })
+    }
+  },
+
+  dismantle: function(creep, job){
+    var structure = Game.getObjectById(job.dismantle)
+    if(creep.dismantle(structure) == ERR_NOT_IN_RANGE){
+      creep.moveTo(structure, {
+        visualizePathStyle: {
+          fill: 'transparent',
+          stroke: '#c0392b',
           lineStyle: 'dashed',
           strokeWidth: .15,
           opacity: .1

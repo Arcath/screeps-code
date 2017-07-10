@@ -8,6 +8,7 @@ var FlagsController = {
     var yellowFlags = flags.where({color: COLOR_YELLOW})
     var redFlags = flags.where({color: COLOR_RED})
     var blueFlags = flags.where({color: COLOR_BLUE})
+    var brownFlags = flags.where({color: COLOR_BROWN})
 
     _.forEach(greenFlags, function(flagObject){
       var flag = Game.flags[flagObject.name]
@@ -78,7 +79,7 @@ var FlagsController = {
         }else{
           job.hash = foundJob.hash
         }
-        if(!Utils.findCreepForJob(job, 150)){
+        if(!Utils.findCreepForJob(job, 100)){
           var nearestRoom = Utils.myNearestRoom(flagObject.room, rooms, CreepDesigner.caps.claim)
 
           spawnQueue.add({
@@ -171,20 +172,23 @@ var FlagsController = {
           source: sourceId,
           act: 'remoteWorker',
           targetRoom: roomName,
-          remoteRoom: Game.flags[flagObject.name].pos.roomName
+          remoteRoom: Game.flags[flagObject.name].pos.roomName,
+          priority: 75
+        }
+
+        var container = _.filter(Game.flags[flagObject.name].pos.findInRange(FIND_STRUCTURES, 1), function(structure){
+          return (structure.structureType == STRUCTURE_CONTAINER)
+        })[0]
+
+        if(container){
+          job.target = container.id
         }
 
         Utils.addIfNotExist(job, jobs)
 
         var creeps = Utils.findCreepsForJob(job, 150)
 
-        if(Memory.stats['remoteMining.' + job.remoteRoom + '.revenue'] > 1200){
-          var count = 2
-        }else{
-          var count = 1
-        }
-
-        if(creeps.length < count){
+        if(creeps.length < 1){
           spawnQueue.add({
             creep: CreepDesigner.createCreep({
               base: CreepDesigner.baseDesign.fastWork,
@@ -198,6 +202,33 @@ var FlagsController = {
             spawned: false,
             room: roomName
           })
+        }
+
+        if(container){
+          var moveJob = {
+            collect: 'sourceCollect',
+            from: container.id,
+            priority: 70,
+            act: 'remoteWorker',
+            targetRoom: roomName,
+            remoteRoom: Game.flags[flagObject.name].pos.roomName
+          }
+
+          Utils.addIfNotExist(moveJob, jobs)
+
+          var creeps = Utils.findCreepsForJob(moveJob, 150)
+
+          if(creeps.length < 1){
+            spawnQueue.add({
+              creepType: 'moveWork',
+              memory: {
+                jobHash: moveJob.hash
+              },
+              priority: moveJob.priority,
+              spawned: false,
+              room: roomName
+            })
+          }
         }
       }
     })
@@ -235,6 +266,50 @@ var FlagsController = {
             room: sourceRoomName
           })
         }
+      }
+    })
+
+    _.forEach(brownFlags, function(flagObject){
+      var flag = Game.flags[flagObject.name]
+
+      if(Game.flags[flagObject.name].memory.target){
+        var targetId = Game.flags[flagObject.name].memory.target
+      }else{
+        var structure = Game.flags[flagObject.name].pos.lookFor(LOOK_STRUCTURES)[0]
+        var targetId = structure.id
+        Game.flags[flagObject.name].memory.target = structure.id
+      }
+
+      var structure = Game.getObjectById(targetId)
+      if(structure.hits < 150000){
+        flag.remove()
+        return
+      }
+
+      var job = {
+        dismantle: targetId,
+        collect: 'dismantle',
+        actFilter: 'deliver',
+        room: flag.pos.roomName,
+        priority: 70
+      }
+
+      Utils.addIfNotExist(job, jobs)
+
+      if(!Utils.findCreepForJob(job)){
+        spawnQueue.add({
+          creep: CreepDesigner.createCreep({
+            base: CreepDesigner.baseDesign.slowWork,
+            cap: CreepDesigner.caps.slowWork,
+            room: Game.rooms[flag.pos.roomName]
+          }),
+          memory: {
+            jobHash: job.hash
+          },
+          priority: job.priority,
+          spawned: false,
+          room: flag.pos.roomName
+        })
       }
     })
   }

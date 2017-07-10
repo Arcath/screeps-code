@@ -53,12 +53,14 @@ module.exports = {
     move: [CARRY, CARRY, MOVE],
     damage: [TOUGH, MOVE, ATTACK, ATTACK],
     claim: [CLAIM, MOVE, MOVE, MOVE, MOVE],
-    upgrader: [WORK, CARRY, MOVE, MOVE, MOVE]
+    upgrader: [WORK, CARRY, MOVE, MOVE, MOVE],
+    moveWork: [WORK, CARRY, MOVE]
   },
 
   extend: {
     slowWork: [WORK],
-    upgrader: [WORK]
+    upgrader: [WORK],
+    moveWork: [CARRY, CARRY, MOVE]
   },
 
   caps: {
@@ -67,6 +69,7 @@ module.exports = {
     move: 750,
     damage: 1200,
     claim: 800,
-    upgrader: 1700
+    upgrader: 1700,
+    moveWork: 850
   }
 }

@@ -11,7 +11,7 @@ module.exports = function(room){
   var sourceContainerMaps = {}
 
   var sourceContainers = _.filter(containers, function(container){
-    var sources = container.pos.findInRange(FIND_SOURCES, 2)
+    var sources = container.pos.findInRange(FIND_SOURCES, 1)
 
     if(sources[0]){
       sourceContainerMaps[sources[0].id] = container.id

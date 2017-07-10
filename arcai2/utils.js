@@ -89,7 +89,7 @@ module.exports = {
       var distance = Game.map.getRoomLinearDistance(roomName, room.name)
 
 
-      if(distance <= nearestRoomDistance && room.rcl > nearestRCL){
+      if(distance <= nearestRoomDistance && room.rcl >= nearestRCL){
         nearestRoomDistance = distance
         nearestRoom = room.name
         nearestRCL = room.rcl

@@ -91,17 +91,18 @@ module.exports = {
         })
 
         if(creepsInRoom.length == 0){
-          var cap = 300
+          var canAffordOnly = true
         }else{
-          var cap = CreepDesigner.caps.move
+          var canAffordOnly = false
         }
 
         if(!creep){
           spawnQueue.add({
             creep: CreepDesigner.createCreep({
               base: CreepDesigner.baseDesign.move,
-              cap: cap,
-              room: Game.rooms[roomObject.name]
+              cap: CreepDesigner.caps.move,
+              room: Game.rooms[roomObject.name],
+              canAffordOnly: canAffordOnly
             }),
             memory: {
               jobHash: job.hash,
@@ -148,7 +149,7 @@ module.exports = {
       Memory.stats['room.' + roomObject.name + '.upgradeRate'] = Utils.workRate(upgraderCreeps, 1)
 
       var upgraderCount = 2
-      if(roomObject.rcl > 3 && roomObject.rcl < 8){
+      if(roomObject.rcl > 2 && roomObject.rcl < 8){
         var upgraderCount = 4
       }
 

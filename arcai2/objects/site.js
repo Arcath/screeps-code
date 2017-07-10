@@ -8,15 +8,17 @@ module.exports = function(site){
   }else if(site.structureType == STRUCTURE_CONTAINER){
     var priority = 110
   }else if(site.structureType == STRUCTURE_TOWER){
-    var priority = 50
+    var priority = 55
   }else{
     var priority = 30
   }
 
-  return {
-    id: site.id,
-    priority: priority,
-    structureType: site.structureType,
-    room: site.room.name
+  if(site.room){
+    return {
+      id: site.id,
+      priority: priority,
+      structureType: site.structureType,
+      room: site.room.name
+    }
   }
 }
