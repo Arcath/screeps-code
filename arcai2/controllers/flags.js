@@ -9,6 +9,7 @@ var FlagsController = {
     var redFlags = flags.where({color: COLOR_RED})
     var blueFlags = flags.where({color: COLOR_BLUE})
     var brownFlags = flags.where({color: COLOR_BROWN})
+    var grayFlags = flags.where({color: COLOR_GREY})
 
     _.forEach(greenFlags, function(flagObject){
       var flag = Game.flags[flagObject.name]
@@ -310,6 +311,37 @@ var FlagsController = {
           spawned: false,
           room: flag.pos.roomName
         })
+      }
+    })
+
+    _.forEach(grayFlags, function(flagObject){
+      var flag = Game.flags[flagObject.name]
+
+      var deliverRoomName = flagObject.name.split('-')[0]
+      var deliverRoom = Game.rooms[deliverRoomName]
+
+      if(deliverRoom.storage){
+        var job = {
+          collect: 'flagCollect',
+          flag: flagObject.name,
+          act: 'deliver',
+          target: deliverRoom.storage.id,
+          priority: 70
+        }
+
+        Utils.addIfNotExist(job, jobs)
+
+        if(!Utils.findCreepForJob(job)){
+          spawnQueue.add({
+            creepType: 'move',
+            memory: {
+              jobHash: job.hash
+            },
+            priority: job.priority,
+            spawned: false,
+            room: deliverRoomName
+          })
+        }
       }
     })
   }

@@ -44,11 +44,6 @@ module.exports = {
         totalWorkRate += workRate
 
         if(workRate < (source.energyCapacity / 300)){
-          var check = []
-          _.forEach(harvestJobs, function(job){
-            check.concat(Utils.findCreepsForJob(job))
-          })
-
           spawnQueue.add(
             {
               creep: CreepDesigner.createCreep({

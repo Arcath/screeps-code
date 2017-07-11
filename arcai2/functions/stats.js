@@ -31,6 +31,12 @@ module.exports = {
       Memory.stats['room.' + room.name + '.job.supply'] = jobs.where({room: room.name}, {collect: 'supply'}).length
 
       Memory.stats['room.' + room.name + '.defcon'] = Memory.defcon[room.name].defcon
+
+      if(room.storage){
+        _.forEach(Object.keys(room.storage.store), function(resource){
+          Memory.stats['room.' + room.name + '.storage.' + resource] = room.storage.store[resource]
+        })
+      }
     })
   }
 }

@@ -97,5 +97,28 @@ module.exports = {
     })
 
     return nearestRoom
+  },
+
+  moveCreep: function(creep, target, color){
+    creep.moveTo(target, {
+      visualizePathStyle: {
+        fill: 'transparent',
+        stroke: color,
+        lineStyle: 'dashed',
+        strokeWidth: .15,
+        opacity: .1
+      },
+      costCallback: function(roomName, costMatrix){
+        if(!Memory.costMatrix[roomName]){
+          return
+        }else{
+          var myMatrix = PathFinder.CostMatrix.deserialize(Memory.costMatrix[roomName])
+
+          console.log('my cost matrix for ' + roomName)
+
+          return myMatrix
+        }
+      }
+    })
   }
 }

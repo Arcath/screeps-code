@@ -128,6 +128,9 @@ var CreepsActor = {
       case 'dismantle':
         this.dismantle(creep, job)
         break
+      case 'flagCollect':
+        this.flagCollect(creep, job)
+        break
     }
   },
 
@@ -211,15 +214,7 @@ var CreepsActor = {
     if(target){
       switch(creep.transfer(target, RESOURCE_ENERGY)){
         case ERR_NOT_IN_RANGE:
-          creep.moveTo(target, {
-            visualizePathStyle: {
-              fill: 'transparent',
-              stroke: '#a9b7c6',
-              lineStyle: 'dashed',
-              strokeWidth: .15,
-              opacity: .1
-            }
-          })
+          Utils.moveCreep(creep, target, '#a9b7c6')
           break
         default:
           creep.memory.actJobHash = undefined
@@ -580,6 +575,24 @@ var CreepsActor = {
           opacity: .1
         }
       })
+    }
+  },
+
+  flagCollect: function(creep, job){
+    var flag = Game.flags[job.flag]
+
+    if(flag.room){
+      var target = _.filter(flag.pos.lookFor(LOOK_STRUCTURES), function(structure){
+        return (structure.structureType == STRUCTURE_STORAGE)
+      })[0]
+
+      if(target){
+        if(creep.withdraw(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
+          Utils.moveCreep(creep, flag.pos, '#f1c40f')
+        }
+      }
+    }else{
+      Utils.moveCreep(creep, flag.pos, '#f1c40f')
     }
   }
 }

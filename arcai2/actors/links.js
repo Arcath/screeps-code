@@ -5,7 +5,7 @@ module.exports = {
     var myRooms = rooms.where({mine: true})
 
     _.forEach(myRooms, function(room){
-      if(room.coreLinks.length != 0 && room.sourceLinks.length != 0){
+      if(room.coreLinks.length != 0 && (room.sourceLinks.length != 0 || room.exitLinks.length != 0)){
         var coreLinks = Utils.inflate(room.coreLinks)
         var sourceLinks = Utils.inflate(room.sourceLinks)
         var exitLinks = Utils.inflate(room.exitLinks)

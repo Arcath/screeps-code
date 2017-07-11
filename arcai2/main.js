@@ -6,6 +6,10 @@ if (Memory.stats == undefined) {
   Memory.stats = {}
 }
 
+if(!Memory.costMatrix){
+  Memory.costMatrix = {}
+}
+
 //var LZString = require('lz-string')
 var SODB = require('sodb')
 var SODBEntry = require('../node_modules/sodb/lib/entry')
@@ -19,6 +23,7 @@ var FlagObject = require('./objects/flag')
 var FlagsController = require('./controllers/flags')
 var JobsController = require('./controllers/jobs')
 var LinksActor = require('./actors/links')
+var Pathing = require('./functions/pathing')
 var ResourceController = require('./controllers/resources')
 var RoomObject = require('./objects/room')
 var SiteObject = require('./objects/site')
@@ -200,6 +205,11 @@ profiler.buildingsController = Game.cpu.getUsed() - _.sum(profiler)
 FlagsController.run(rooms, jobs, flags, spawnQueue)
 
 profiler.flagsController = Game.cpu.getUsed() - _.sum(profiler)
+
+// Run the Pathing system
+Pathing.buildCostMatrix(flags)
+
+profiler.pathing = Game.cpu.getUsed() - _.sum(profiler)
 
 // Run the Creeps Controller
 CreepsController.run(rooms, jobs, spawnQueue)

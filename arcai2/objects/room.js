@@ -44,7 +44,7 @@ module.exports = function(room){
   }
 
 
-  if(recycleContainers.length == 0 && room.controller.my && spawns.length != 0){
+  if(recycleContainers.length == 0 && room.controller && room.controller.my && spawns.length != 0){
     var firstSpawn = spawns[0]
 
     var pos = new RoomPosition(firstSpawn.pos.x - 1, firstSpawn.pos.y, room.name)
@@ -119,6 +119,14 @@ module.exports = function(room){
     exitLinkMaps[Game.map.describeExits(room.name)[direction]] = link.id
   })
 
+  if(room.controller){
+    var mine = room.controller.my
+    var level = room.controller.level
+  }else{
+    var mine = false
+    var level = 0
+  }
+
   return {
     coreLinks: Utils.deflate(coreLinks),
     energyAvailable: room.energyAvailable,
@@ -130,9 +138,9 @@ module.exports = function(room){
     generalContainers: Utils.deflate(generalContainers),
     links: Utils.deflate(links),
     minerals: Utils.deflate(room.find(FIND_MINERALS)),
-    mine: room.controller.my,
+    mine: mine,
     name: room.name,
-    rcl: room.controller.level,
+    rcl: level,
     recycleContainers: Utils.deflate(recycleContainers),
     sources: Utils.deflate(room.find(FIND_SOURCES)),
     sourceContainers: Utils.deflate(sourceContainers),
