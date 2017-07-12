@@ -1,4 +1,5 @@
 const CreepDesigner = require('../functions/creepDesigner')
+const Constants = require('../constants')
 const Utils = require('../utils')
 
 var FlagsController = {
@@ -10,6 +11,7 @@ var FlagsController = {
     var blueFlags = flags.where({color: COLOR_BLUE})
     var brownFlags = flags.where({color: COLOR_BROWN})
     var grayFlags = flags.where({color: COLOR_GREY})
+    var whiteFlags = flags.where({color: COLOR_WHITE})
 
     _.forEach(greenFlags, function(flagObject){
       var flag = Game.flags[flagObject.name]
@@ -341,6 +343,54 @@ var FlagsController = {
             spawned: false,
             room: deliverRoomName
           })
+        }
+      }
+    })
+
+    _.forEach(whiteFlags, function(flagObject){
+      var flag = Game.flags[flagObject.name]
+
+      var actFlagName = flagObject.name.split('-')[1]
+
+      var party = Constants.parties[flagObject.secondaryColor]
+
+      if(!party){
+        console.log('party ' + flagObject.secondaryColor + ' does not exist')
+      }else{
+        var job = {
+          collect: 'rally',
+          flag: flagObject.name,
+          act: 'runParty',
+          priority: 70,
+          actFlag: actFlagName
+        }
+
+        Utils.addIfNotExist(job, jobs)
+
+        var creeps = Utils.findCreepsForJob(job)
+
+        if(creeps.length < party.length){
+          spawnQueue.add({
+            creep: party[creeps.length],
+            memory: {
+              jobHash: job.hash
+            },
+            spawned: false,
+            room: Utils.myNearestRoom(flagObject.room, rooms)
+          })
+        }else{
+          var readyCount = 0
+          _.forEach(creeps, function(creep){
+            if(creep.memory.ready){
+              readyCount += 1
+            }
+          })
+
+          if(readyCount == creeps.length){
+            _.forEach(creeps, function(creep){
+              creep.memory.act = true
+            })
+          }
         }
       }
     })

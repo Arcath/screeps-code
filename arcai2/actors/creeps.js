@@ -91,6 +91,9 @@ var CreepsActor = {
         case 'repair':
           this.repair(creep, job)
           break
+        case 'runParty':
+          this.runParty(creep, job)
+          break
       }
     }else{
       // Assign an acting job
@@ -130,6 +133,9 @@ var CreepsActor = {
         break
       case 'flagCollect':
         this.flagCollect(creep, job)
+        break
+      case 'rally':
+        this.rally(creep, job)
         break
     }
   },
@@ -474,7 +480,7 @@ var CreepsActor = {
     })
 
     var roadsNeedingHealing = _.filter(creep.pos.lookFor(LOOK_STRUCTURES), function(road){
-      return (road.hits < road.hitsMax)
+      return (road.hits < road.hitsMax && road.structureType != STRUCTURE_RAMPART)
     })
 
     if(sites.length > 0){
@@ -593,6 +599,36 @@ var CreepsActor = {
       }
     }else{
       Utils.moveCreep(creep, flag.pos, '#f1c40f')
+    }
+  },
+
+  rally: function(creep, job){
+    var flag = Game.flags[job.flag]
+
+    if(flag.room){
+      if(creep.pos.getRangeTo(flag) > 1){
+        Utils.moveCreep(creep, flag.pos, '#1abc9c')
+      }else{
+        creep.memory.ready = true
+      }
+    }else{
+      Utils.moveCreep(creep, flag.pos, '#1abc9c')
+    }
+  },
+
+  runParty: function(creep, job){
+    var flag = Game.flags[job.actFlag]
+
+    if(!flag.room || creep.room.name != flag.pos.roomName){
+      Utils.moveCreep(creep, flag.pos, '#1abc9c')
+    }else{
+      var closestHostile = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS)
+
+      if(closestHostile){
+        if(creep.attack(closestHostile) == ERR_NOT_IN_RANGE){
+          Utils.moveCreep(creep, closestHostile, '#1abc9c')
+        }
+      }
     }
   }
 }

@@ -114,8 +114,6 @@ module.exports = {
         }else{
           var myMatrix = PathFinder.CostMatrix.deserialize(Memory.costMatrix[roomName])
 
-          console.log('my cost matrix for ' + roomName)
-
           return myMatrix
         }
       }
