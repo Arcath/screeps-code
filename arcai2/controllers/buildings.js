@@ -61,7 +61,16 @@ var BuildingsController = {
         var repairTargets = tower.pos.findInRange(FIND_STRUCTURES, 40, {
           filter: function(structure){
             if(structure.structureType == STRUCTURE_WALL || structure.structureType == STRUCTURE_RAMPART){
-              return (structure.hits < 100000)
+              if(tower.room.controller.level <= 3){
+                var max = 100000
+              }else if(tower.room.controller.level <= 5){
+                var max = 1000000
+              }else if(tower.room.controller.level <= 7){
+                var max = 2000000
+              }else if(tower.room.controller.level <= 8){
+                var max = 2500000
+              }
+              return (structure.hits < max)
             }else{
               return (structure.hits < structure.hitsMax)
             }

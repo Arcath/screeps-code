@@ -11,7 +11,9 @@
     "lz-string": "^1.4.4",
     "screeps-api": "^0.2.10",
     "sodb": "^1.2.5",
+    "source-list-map": "^2.0.0",
     "table": "^4.0.1",
-    "webpack": "^3.0.0"
+    "webpack": "^3.0.0",
+    "webpack-sources": "^1.0.1"
   }
 }

@@ -78,7 +78,7 @@ module.exports = {
     return workRate
   },
 
-  myNearestRoom: function(roomName, rooms){
+  myNearestRoom: function(roomName, rooms, minCost = 0){
     var myRooms = rooms.where({mine: true}, {spawnable: true}, {name: {isnot: roomName}})
 
     var nearestRoom
@@ -88,11 +88,14 @@ module.exports = {
     _.forEach(myRooms, function(room){
       var distance = Game.map.getRoomLinearDistance(roomName, room.name)
 
+      var roomInstance = Game.rooms[room.name]
 
-      if(distance <= nearestRoomDistance && room.rcl >= nearestRCL){
-        nearestRoomDistance = distance
-        nearestRoom = room.name
-        nearestRCL = room.rcl
+      if(roomInstance.energyCapacityAvailable > minCost){
+        if(distance <= nearestRoomDistance && room.rcl >= nearestRCL){
+          nearestRoomDistance = distance
+          nearestRoom = room.name
+          nearestRCL = room.rcl
+        }
       }
     })
 
@@ -118,5 +121,21 @@ module.exports = {
         }
       }
     })
+  },
+
+  findHostileCreeps: function(unit){
+    return _.filter(unit.room.find(FIND_HOSTILE_CREEPS), function(creep){
+      return (Memory.allianceData.doNotAgress.indexOf(creep.owner.username) == -1)
+    })
+  },
+
+  hasBodyPart: function(body, part){
+    for(var bodyPart in body){
+      if(body[bodyPart].type == part){
+        return true
+      }
+    }
+
+    return false
   }
 }

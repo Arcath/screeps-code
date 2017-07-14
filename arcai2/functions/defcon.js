@@ -23,7 +23,7 @@ module.exports = {
         roomDefcon.count = 0
       }
 
-      if(hostileCreeps.length > 0 && hostileCreeps.length < 4){
+      if(hostileCreeps.length > 0 && hostileCreeps.length < 4 && roomDefcon.defcon == 0){
         roomDefcon.defcon = 1
       }
 

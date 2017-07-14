@@ -51,25 +51,28 @@ module.exports = {
     slowWork: [WORK, WORK, CARRY, MOVE],
     fastWork: [WORK, CARRY, MOVE],
     move: [CARRY, CARRY, MOVE],
-    damage: [TOUGH, MOVE, ATTACK, ATTACK],
+    damage: [TOUGH, MOVE, MOVE, ATTACK, ATTACK],
     claim: [CLAIM, MOVE, MOVE, MOVE, MOVE],
     upgrader: [WORK, CARRY, MOVE, MOVE, MOVE],
-    moveWork: [WORK, CARRY, MOVE]
+    moveWork: [WORK, CARRY, MOVE],
+    tank: [TOUGH, TOUGH, MOVE, MOVE, HEAL]
   },
 
   extend: {
     slowWork: [WORK],
     upgrader: [WORK],
-    moveWork: [CARRY, CARRY, MOVE]
+    moveWork: [CARRY, CARRY, MOVE],
+    tank: [HEAL, MOVE]
   },
 
   caps: {
     slowWork: 1200,
     fastWork: 1200,
     move: 750,
-    damage: 1200,
+    damage: 1240,
     claim: 800,
     upgrader: 1700,
-    moveWork: 850
+    moveWork: 850,
+    tank: 1570
   }
 }

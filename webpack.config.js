@@ -5,9 +5,10 @@ module.exports = {
   entry: './arcai2/main.js',
   output: {
     path: path.join(__dirname, 'dist'),
-    filename: 'main.js'
+    filename: 'main.js',
+    libraryTarget: 'commonjs2'
   },
   externals: {
-    './version': 'require(\'./version\')'
+    './version': './version'
   }
 }

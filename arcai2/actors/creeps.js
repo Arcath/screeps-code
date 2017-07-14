@@ -2,7 +2,7 @@ const Utils = require('../utils')
 const CreepDesigner = require('../functions/creepDesigner')
 
 var CreepsActor = {
-  run: function(rooms, jobs){
+  run: function(rooms, jobs, flags){
     _.forEach(Game.creeps, function(creep){
       var recycle = false
 
@@ -36,7 +36,7 @@ var CreepsActor = {
       }else{
         if(job){
           if(creep.memory.act){
-            if(_.sum(creep.carry) == 0){
+            if(_.sum(creep.carry) == 0 && creep.carryCapacity != 0){
               creep.memory.act = false
               creep.memory.actJobHash = undefined
             }
@@ -57,7 +57,7 @@ var CreepsActor = {
               creep.memory.actJobHash = undefined
               creep.memory.act = true
             }
-            CreepsActor.collect(creep, job, rooms, jobs)
+            CreepsActor.collect(creep, job, rooms, jobs, flags)
           }
         }else{
           creep.memory.jobHash = undefined
@@ -101,7 +101,7 @@ var CreepsActor = {
     }
   },
 
-  collect: function(creep, job, rooms, jobs){
+  collect: function(creep, job, rooms, jobs, flags){
     switch(job.collect){
       case 'harvest':
         this.harvest(creep, job)
@@ -120,7 +120,7 @@ var CreepsActor = {
         this.extract(creep, job)
         break
       case 'defend':
-        this.defend(creep, job)
+        this.defend(creep, job, flags)
         break
       case 'reserve':
         this.reserve(creep, job)
@@ -136,6 +136,9 @@ var CreepsActor = {
         break
       case 'rally':
         this.rally(creep, job)
+        break
+      case 'tank':
+        this.tank(creep, job)
         break
     }
   },
@@ -196,6 +199,8 @@ var CreepsActor = {
             &&
             object.collect != 'distribute'
             &&
+            object.collect != 'reserve'
+            &&
             object.room == creep.room.name
           )
         }else{
@@ -248,27 +253,11 @@ var CreepsActor = {
           creep.harvest(source)
         }
       }else{
-        creep.moveTo(target, {
-          visualizePathStyle: {
-            fill: 'transparent',
-            stroke: '#c0392b',
-            lineStyle: 'dashed',
-            strokeWidth: .15,
-            opacity: .3
-          }
-        })
+        Utils.moveCreep(creep, target.pos, '#c0392b')
       }
     }else{
       if(creep.harvest(source) == ERR_NOT_IN_RANGE){
-        creep.moveTo(source, {
-          visualizePathStyle: {
-            fill: 'transparent',
-            stroke: '#c0392b',
-            lineStyle: 'dashed',
-            strokeWidth: .15,
-            opacity: .3
-          }
-        })
+        Utils.moveCreep(creep, source.pos, '#c0392b')
       }
     }
   },
@@ -392,25 +381,42 @@ var CreepsActor = {
     })
   },
 
-  defend: function(creep, job){
-    var room = Game.rooms[job.room]
+  defend: function(creep, job, flags){
+    var flag = Game.flags[job.flag]
 
-    if(room){
-      if(creep.room.name != job.room){
-        creep.moveTo(room.controller)
-      }else{
-        var hostile = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS)
+    if(creep.room.name != job.room){
+      Utils.moveCreep(creep, flag.pos, '#c0392b')
+    }else{
+      var hostile = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS)
 
+      var say = 'Spawn More Overlords'.split(' ')
+      creep.say(say[Game.time % say.length], true)
+
+      if(hostile){
         if(creep.attack(hostile) == ERR_NOT_IN_RANGE){
           creep.moveTo(hostile)
         }
 
-        var hostileSite = creep.pos.findClosestByRange(FIND_HOSTILE_CONSTRUCTION_SITES)
+        return
+      }
 
-        if(hostileSite){
-          creep.moveTo(hostileSite)
+      var hostileSite = creep.pos.findClosestByRange(FIND_HOSTILE_CONSTRUCTION_SITES)
+
+      if(hostileSite){
+        creep.moveTo(hostileSite)
+
+        return
+      }
+
+      if(creep.ticksToLive < 100){
+        var yellowFlags = flags.where({color: COLOR_YELLOW}, {room: flag.pos.roomName})
+
+        if(yellowFlags.length != 0){
+          flag.remove()
         }
       }
+
+      Utils.moveCreep(creep, flag.pos, '#c0392b')
     }
   },
 
@@ -444,6 +450,19 @@ var CreepsActor = {
   },
 
   remoteWorker: function(creep, job, rooms){
+    if(creep.room.name == job.remoteRoom){
+      var hostiles = creep.room.find(FIND_HOSTILE_CREEPS)
+
+      if(hostiles.length > 0){
+        var redFlags = _.filter(creep.room.find(FIND_FLAGS), function(flag){
+          return (flag.color == COLOR_RED)
+        })
+        if(redFlags.length == 0){
+          creep.room.createFlag(creep.pos, creep.name + 'CallsForAid', COLOR_RED)
+        }
+      }
+    }
+
     if(job.target){
       var target = Game.getObjectById(job.target)
     }else{
@@ -501,7 +520,12 @@ var CreepsActor = {
         })
       }else{
         if(!job.target){
-          var trasfered = _.min([(target.storeCapacity - _.sum(target.store)), carry])
+
+          if(target.energy){
+            var trasfered = _.min([(target.energyCapacity - target.energy), carry])
+          }else{
+            var trasfered = _.min([(target.storeCapacity - _.sum(target.store)), carry])
+          }
 
           Memory.stats['remoteMining.' + job.remoteRoom + '.revenue'] += trasfered
         }
@@ -622,13 +646,82 @@ var CreepsActor = {
     if(!flag.room || creep.room.name != flag.pos.roomName){
       Utils.moveCreep(creep, flag.pos, '#1abc9c')
     }else{
-      var closestHostile = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS)
+      var say = 'Spawn More Overlords'.split(' ')
+      creep.say(say[Game.time % say.length], true)
 
-      if(closestHostile){
-        if(creep.attack(closestHostile) == ERR_NOT_IN_RANGE){
-          Utils.moveCreep(creep, closestHostile, '#1abc9c')
+      if(Utils.hasBodyPart(creep.body, ATTACK)){
+        PartyActions.attack(creep)
+      }
+
+      if(Utils.hasBodyPart(creep.body, HEAL)){
+        PartyActions.heal(creep)
+      }
+    }
+  },
+
+  tank: function(creep, job, flags){
+    var flag = Game.flags[job.flag]
+
+    if(creep.room.name != job.room){
+      Utils.moveCreep(creep, flag.pos, '#c0392b')
+    }else{
+      if(creep.hits < creep.hitsMax){
+        creep.heal(creep)
+        return
+      }
+
+      Utils.moveCreep(creep, flag.pos, '#c0392b')
+    }
+  }
+}
+
+var PartyActions = {
+  attack: function(creep){
+    var structure = flag.pos.lookFor(LOOK_STRUCTURES)[0]
+
+    if(structure){
+      if(creep.attack(structure) == ERR_NOT_IN_RANGE){
+        creep.moveTo(structure)
+      }
+
+      return
+    }else{
+      var hostiles = _.filter(creep.room.find(FIND_HOSTILE_STRUCTURES), function(structure){
+        return (structure.structureType == STRUCTURE_TOWER)
+      })
+
+      if(hostiles.length == 0){
+        var hostiles = Utils.findHostileCreeps(creep)
+      }
+
+      if(hostiles.length != 0){
+        var hostile = creep.pos.findClosestByRange(hostiles)
+
+        if(creep.attack(hostile) == ERR_NOT_IN_RANGE){
+          creep.moveTo(hostile)
         }
       }
+    }
+  },
+
+  heal(creep){
+    if(creep.hits < creep.hitsMax){
+      creep.heal(creep)
+      return
+    }
+
+    var targets = _.filter(creep.room.find(FIND_MY_CREEPS), function(cr){
+      return (cr.hits < cr.hitsMax)
+    })
+
+    if(targets.length != 0){
+      var target = creep.pos.findClosestByRange(targets)
+
+      if(creep.heal(target) == ERR_NOT_IN_RANGE){
+        creep.moveTo(target)
+      }
+
+      return
     }
   }
 }

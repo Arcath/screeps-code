@@ -41,7 +41,7 @@ var FlagsController = {
         jobs.update(siteJob)
       }
 
-      if(!Utils.findCreepForJob(siteJob)){
+      if(!Utils.findCreepForJob(siteJob, 200)){
         var nearestRoom = Utils.myNearestRoom(flag.room.name, rooms)
 
         spawnQueue.add({
@@ -130,31 +130,62 @@ var FlagsController = {
     })
 
     _.forEach(redFlags, function(flagObject){
-      var job = {
-        collect: 'defend',
-        room: flagObject.room,
-        priority: 100,
-        flag: flagObject.name
-      }
+      if(flagObject.secondaryColor == COLOR_RED){
+        var job = {
+          collect: 'defend',
+          room: flagObject.room,
+          priority: 100,
+          flag: flagObject.name
+        }
 
-      Utils.addWithHash(job, jobs)
+        Utils.addIfNotExist(job, jobs)
 
-      if(!Utils.findCreepForJob(job)){
-        var nearestRoom = Utils.myNearestRoom(flagObject.room, rooms, CreepDesigner.caps.damage)
+        if(!Utils.findCreepForJob(job, 300)){
+          var nearestRoom = Utils.myNearestRoom(flagObject.room, rooms, CreepDesigner.caps.damage)
 
-        spawnQueue.add({
-          creep: CreepDesigner.createCreep({
-            base: CreepDesigner.baseDesign.damage,
-            cap: CreepDesigner.caps.damage,
-            room: Game.rooms[nearestRoom]
-          }),
-          memory: {
-            jobHash: job.hash
-          },
-          priority: job.priority,
-          spawned: false,
-          room: nearestRoom
-        })
+          spawnQueue.add({
+            creep: CreepDesigner.createCreep({
+              base: CreepDesigner.baseDesign.damage,
+              cap: CreepDesigner.caps.damage,
+              room: Game.rooms[nearestRoom]
+            }),
+            memory: {
+              jobHash: job.hash
+            },
+            priority: job.priority,
+            spawned: false,
+            room: nearestRoom
+          })
+        }
+      }else if(flagObject.secondaryColor == COLOR_GREEN){
+        var job = {
+          collect: 'tank',
+          room: flagObject.room,
+          priority: 100,
+          flag: flagObject.name
+        }
+
+        Utils.addIfNotExist(job, jobs)
+
+        if(!Utils.findCreepForJob(job, 300)){
+          var nearestRoom = Utils.myNearestRoom(flagObject.room, rooms, CreepDesigner.caps.tank)
+          console.log('spawn a tank')
+
+          spawnQueue.add({
+            creep: CreepDesigner.createCreep({
+              base: CreepDesigner.baseDesign.tank,
+              cap: CreepDesigner.caps.tank,
+              room: Game.rooms[nearestRoom],
+              extend: CreepDesigner.extend.tank
+            }),
+            memory: {
+              jobHash: job.hash
+            },
+            priority: job.priority,
+            spawned: false,
+            room: nearestRoom
+          })
+        }
       }
     })
 
@@ -191,7 +222,9 @@ var FlagsController = {
 
         var creeps = Utils.findCreepsForJob(job, 150)
 
-        if(creeps.length < 1){
+        var blockingFlags = flags.where({color: COLOR_RED}, {room: flagObject.room})
+
+        if(creeps.length < 1 && blockingFlags.length == 0){
           spawnQueue.add({
             creep: CreepDesigner.createCreep({
               base: CreepDesigner.baseDesign.fastWork,
@@ -221,7 +254,12 @@ var FlagsController = {
 
           var creeps = Utils.findCreepsForJob(moveJob, 150)
 
-          if(creeps.length < 1){
+          var maxCount = 1
+          if(container.store.energy > 1000){
+            maxCount = 2
+          }
+
+          if(creeps.length < maxCount && blockingFlags.length == 0){
             spawnQueue.add({
               creepType: 'moveWork',
               memory: {
@@ -370,13 +408,15 @@ var FlagsController = {
         var creeps = Utils.findCreepsForJob(job)
 
         if(creeps.length < party.length){
+          var creepCost = CreepDesigner.creepCost(party[creeps.length])
+
           spawnQueue.add({
             creep: party[creeps.length],
             memory: {
               jobHash: job.hash
             },
             spawned: false,
-            room: Utils.myNearestRoom(flagObject.room, rooms)
+            room: Utils.myNearestRoom(flagObject.room, rooms, creepCost)
           })
         }else{
           var readyCount = 0

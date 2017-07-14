@@ -144,9 +144,6 @@ module.exports = {
       Memory.stats['room.' + roomObject.name + '.upgradeRate'] = Utils.workRate(upgraderCreeps, 1)
 
       var upgraderCount = 2
-      if(roomObject.rcl > 2 && roomObject.rcl < 8){
-        var upgraderCount = 4
-      }
 
       if(roomObject.rcl == 8){
         var upgraderCount = 1
