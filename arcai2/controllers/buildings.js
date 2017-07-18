@@ -85,7 +85,9 @@ var BuildingsController = {
 
   runTowers: function(room, towers){
     _.forEach(Utils.inflate(towers), function(tower){
-      var closestHostile = tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS)
+      var hostiles = Utils.findHostileCreeps(tower)
+
+      var closestHostile = tower.pos.findClosestByRange(hostiles)
       if(closestHostile){
         tower.attack(closestHostile)
       }else{

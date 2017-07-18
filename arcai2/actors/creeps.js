@@ -7,7 +7,6 @@ var CreepsActor = {
       var recycle = false
 
       if(creep.memory.jobHash != undefined){
-        //var job = jobs.findOne({hash: creep.memory.jobHash})
         var job = jobs.indexLookup(creep.memory.jobHash)
       }else{
         if(!creep.memory.recycle){
@@ -264,30 +263,14 @@ var CreepsActor = {
 
   upgrade: function(creep){
     if(creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE){
-      creep.moveTo(creep.room.controller, {
-        visualizePathStyle: {
-          fill: 'transparent',
-          stroke: '#2ecc71',
-          lineStyle: 'dashed',
-          strokeWidth: .15,
-          opacity: .1
-        }
-      })
+      Utils.moveCreep(creep, creep.room.controller, '#2ecc71')
     }
   },
 
   build: function(creep, job){
     var site = Game.getObjectById(job.target)
     if(creep.build(site) == ERR_NOT_IN_RANGE){
-      creep.moveTo(site, {
-        visualizePathStyle: {
-          fill: 'transparent',
-          stroke: '#9b59b6',
-          lineStyle: 'dashed',
-          strokeWidth: .15,
-          opacity: .1
-        }
-      })
+      Utils.moveCreep(creep, site, '#9b59b6')
     }
   },
 
@@ -296,15 +279,7 @@ var CreepsActor = {
     var container = Game.getObjectById(job.from)
     if(container){
       if(creep.withdraw(container, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
-        creep.moveTo(container, {
-          visualizePathStyle: {
-            fill: 'transparent',
-            stroke: '#f1c40f',
-            lineStyle: 'dashed',
-            strokeWidth: .15,
-            opacity: .1
-          }
-        })
+        Utils.moveCreep(creep, container, '#f1c40f')
       }
     }
   },
@@ -318,30 +293,14 @@ var CreepsActor = {
 
     if(container){
       if(creep.withdraw(container, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
-        creep.moveTo(container, {
-          visualizePathStyle: {
-            fill: 'transparent',
-            stroke: '#f1c40f',
-            lineStyle: 'dashed',
-            strokeWidth: .15,
-            opacity: .1
-          }
-        })
+        Utils.moveCreep(creep, container, '#f1c40f')
       }
     }
   },
 
   claim: function(creep, job){
     if(!creep.pos.isNearTo(Game.flags[job.flag])){
-      creep.moveTo(Game.flags[job.flag], {
-        visualizePathStyle: {
-          fill: 'transparent',
-          stroke: '#8e44ad',
-          lineStyle: 'dashed',
-          strokeWidth: .15,
-          opacity: .1
-        }
-      })
+      Utils.moveCreep(creep, Game.flags[job.flag], '#8e44ad')
     }else{
       creep.claimController(creep.room.controller)
       Game.flags[job.flag].remove()
@@ -351,15 +310,7 @@ var CreepsActor = {
   extract: function(creep, job){
     var mineral = Game.getObjectById(job.mineral)
     if(creep.harvest(mineral) == ERR_NOT_IN_RANGE){
-      creep.moveTo(mineral, {
-        visualizePathStyle: {
-          fill: 'transparent',
-          stroke: '#95a5a6',
-          lineStyle: 'dashed',
-          strokeWidth: .15,
-          opacity: .1
-        }
-      })
+      Utils.moveCreep(creep, mineral, '#95a5a6')
     }
   },
 
@@ -368,15 +319,7 @@ var CreepsActor = {
 
     _.forEach(Object.keys(creep.carry), function(resource){
       if(creep.transfer(target, resource) == ERR_NOT_IN_RANGE){
-        creep.moveTo(target, {
-          visualizePathStyle: {
-            fill: 'transparent',
-            stroke: '#a9b7c6',
-            lineStyle: 'dashed',
-            strokeWidth: .15,
-            opacity: .1
-          }
-        })
+        Utils.moveCreep(creep, target, '#a9b7c6')
       }
     })
   },
@@ -387,14 +330,15 @@ var CreepsActor = {
     if(creep.room.name != job.room){
       Utils.moveCreep(creep, flag.pos, '#c0392b')
     }else{
-      var hostile = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS)
+      var hostiles = Utils.findHostileCreeps(creep)
+      var hostile = creep.pos.findClosestByRange(hostiles)
 
       var say = 'Spawn More Overlords'.split(' ')
       creep.say(say[Game.time % say.length], true)
 
       if(hostile){
         if(creep.attack(hostile) == ERR_NOT_IN_RANGE){
-          creep.moveTo(hostile)
+          Utils.moveCreep(creep, hostile, '#c0392b')
         }
 
         return
@@ -403,7 +347,7 @@ var CreepsActor = {
       var hostileSite = creep.pos.findClosestByRange(FIND_HOSTILE_CONSTRUCTION_SITES)
 
       if(hostileSite){
-        creep.moveTo(hostileSite)
+        Utils.moveCreep(creep, hostileSite, '#c0392b')
 
         return
       }
@@ -422,15 +366,7 @@ var CreepsActor = {
 
   reserve: function(creep, job){
     if(!creep.pos.isNearTo(Game.flags[job.flag])){
-      creep.moveTo(Game.flags[job.flag], {
-        visualizePathStyle: {
-          fill: 'transparent',
-          stroke: '#8e44ad',
-          lineStyle: 'dashed',
-          strokeWidth: .15,
-          opacity: .1
-        }
-      })
+      Utils.moveCreep(creep, Game.flags[job.flag], '#8e44ad')
     }else{
       if(!Memory.stats['remoteMining.' + creep.room.name + '.revenue']){
         Memory.stats['remoteMining.' + creep.room.name + '.revenue'] = 0
@@ -451,7 +387,8 @@ var CreepsActor = {
 
   remoteWorker: function(creep, job, rooms){
     if(creep.room.name == job.remoteRoom){
-      var hostiles = creep.room.find(FIND_HOSTILE_CREEPS)
+      var hostiles = Utils.findHostileCreeps(creep)
+      var hostiles = creep.room.find(hostiles)
 
       if(hostiles.length > 0){
         var redFlags = _.filter(creep.room.find(FIND_FLAGS), function(flag){
@@ -509,18 +446,9 @@ var CreepsActor = {
     }else{
       var carry = creep.carry.energy
       if(creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
-        creep.moveTo(target, {
-          visualizePathStyle: {
-            fill: 'transparent',
-            stroke: '#a9b7c6',
-            lineStyle: 'dashed',
-            strokeWidth: .15,
-            opacity: .1
-          }
-        })
+        Utils.moveCreep(creep, target, '#a9b7c6')
       }else{
         if(!job.target){
-
           if(target.energy){
             var trasfered = _.min([(target.energyCapacity - target.energy), carry])
           }else{
@@ -539,15 +467,7 @@ var CreepsActor = {
     if(container){
       switch(creep.withdraw(container, job.resource)){
         case ERR_NOT_IN_RANGE:
-          creep.moveTo(container, {
-            visualizePathStyle: {
-              fill: 'transparent',
-              stroke: '#f1c40f',
-              lineStyle: 'dashed',
-              strokeWidth: .15,
-              opacity: .1
-            }
-          })
+          Utils.moveCreep(creep, container, '#f1c40f')
           break
         case ERR_NOT_ENOUGH_RESOURCES:
           creep.memory.act = true
@@ -562,15 +482,7 @@ var CreepsActor = {
     if(target){
       switch(creep.transfer(target, job.resource)){
         case ERR_NOT_IN_RANGE:
-          creep.moveTo(target, {
-            visualizePathStyle: {
-              fill: 'transparent',
-              stroke: '#a9b7c6',
-              lineStyle: 'dashed',
-              strokeWidth: .15,
-              opacity: .1
-            }
-          })
+          Utils.moveCreep(creep, target, '#a9b7c6')
           break
         default:
           creep.memory.act = false
@@ -581,30 +493,14 @@ var CreepsActor = {
   repair: function(creep, job){
     var building = Game.getObjectById(job.target)
     if(creep.repair(building) == ERR_NOT_IN_RANGE){
-      creep.moveTo(building, {
-        visualizePathStyle: {
-          fill: 'transparent',
-          stroke: '#9b59b6',
-          lineStyle: 'dashed',
-          strokeWidth: .15,
-          opacity: .1
-        }
-      })
+      Utils.moveCreep(creep, building, '#9b59b6')
     }
   },
 
   dismantle: function(creep, job){
     var structure = Game.getObjectById(job.dismantle)
     if(creep.dismantle(structure) == ERR_NOT_IN_RANGE){
-      creep.moveTo(structure, {
-        visualizePathStyle: {
-          fill: 'transparent',
-          stroke: '#c0392b',
-          lineStyle: 'dashed',
-          strokeWidth: .15,
-          opacity: .1
-        }
-      })
+      Utils.moveCreep(creep, structure, '#c0392b')
     }
   },
 
