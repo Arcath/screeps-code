@@ -90,7 +90,7 @@ module.exports = {
 
       var roomInstance = Game.rooms[room.name]
 
-      if(roomInstance.energyCapacityAvailable > minCost){
+      if(roomInstance.energyCapacityAvailable >= minCost){
         if(distance <= nearestRoomDistance && room.rcl >= nearestRCL){
           nearestRoomDistance = distance
           nearestRoom = room.name

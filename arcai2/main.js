@@ -94,7 +94,7 @@ module.exports.loop = function(){
       delete Memory.creeps[name]
       for(var rm in Memory.arc){
         Memory.arc[rm].newCreep = true
-      }
+      } 
       console.log('Clearing non-existing creep memory:', name);
     }
   }

@@ -112,19 +112,21 @@ var FlagsController = {
         if(!Utils.findCreepForJob(job)){
           var nearestRoom = Utils.myNearestRoom(flagObject.room, rooms, CreepDesigner.caps.claim)
 
-          spawnQueue.add({
-            creep: CreepDesigner.createCreep({
-              base: CreepDesigner.baseDesign.claim,
-              cap: CreepDesigner.caps.claim,
-              room: Game.rooms[nearestRoom]
-            }),
-            memory: {
-              jobHash: job.hash
-            },
-            priority: job.priority,
-            spawned: false,
-            room: nearestRoom
-          })
+          if(nearestRoom){
+            spawnQueue.add({
+              creep: CreepDesigner.createCreep({
+                base: CreepDesigner.baseDesign.claim,
+                cap: CreepDesigner.caps.claim,
+                room: Game.rooms[nearestRoom]
+              }),
+              memory: {
+                jobHash: job.hash
+              },
+              priority: job.priority,
+              spawned: false,
+              room: nearestRoom
+            })
+          }
         }
       }
     })

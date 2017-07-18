@@ -14,6 +14,37 @@ var BuildingsController = {
       if(room.towers.length > 0){
         BuildingsController.runTowers(room, room.towers)
       }
+
+      if(Game.time % 20 === 0){
+        var roomPlans = require('../data/roomPlans')
+
+        if(roomPlans[room.name] && roomPlans[room.name][room.rcl]){
+          var roomPlan = roomPlans[room.name][room.rcl]
+
+          _.forEach(Object.keys(roomPlan.buildings), function(buildingType){
+            _.forEach(roomPlan.buildings[buildingType].pos, function(position){
+              var pos = new RoomPosition(position.x, position.y, room.name)
+
+              var structures = _.filter(pos.look(), function(entry){
+                if(entry.type == 'structure'){
+                  return (entry.structureType == buildingType)
+                }else if(entry.type == 'constructionSite'){
+                  return (entry.structureType == buildingType)
+                }else{
+                  return false
+                }
+              })
+
+              if(structures.length == 0){
+                pos.createConstructionSite(buildingType)
+                if(room.spawns.length == 0 && buildingType == 'spawn' && !Game.flags[room.name + buildingType]){
+                  pos.createFlag(room.name + buildingType, COLOR_GREEN)
+                }
+              }
+            })
+          })
+        }
+      }
     })
   },
 
