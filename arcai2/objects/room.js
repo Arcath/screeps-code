@@ -8,6 +8,14 @@ module.exports = function(room){
     return (structure.structureType == STRUCTURE_CONTAINER)
   })
 
+  var walls = _.filter(room.find(FIND_STRUCTURES), function(structure){
+    return (structure.structureType == STRUCTURE_WALL)
+  })
+
+  var ramparts = _.filter(room.find(FIND_STRUCTURES), function(structure){
+    return (structure.structureType == STRUCTURE_RAMPART)
+  })
+
   var sourceContainerMaps = {}
 
   var sourceContainers = _.filter(containers, function(container){
@@ -87,13 +95,13 @@ module.exports = function(room){
 
   var coreLinks = _.filter(links, function(link){
     var sources = link.pos.findInRange(FIND_SOURCES, 2)
-    var exits = link.pos.findInRange(FIND_EXIT, 2)
+    var exits = link.pos.findInRange(FIND_EXIT, 4)
 
     return (sources.length == 0 && exits.length == 0)
   })
 
   var exitLinks = _.filter(links, function(link){
-    var exits = link.pos.findInRange(FIND_EXIT, 2)
+    var exits = link.pos.findInRange(FIND_EXIT, 4)
 
     return (exits.length != 0)
   })
@@ -140,6 +148,7 @@ module.exports = function(room){
     minerals: Utils.deflate(room.find(FIND_MINERALS)),
     mine: mine,
     name: room.name,
+    ramparts: Utils.deflate(ramparts),
     rcl: level,
     recycleContainers: Utils.deflate(recycleContainers),
     sources: Utils.deflate(room.find(FIND_SOURCES)),
@@ -152,6 +161,7 @@ module.exports = function(room){
     storage: storageId,
     structures: Utils.deflate(structures),
     terminal: terminalId,
-    towers: Utils.deflate(towers)
+    towers: Utils.deflate(towers),
+    walls: Utils.deflate(walls)
   }
 }

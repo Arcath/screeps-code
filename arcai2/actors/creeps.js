@@ -300,10 +300,15 @@ var CreepsActor = {
 
   claim: function(creep, job){
     if(!creep.pos.isNearTo(Game.flags[job.flag])){
-      Utils.moveCreep(creep, Game.flags[job.flag], '#8e44ad')
+      Utils.moveCreep(creep, Game.flags[job.flag], '#8e44ad', {
+        waypoint: job.flag + '-Waypoint'
+      })
     }else{
       creep.claimController(creep.room.controller)
       Game.flags[job.flag].remove()
+      if(Game.flags[job.flag + '-Waypoint']){
+        Game.flags[job.flag + '-Waypoint'].remove()
+      }
     }
   },
 
@@ -352,7 +357,7 @@ var CreepsActor = {
         return
       }
 
-      if(creep.ticksToLive < 100){
+      if(!hostile && !hostileSite){
         var yellowFlags = flags.where({color: COLOR_YELLOW}, {room: flag.pos.roomName})
 
         if(yellowFlags.length != 0){
@@ -388,7 +393,6 @@ var CreepsActor = {
   remoteWorker: function(creep, job, rooms){
     if(creep.room.name == job.remoteRoom){
       var hostiles = Utils.findHostileCreeps(creep)
-      var hostiles = creep.room.find(hostiles)
 
       if(hostiles.length > 0){
         var redFlags = _.filter(creep.room.find(FIND_FLAGS), function(flag){

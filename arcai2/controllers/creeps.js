@@ -15,6 +15,7 @@ module.exports = {
       var siteJobs = jobs.refineSearch(roomJobs, {act: 'build'})
       var extractJobs = jobs.refineSearch(roomJobs, {collect: 'extract'})
       var supplyJobs = jobs.refineSearch(roomJobs, {collect: 'supply'})
+      var repairJobs = jobs.refineSearch(roomJobs, {act: 'repair'})
 
       if(supplyJobs.length > 0){
         var supplyCreeps = _.filter(Game.creeps, function(creep){
@@ -44,21 +45,23 @@ module.exports = {
         totalWorkRate += workRate
 
         if(workRate < (source.energyCapacity / 300)){
-          spawnQueue.add(
-            {
-              creep: CreepDesigner.createCreep({
-                base: CreepDesigner.baseDesign.slowWork,
-                cap: CreepDesigner.caps.slowWork,
-                room: Game.rooms[roomObject.name]
-              }),
-              memory: {
-                jobHash: job.hash
-              },
-              priority: job.priority,
-              spawned: false,
-              room: roomObject.name
-            }
-          )
+          if(!job.target || (job.target && workRate == 0)){
+            spawnQueue.add(
+              {
+                creep: CreepDesigner.createCreep({
+                  base: CreepDesigner.baseDesign.slowWork,
+                  cap: CreepDesigner.caps.slowWork,
+                  room: Game.rooms[roomObject.name]
+                }),
+                memory: {
+                  jobHash: job.hash
+                },
+                priority: job.priority,
+                spawned: false,
+                room: roomObject.name
+              }
+            )
+          }
         }
       })
 
@@ -111,7 +114,7 @@ module.exports = {
       })
 
       if(siteJobs.length > 0){
-        var numBuilders = parseInt((siteJobs.length / 10) + 1)
+        var numBuilders = _.min([parseInt((siteJobs.length / 10) + 1), 3])
 
         var builderCreeps = _.filter(Game.creeps, function(creep){
           return (creep.memory.actFilter == 'build' && creep.room.name == roomObject.name)
@@ -188,6 +191,25 @@ module.exports = {
             })
           }
         })
+      }
+
+      if(repairJobs.length > 0 && roomObject.rcl > 3){
+        var repairCreeps = _.filter(Game.creeps, function(creep){
+          return (creep.memory.actFilter == 'repair' && creep.room.name == roomObject.name)
+        })
+
+        if(repairCreeps.length < 1 && roomObject.generalContainers.length > 0){
+          spawnQueue.add({
+            creepType: 'fastWork',
+            memory: {
+              jobHash: repairJobs[0].hash,
+              actFilter: 'repair'
+            },
+            priority: repairJobs[0].priority,
+            spawned: false,
+            room: roomObject.name
+          })
+        }
       }
     })
   }

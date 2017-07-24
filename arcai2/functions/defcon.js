@@ -1,3 +1,5 @@
+const Utils = require ('../utils')
+
 module.exports = {
   run: function(rooms, structureTotal){
     if(!Memory.defcon){
@@ -16,7 +18,7 @@ module.exports = {
 
       roomDefcon.structureCount = structureTotal[roomObject.name]
 
-      var hostileCreeps = room.find(FIND_HOSTILE_CREEPS)
+      var hostileCreeps = Utils.findHostileCreeps({room: room})
 
       if(hostileCreeps.length == 0){
         roomDefcon.defcon = 0

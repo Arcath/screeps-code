@@ -258,6 +258,23 @@ var JobsController = {
             Utils.addIfNotExist(job, jobs)
           }
         })
+      }else{
+        _.forEach([].concat(
+          Utils.inflate(roomObject.ramparts),
+          Utils.inflate(roomObject.walls)
+        ), function(structure){
+          if(structure.hits < (roomObject.rcl * 100000)){
+            var job = {
+              act: 'repair',
+              target: structure.id,
+              room: roomObject.name,
+              priority: 40,
+              collect: 'lowCollect'
+            }
+
+            Utils.addIfNotExist(job, jobs)
+          }
+        })
       }
     })
   }

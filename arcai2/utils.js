@@ -102,25 +102,36 @@ module.exports = {
     return nearestRoom
   },
 
-  moveCreep: function(creep, target, color){
-    creep.moveTo(target, {
-      visualizePathStyle: {
-        fill: 'transparent',
-        stroke: color,
-        lineStyle: 'dashed',
-        strokeWidth: .15,
-        opacity: .1
-      },
-      costCallback: function(roomName, costMatrix){
-        if(!Memory.costMatrix[roomName]){
-          return
-        }else{
-          var myMatrix = PathFinder.CostMatrix.deserialize(Memory.costMatrix[roomName])
-
-          return myMatrix
-        }
+  moveCreep: function(creep, target, color, options = {}){
+    if(options.waypoint && !creep.memory.waypointed && Game.flags[options.waypoint]){
+      if(creep.pos.inRangeTo(Game.flags[options.waypoint].pos, 1)){
+        creep.memory.waypointed = true
+      }else{
+        target = Game.flags[options.waypoint].pos
       }
-    })
+    }
+
+    if(creep.fatigue == 0){
+      creep.moveTo(target, {
+        visualizePathStyle: {
+          fill: 'transparent',
+          stroke: color,
+          lineStyle: 'dashed',
+          strokeWidth: .15,
+          opacity: .1
+        },
+        costCallback: function(roomName, costMatrix){
+          if(!Memory.costMatrix[roomName]){
+            return
+          }else{
+            var myMatrix = PathFinder.CostMatrix.deserialize(Memory.costMatrix[roomName])
+
+            return myMatrix
+          }
+        },
+        maxOps: 10000
+      })
+    }
   },
 
   findHostileCreeps: function(unit){

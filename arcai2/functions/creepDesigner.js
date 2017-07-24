@@ -1,5 +1,9 @@
 module.exports = {
   createCreep: function(options){
+    if(!options.room){
+      return []
+    }
+
     if(!options.extend){
       options.extend = options.base
     }
@@ -52,7 +56,7 @@ module.exports = {
     fastWork: [WORK, CARRY, MOVE],
     move: [CARRY, CARRY, MOVE],
     damage: [TOUGH, MOVE, MOVE, ATTACK, ATTACK],
-    claim: [CLAIM, MOVE, MOVE, MOVE, MOVE],
+    claim: [CLAIM, MOVE],
     upgrader: [WORK, CARRY, MOVE, MOVE, MOVE],
     moveWork: [WORK, CARRY, MOVE],
     tank: [TOUGH, TOUGH, MOVE, MOVE, HEAL]
@@ -70,7 +74,7 @@ module.exports = {
     fastWork: 1200,
     move: 750,
     damage: 1240,
-    claim: 800,
+    claim: 1300,
     upgrader: 1700,
     moveWork: 850,
     tank: 1570
