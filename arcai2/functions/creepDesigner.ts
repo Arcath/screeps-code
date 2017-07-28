@@ -1,14 +1,15 @@
-module.exports = {
+module.exports = <CreepDesigner>{
   createCreep: function(options){
     if(!options.room){
       return []
     }
 
     if(!options.extend){
-      options.extend = options.base
+      options.extend = <string[]>options.base
     }
 
     if(options.canAffordOnly){
+      console.log('can afford only')
       var canSpend = options.room.energyAvailable
     }else{
       var canSpend = options.room.energyCapacityAvailable
@@ -18,7 +19,10 @@ module.exports = {
       var canSpend = options.cap
     }
 
-    var creep = [].concat(options.base)
+    if(options.canAffordOnly)
+      console.log(canSpend)
+
+    var creep = <string[]>[].concat(<never[]>options.base)
     var add = true
     var extendIndex = 0
 
@@ -37,6 +41,9 @@ module.exports = {
         }
       }
     }
+
+    if(options.canAffordOnly)
+      console.log(this.creepCost(creep))
 
     return creep
   },

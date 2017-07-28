@@ -52,3 +52,6 @@ private.json
 node_modules/
 dist/
 scratch.md
+lib/
+arcos/
+main.js.backup

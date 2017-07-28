@@ -1,4 +1,4 @@
-module.exports = function(flag){
+module.exports = function(flag: Flag){
   return {
     color: flag.color,
     name: flag.name,

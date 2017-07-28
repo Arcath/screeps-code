@@ -1,8 +1,8 @@
-const Utils = require('../utils')
+import {Utils} from '../utils'
 
 module.exports = {
-  run: function(rooms){
-    var myRooms = rooms.where({mine: true})
+  run: function(rooms: SODB){
+    var myRooms = <ObjectRoom[]>rooms.where({mine: true})
 
     _.forEach(myRooms, function(room){
       if(room.coreLinks.length != 0 && (room.sourceLinks.length != 0 || room.exitLinks.length != 0)){

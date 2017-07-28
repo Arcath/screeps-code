@@ -1,5 +1,5 @@
 module.exports = {
-  run: function(rooms, jobs, sites, flags){
+  run: function(rooms: SODB, jobs: SODB){
     if (Memory.stats == undefined) {
       Memory.stats = {}
     }
@@ -20,8 +20,10 @@ module.exports = {
       var room = Game.rooms[roomObject.name]
       Memory.stats['room.' + room.name + '.energyAvailable'] = room.energyAvailable
       Memory.stats['room.' + room.name + '.energyCapacityAvailable'] = room.energyCapacityAvailable
-      Memory.stats['room.' + room.name + '.controllerProgress'] = room.controller.progress
-      Memory.stats['room.' + room.name + '.controllerProgressTotal'] = room.controller.progressTotal
+      if(room.controller){
+        Memory.stats['room.' + room.name + '.controllerProgress'] = room.controller.progress
+        Memory.stats['room.' + room.name + '.controllerProgressTotal'] = room.controller.progressTotal
+      }
 
       var roomJobs = jobs.where({room: room.name})
       Memory.stats['room.' + room.name + '.jobs'] = roomJobs.length
@@ -34,7 +36,8 @@ module.exports = {
 
       if(room.storage){
         _.forEach(Object.keys(room.storage.store), function(resource){
-          Memory.stats['room.' + room.name + '.storage.' + resource] = room.storage.store[resource]
+          if(room.storage)
+            Memory.stats['room.' + room.name + '.storage.' + resource] = room.storage.store[resource]
         })
       }
     })

@@ -1,9 +1,10 @@
 const CreepDesigner = require('../functions/creepDesigner')
 const Constants = require('../constants')
-const Utils = require('../utils')
+
+import {Utils} from '../utils'
 
 var FlagsController = {
-  run: function(rooms, jobs, flags, spawnQueue){
+  run: function(rooms: SODB, jobs: SODB, flags: SODB, spawnQueue: SODB){
     var greenFlags = flags.where({color: COLOR_GREEN})
     var purpleFlags = flags.where({color: COLOR_PURPLE})
     var yellowFlags = flags.where({color: COLOR_YELLOW})
@@ -13,7 +14,7 @@ var FlagsController = {
     var grayFlags = flags.where({color: COLOR_GREY})
     var whiteFlags = flags.where({color: COLOR_WHITE})
 
-    _.forEach(greenFlags, function(flagObject){
+    _.forEach(greenFlags, function(flagObject: ObjectFlag){
       var flag = Game.flags[flagObject.name]
       var lookup = _.filter(flag.pos.look(), function(item){
         return (item.type == 'constructionSite')
@@ -23,18 +24,18 @@ var FlagsController = {
         flag.remove()
         return
       }else{
-        var site = lookup.constructionSite
+        var site = <ConstructionSite>lookup.constructionSite
       }
 
-      var siteJob = Utils.jobForTarget(site, jobs)
+      var siteJob = <BuildJob>Utils.jobForTarget(site, jobs)
 
       if(siteJob.collect != 'harvest'){
         siteJob.collect = 'harvest'
 
-        var room = rooms.findOne({name: flag.room.name})
+        var room = <ObjectRoom>rooms.findOne({name: flag.room!.name})
         var sources = Utils.inflate(room.sources)
 
-        var source = flag.pos.findClosestByRange(sources)
+        var source = <Source>flag.pos.findClosestByRange(sources)
 
         siteJob.source = source.id
 
@@ -42,7 +43,7 @@ var FlagsController = {
       }
 
       if(!Utils.findCreepForJob(siteJob, 200)){
-        var nearestRoom = Utils.myNearestRoom(flag.room.name, rooms)
+        var nearestRoom = Utils.myNearestRoom(flag.room!.name, rooms)
 
         spawnQueue.add({
           creep: CreepDesigner.createCreep({
@@ -68,14 +69,14 @@ var FlagsController = {
       }*/
 
       if(flag.secondaryColor == COLOR_PURPLE){
-        var job = {
+        var job = <ObjectJob>{
           collect: 'reserve',
           room: flagObject.room,
           priority: 10,
           flag: flagObject.name
         }
 
-        var foundJob = jobs.findOne({collect: 'reserve'}, {room: flagObject.room})
+        var foundJob = <ObjectJob>jobs.findOne({collect: 'reserve'}, {room: flagObject.room})
 
         if(!foundJob){
           Utils.addWithHash(job, jobs)
@@ -100,7 +101,7 @@ var FlagsController = {
           })
         }
       }else if(flag.secondaryColor == COLOR_RED){
-        var job = {
+        var job = <ObjectJob>{
           collect: 'claim',
           room: flagObject.room,
           priority: 10,
@@ -133,7 +134,7 @@ var FlagsController = {
 
     _.forEach(redFlags, function(flagObject){
       if(flagObject.secondaryColor == COLOR_RED){
-        var job = {
+        var job = <ObjectJob>{
           collect: 'defend',
           room: flagObject.room,
           priority: 100,
@@ -160,7 +161,7 @@ var FlagsController = {
           })
         }
       }else if(flagObject.secondaryColor == COLOR_GREEN){
-        var job = {
+        var job = <ObjectJob>{
           collect: 'tank',
           room: flagObject.room,
           priority: 100,
@@ -194,16 +195,16 @@ var FlagsController = {
     _.forEach(yellowFlags, function(flagObject){
       if(Game.rooms[flagObject.room]){
         if(Game.flags[flagObject.name].memory.source){
-          var sourceId = Game.flags[flagObject.name].memory.source
+          var sourceId = <string>Game.flags[flagObject.name].memory.source
         }else{
-          var source = Game.flags[flagObject.name].pos.lookFor(LOOK_SOURCES)[0]
+          var source = <Source>Game.flags[flagObject.name].pos.lookFor(LOOK_SOURCES)[0]
           var sourceId = source.id
           Game.flags[flagObject.name].memory.source = source.id
         }
 
         var roomName = flagObject.name.split('-')[0]
 
-        var job = {
+        var job = <ObjectJob>{
           collect: 'harvest',
           source: sourceId,
           act: 'remoteWorker',
@@ -212,7 +213,7 @@ var FlagsController = {
           priority: 75
         }
 
-        var container = _.filter(Game.flags[flagObject.name].pos.findInRange(FIND_STRUCTURES, 1), function(structure){
+        var container = <StructureContainer>_.filter(Game.flags[flagObject.name].pos.findInRange(FIND_STRUCTURES, 1), function(structure: Structure){
           return (structure.structureType == STRUCTURE_CONTAINER)
         })[0]
 
@@ -243,7 +244,7 @@ var FlagsController = {
         }
 
         if(container){
-          var moveJob = {
+          var moveJob = <ObjectJob>{
             collect: 'sourceCollect',
             from: container.id,
             priority: 70,
@@ -277,14 +278,14 @@ var FlagsController = {
     })
 
     _.forEach(blueFlags, function(flagObject){
-      var destRoom = rooms.findOne({name: flagObject.room})
+      var destRoom = <ObjectRoom>rooms.findOne({name: flagObject.room})
 
       var sourceRoomName = flagObject.name.split('-')[0]
 
-      var sourceRoom = rooms.findOne({name: sourceRoomName})
+      var sourceRoom = <ObjectRoom>rooms.findOne({name: sourceRoomName})
 
       if(destRoom.storage && sourceRoom.storage){
-        var job = {
+        var job = <ObjectJob>{
           collect: 'sourceCollect',
           from: sourceRoom.storage,
           act: 'deliver',
@@ -316,20 +317,20 @@ var FlagsController = {
       var flag = Game.flags[flagObject.name]
 
       if(Game.flags[flagObject.name].memory.target){
-        var targetId = Game.flags[flagObject.name].memory.target
+        var targetId = <string>Game.flags[flagObject.name].memory.target
       }else{
-        var structure = Game.flags[flagObject.name].pos.lookFor(LOOK_STRUCTURES)[0]
+        var structure = <Structure>Game.flags[flagObject.name].pos.lookFor(LOOK_STRUCTURES)[0]
         var targetId = structure.id
         Game.flags[flagObject.name].memory.target = structure.id
       }
 
-      var structure = Game.getObjectById(targetId)
+      var structure = <Structure>Game.getObjectById(targetId)
       if(structure.hits < 150000){
         flag.remove()
         return
       }
 
-      var job = {
+      var job = <ObjectJob>{
         dismantle: targetId,
         collect: 'dismantle',
         actFilter: 'deliver',
@@ -357,13 +358,11 @@ var FlagsController = {
     })
 
     _.forEach(grayFlags, function(flagObject){
-      var flag = Game.flags[flagObject.name]
-
       var deliverRoomName = flagObject.name.split('-')[0]
       var deliverRoom = Game.rooms[deliverRoomName]
 
       if(deliverRoom.storage){
-        var job = {
+        var job = <ObjectJob>{
           collect: 'flagCollect',
           flag: flagObject.name,
           act: 'deliver',
@@ -388,8 +387,6 @@ var FlagsController = {
     })
 
     _.forEach(whiteFlags, function(flagObject){
-      var flag = Game.flags[flagObject.name]
-
       var actFlagName = flagObject.name.split('-')[1]
 
       var party = Constants.parties[flagObject.secondaryColor]
@@ -397,7 +394,7 @@ var FlagsController = {
       if(!party){
         console.log('party ' + flagObject.secondaryColor + ' does not exist')
       }else{
-        var job = {
+        var job = <ObjectJob>{
           collect: 'rally',
           flag: flagObject.name,
           act: 'runParty',

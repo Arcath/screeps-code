@@ -1,17 +1,16 @@
-var Utils = require('../utils')
+import {Utils} from '../utils'
 
 var JobsController = {
   // Find all jobs in the room
-  jobsForRoom: function(roomObject, jobs){
+  jobsForRoom: function(roomObject: ObjectRoom, jobs: SODB){
 
     // If the room is mine
     if(roomObject.mine){
 
       // Create the permemant harvesting job(s)
       _.forEach(roomObject.sources, function(source){
-        var job = {
+        var job = <HarvestJob>{
           collect: 'harvest',
-          creepType: 'slowWork',
           source: source,
           room: roomObject.name,
           priority: 100
@@ -19,15 +18,15 @@ var JobsController = {
 
         if(roomObject.sourceLinkMaps[source] && roomObject.coreLinks.length > 0){
           job.act = 'deliver'
-          job.target = roomObject.sourceLinkMaps[source]
-          job.overflow = roomObject.sourceContainerMaps[source]
+          job.target = <string>roomObject.sourceLinkMaps[source]
+          job.overflow = <string>roomObject.sourceContainerMaps[source]
         }
 
         if(roomObject.sourceContainerMaps[source] && (!roomObject.sourceLinkMaps[source] || roomObject.coreLinks.length == 0)){
           job.act = 'deliver'
-          job.target = roomObject.sourceContainerMaps[source]
+          job.target = <string>roomObject.sourceContainerMaps[source]
 
-          Utils.addWithHash({
+          Utils.addWithHash(<DistroJob>{
             collect: 'distribute',
             from: roomObject.sourceContainerMaps[source],
             room: roomObject.name,
@@ -39,7 +38,7 @@ var JobsController = {
       })
 
       _.forEach(roomObject.coreLinks, function(link){
-        Utils.addWithHash({
+        Utils.addWithHash(<DistroJob>{
           collect: 'distribute',
           from: link,
           room: roomObject.name,
@@ -51,21 +50,23 @@ var JobsController = {
       Utils.addWithHash({
         collect: 'lowCollect',
         act: 'upgrade',
-        creepType: 'fastWork',
         room: roomObject.name,
         priority: 10
       }, jobs)
     }
   },
 
-  energyJobs: function(rooms, jobs){
-    var energyJobsProfiler = {base: Game.cpu.getUsed()}
+  energyJobs: function(rooms: SODB, jobs: SODB){
+    var energyJobsProfiler = <NumberList>{
+      base: Game.cpu.getUsed(),
+      getRooms: 0
+    }
     var myRooms = rooms.where({mine: true})
 
     energyJobsProfiler.getRooms = Game.cpu.getUsed() - _.sum(energyJobsProfiler)
     Memory.stats['methodProfiles.energyJobs.getRooms'] = energyJobsProfiler.getRooms
 
-    _.forEach(myRooms, function(room){
+    _.forEach(myRooms, function(room: ObjectRoom){
       var spawns = Utils.inflate(room.spawns)
 
       _.forEach(spawns, function(spawn){
@@ -107,11 +108,11 @@ var JobsController = {
       energyJobsProfiler[room.name + 'towers'] = Game.cpu.getUsed() - _.sum(energyJobsProfiler)
       Memory.stats['methodProfiles.energyJobs.' + room.name + 'towers'] = energyJobsProfiler[room.name + 'towers']
 
-      var storage = Game.getObjectById(room.storage)
+      var storage = <StructureStorage>Game.getObjectById(room.storage)
 
       if(storage){
         if(storage.store.energy > 300000){
-          Utils.addIfNotExist({
+          Utils.addIfNotExist(<DistroJob>{
             collect: 'distribute',
             from: room.storage,
             room: room.name,
@@ -125,30 +126,30 @@ var JobsController = {
     })
   },
 
-  energyJobForBuilding: function(building, priority, jobs, roomName){
+  energyJobForBuilding: function(building: AnyStructure, priority: number, jobs: SODB, roomName: string){
     if(!building){
       return
     }
 
-    if(building.energy >= 0){
+    if(typeof building.energy != 'undefined'){
       var energy = building.energy
       var capacity = building.energyCapacity
     }else{
-      var energy = _.sum(building.store)
+      var energy = _.sum(building.store!)
       var capacity = building.storeCapacity
     }
 
     if(building.structureType == STRUCTURE_TOWER){
-      capacity = capacity * 0.8
+      capacity = capacity! * 0.8
       if(Memory.defcon[roomName].defcon != 0){
         priority = 200
       }
     }
 
     if(Memory.jobPremades[building.id]){
-      var job = Memory.jobPremades[building.id]
+      var job = <ObjectJob>Memory.jobPremades[building.id]
     }else{
-      var job = {
+      var job = <ObjectJob>{
         act: 'deliver',
         priority: priority,
         room: roomName,
@@ -162,7 +163,7 @@ var JobsController = {
     }
 
     //var foundJob = jobs.findOne({hash: job.hash})
-    var foundJob = jobs.indexLookup(job.hash)
+    var foundJob = <ObjectJob>jobs.indexLookup(<string>job.hash)
 
     if(Memory.defcon[roomName].defcon != 0 && building.structureType == STRUCTURE_TOWER && foundJob){
       foundJob.priority = 200
@@ -172,7 +173,7 @@ var JobsController = {
       if(foundJob.changed){ jobs.update(foundJob) }
     }
 
-    if(energy < capacity){
+    if(energy < capacity!){
       if(!foundJob){
         jobs.add(job)
       }
@@ -183,9 +184,9 @@ var JobsController = {
     }
   },
 
-  siteJobs: function(sites, jobs){
-    _.forEach(sites.all(), function(site){
-      var job = {
+  siteJobs: function(sites: SODB, jobs: SODB){
+    _.forEach(sites.all(), function(site: ObjectSite){
+      var job = <ObjectJob>{
         collect: 'lowCollect',
         act: 'build',
         priority: site.priority,
@@ -204,7 +205,7 @@ var JobsController = {
     })
   },
 
-  extractorJobs: function(rooms, jobs){
+  extractorJobs: function(rooms: SODB, jobs: SODB){
     var myRooms = rooms.where({mine: true}, {storage: {defined: true}})
 
     _.forEach(myRooms, function(room){
@@ -212,11 +213,11 @@ var JobsController = {
         return
       }
 
-      _.forEach(Utils.inflate(room.extractors), function(extractor){
-        var mineral = Game.getObjectById(room.minerals[0])
+      _.forEach(Utils.inflate(room.extractors), function(){
+        var mineral = <Mineral>Game.getObjectById(room.minerals[0])
 
         if(mineral.mineralAmount > 0){
-          var job = {
+          var job = <ObjectJob>{
             collect: 'extract',
             priority: 70,
             room: room.name,
@@ -233,22 +234,18 @@ var JobsController = {
     })
   },
 
-  mineralJobs: function(rooms, jobs){
-
-  },
-
-  repairJobs: function(rooms, jobs){
+  repairJobs: function(rooms: SODB, jobs: SODB){
     var myRooms = rooms.where({mine: true})
 
-    _.forEach(myRooms, function(roomObject){
+    _.forEach(myRooms, function(roomObject: ObjectRoom){
       if(roomObject.rcl < 4){
         _.forEach([].concat(
-          Utils.inflate(roomObject.recycleContainers),
-          Utils.inflate(roomObject.generalContainers),
-          Utils.inflate(roomObject.sourceContainers)
-        ), function(container){
+          <never[]>Utils.inflate(roomObject.recycleContainers),
+          <never[]>Utils.inflate(roomObject.generalContainers),
+          <never[]>Utils.inflate(roomObject.sourceContainers)
+        ), function(container: StructureContainer){
           if(container.hits < (container.hitsMax * 0.5)){
-            var job = {
+            var job = <ObjectJob>{
               act: 'repair',
               target: container.id,
               room: roomObject.name,
@@ -260,9 +257,9 @@ var JobsController = {
         })
       }else{
         _.forEach([].concat(
-          Utils.inflate(roomObject.ramparts),
-          Utils.inflate(roomObject.walls)
-        ), function(structure){
+          <never[]>Utils.inflate(roomObject.ramparts),
+          <never[]>Utils.inflate(roomObject.walls)
+        ), function(structure: Structure){
           if(structure.hits < (roomObject.rcl * 100000)){
             var job = {
               act: 'repair',

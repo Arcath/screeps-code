@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es6",
+    "removeComments": true,
+    "noEmitOnError": true,
+    "noResolve": false,
+    "experimentalDecorators": true,
+    "strict": true,
+    "noUnusedParameters": true,
+    "noUnusedLocals": true,
+    "sourceMap": true,
+    "baseUrl": "./src/",
+    "outDir": "./lib/",
+    "allowUnusedLabels": true
+  },
+  "compileOnSave": false,
+  "include": [
+    "arcai2/**/*.ts",
+    "arcai2/**/*.d.ts",
+    "typings/**/*.d.ts"
+  ],
+  "exclude": [
+    "dist",
+    "node_modules",
+    "src/snippets",
+    "arcos"
+  ]
+}

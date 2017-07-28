@@ -1,8 +1,8 @@
-const Utils = require('../utils')
+import {Utils} from '../utils'
 
 var ResourceController = {
-  run: function(rooms, jobs){
-    var resourceRooms = rooms.where({mine: true}, {rcl: {gte: 6}})
+  run: function(rooms: SODB, jobs: SODB){
+    var resourceRooms = <ObjectRoom[]>rooms.where({mine: true}, {rcl: {gte: 6}})
 
     _.forEach(resourceRooms, function(roomObject){
       var room = Game.rooms[roomObject.name]
@@ -24,7 +24,7 @@ var ResourceController = {
           }
         }
 
-        var recycleContainers = Utils.inflate(roomObject.recycleContainers)
+        var recycleContainers = <StructureContainer[]>Utils.inflate(roomObject.recycleContainers)
 
         _.forEach(recycleContainers, function(container){
           if(Object.keys(container.store).length > 1){
@@ -35,7 +35,7 @@ var ResourceController = {
                   resource: resource,
                   from: container.id,
                   act: 'deliverResource',
-                  target: room.storage.id,
+                  target: room.storage!.id,
                   room: roomObject.name,
                   priority: 40
                 }

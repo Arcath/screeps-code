@@ -1,4 +1,8 @@
-global.SCRIPT_VERSION = require('./version')
+//---------------------------------------------------------
+//    ArcAI2
+//
+//    Written By Adam Laycock <adam@arcath.net>
+//---------------------------------------------------------
 
 //var LZString = require('lz-string')
 var SODB = require('sodb')
@@ -15,14 +19,19 @@ var JobsController = require('./controllers/jobs')
 var LinksActor = require('./actors/links')
 var Pathing = require('./functions/pathing')
 var ResourceController = require('./controllers/resources')
-var RoomObject = require('./objects/room')
+var ObjectRoom = require('./objects/room')
 var SiteObject = require('./objects/site')
 var Stats = require('./functions/stats')
-var Utils = require('./utils')
+import {Utils} from './utils'
 
 
 module.exports.loop = function(){
-  var profiler = {}
+  // Set the script version global.
+  // This is set by grunt to the timestamp of the build.
+  // Forces a new game state when code is comitted.
+  global.SCRIPT_VERSION = require('./version')
+
+  var profiler: NumberList = {}
   profiler.require = Game.cpu.getUsed()
 
   if(global.lastTick && global.LastMemory && Game.time === (global.lastTick + 1)){
@@ -63,12 +72,12 @@ module.exports.loop = function(){
     }
   }
 
-  if(Memory.allianceData.readMembers){
+  if(Memory.allianceData.readMembers && RawMemory.foreignSegment){
     Memory.allianceData.members = JSON.parse(RawMemory.foreignSegment['data'])
     Memory.allianceData.readMembers = false
   }
 
-  if(Memory.allianceData.readDoNotAgress){
+  if(Memory.allianceData.readDoNotAgress && RawMemory.foreignSegment){
     Memory.allianceData.doNotAgress = JSON.parse(RawMemory.foreignSegment['data'])
     Memory.allianceData.readDoNotAgress = false
   }
@@ -92,21 +101,18 @@ module.exports.loop = function(){
   for(var name in Memory.creeps){
     if(!Game.creeps[name]){
       delete Memory.creeps[name]
-      for(var rm in Memory.arc){
-        Memory.arc[rm].newCreep = true
-      } 
       console.log('Clearing non-existing creep memory:', name);
     }
   }
 
   // Get the total of all rcls added together (for state change on RCL up)
   var rclTotal = 0
-  var structureTotal = {}
+  var structureTotal:NumberList = {}
   _.forEach(Game.rooms, function(room){
     if(room.controller){
       if(room.controller.my){
         rclTotal += room.controller.level
-        structureTotal[room.name] = room.find(FIND_STRUCTURES).length
+        structureTotal[room.name.toString()] = room.find(FIND_STRUCTURES).length
       }
     }
   })
@@ -148,7 +154,7 @@ module.exports.loop = function(){
 
     // Build data
     for(var roomName in Game.rooms){
-      var roomObject = RoomObject(Game.rooms[roomName])
+      var roomObject = ObjectRoom(Game.rooms[roomName])
       rooms.add(roomObject)
 
       JobsController.jobsForRoom(roomObject, jobs)
@@ -164,7 +170,7 @@ module.exports.loop = function(){
 
     JobsController.siteJobs(sites, jobs)
 
-    var dbRevisions = {
+    var dbRevisions:DBRevisions = {
       rooms: -1,
       jobs: -1,
       sites: -1,
@@ -205,7 +211,7 @@ module.exports.loop = function(){
     flags.objects = Memory.state.flagObjects
     flags.cache.cache = Memory.state.flagCache
 
-    var dbRevisions = {
+    var dbRevisions:DBRevisions = {
       rooms: rooms.dbRevision,
       jobs: jobs.dbRevision,
       sites: sites.dbRevision,
@@ -230,7 +236,7 @@ module.exports.loop = function(){
   profiler.jobsController = Game.cpu.getUsed() - _.sum(profiler)
 
   // Run the Buildings Controller
-  BuildingsController.run(rooms, jobs, flags)
+  BuildingsController.run(rooms, flags)
 
   profiler.buildingsController = Game.cpu.getUsed() - _.sum(profiler)
 
@@ -262,38 +268,49 @@ module.exports.loop = function(){
 
   // Process the spawn queue
   for(var roomName in Game.rooms){
-    var room = rooms.findOne({name: roomName})
+    var room = <ObjectRoom>rooms.findOne({name: roomName})
 
     if(room){
-      var spawns = Utils.inflate(room.spawns)
+      var spawns = <StructureSpawn[]>Utils.inflate(room.spawns)
 
       _.forEach(spawns, function(spawn){
         if(!spawn.spawning){
-          var queue = spawnQueue.order({room: roomName}, {spawned: false}, 'priority').reverse()[0]
+          var topPriority = spawnQueue.order({room: roomName}, {spawned: false}, 'priority').reverse()[0]
+          if(topPriority){
+            var samePriority = spawnQueue.where({room: roomName}, {spawned: false}, {priority: topPriority.priority})
 
-          if(queue){
-            if(queue.creepType){
-              console.log('Designing ' + queue.creepType + ' for ' + roomName)
-              if(CreepDesigner.extend[queue.creepType]){
-                var extend = CreepDesigner.extend[queue.creepType]
+            var queue = <any>_.sortBy(samePriority, function(entry: any){
+              if(entry.creepType){
+                return 90
               }else{
-                var extend = CreepDesigner.baseDesign[queue.creepType]
+                return entry.creep.length
               }
-              var creep = CreepDesigner.createCreep({
-                base: CreepDesigner.baseDesign[queue.creepType],
-                cap: CreepDesigner.caps[queue.creepType],
-                room: Game.rooms[roomName],
-                extend: extend
-              })
-            }else{
-              var creep = queue.creep
+            })[0]
+
+            if(queue){
+              if(queue.creepType){
+                console.log('Designing ' + queue.creepType + ' for ' + roomName)
+                if(CreepDesigner.extend[queue.creepType]){
+                  var extend = CreepDesigner.extend[queue.creepType]
+                }else{
+                  var extend = CreepDesigner.baseDesign[queue.creepType]
+                }
+                var creep = CreepDesigner.createCreep({
+                  base: CreepDesigner.baseDesign[queue.creepType],
+                  cap: CreepDesigner.caps[queue.creepType],
+                  room: Game.rooms[roomName],
+                  extend: extend
+                })
+              }else{
+                var creep = queue.creep
+              }
+
+              spawn.createCreep(creep, undefined, queue.memory)
+
+              queue.spawned = true
+
+              spawnQueue.update(queue)
             }
-
-            spawn.createCreep(creep, undefined, queue.memory)
-
-            queue.spawned = true
-
-            spawnQueue.update(queue)
           }
         }
       })
@@ -338,5 +355,5 @@ module.exports.loop = function(){
   Memory.stats['profile.memoryInit'] = profiler.memoryInit
   Memory.stats['profile.require'] = profiler.require
 
-  Stats.run(rooms, jobs, sites, flags)
+  Stats.run(rooms, jobs)
 }

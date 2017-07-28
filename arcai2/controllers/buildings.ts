@@ -1,8 +1,8 @@
-var Utils = require('../utils')
+import {Utils} from '../utils'
 
 var BuildingsController = {
-  run: function(rooms, jobs, flags){
-    var myRooms = rooms.where({mine: true})
+  run: function(rooms: SODB, flags: SODB){
+    var myRooms = <ObjectRoom[]>rooms.where({mine: true})
 
     _.forEach(myRooms, function(room){
       var roomFlags = flags.where({room: room.name})
@@ -12,7 +12,7 @@ var BuildingsController = {
       }
 
       if(room.towers.length > 0){
-        BuildingsController.runTowers(room, room.towers)
+        BuildingsController.runTowers(room.towers)
       }
 
       if(Game.time % 20 === 0){
@@ -27,9 +27,9 @@ var BuildingsController = {
 
               var structures = _.filter(pos.look(), function(entry){
                 if(entry.type == 'structure'){
-                  return (entry.structureType == buildingType)
+                  return (entry.structure && entry.structure.structureType == buildingType)
                 }else if(entry.type == 'constructionSite'){
-                  return (entry.structureType == buildingType)
+                  return (entry.constructionSite && entry.constructionSite.structureType == buildingType)
                 }else{
                   return false
                 }
@@ -48,7 +48,7 @@ var BuildingsController = {
     })
   },
 
-  createPaths: function(room, roomFlags, flags){
+  createPaths: function(room: ObjectRoom, roomFlags: object[], flags: SODB){
     var spawnPathFlags = flags.refineSearch(roomFlags, {color: COLOR_ORANGE}, {secondaryColor: COLOR_ORANGE})
 
     _.forEach(spawnPathFlags, function(flagObject){
@@ -83,7 +83,7 @@ var BuildingsController = {
     })
   },
 
-  runTowers: function(room, towers){
+  runTowers: function(towers: SerializedTowers){
     _.forEach(Utils.inflate(towers), function(tower){
       var hostiles = Utils.findHostileCreeps(tower)
 
@@ -92,14 +92,14 @@ var BuildingsController = {
         tower.attack(closestHostile)
       }else{
         var repairTargets = tower.pos.findInRange(FIND_STRUCTURES, 40, {
-          filter: function(structure){
+          filter: function(structure: Structure){
             if(structure.structureType == STRUCTURE_WALL || structure.structureType == STRUCTURE_RAMPART){
               return (
                 structure.hits < 20000
                 ||
-                structure.hits > (tower.room.controller.level * 100000) - 2000
+                structure.hits > (tower.room.controller!.level * 100000) - 2000
                 &&
-                structure.hits < (tower.room.controller.level * 100000) + 1000
+                structure.hits < (tower.room.controller!.level * 100000) + 1000
               )
             }else{
               return (structure.hits < structure.hitsMax)
@@ -108,11 +108,11 @@ var BuildingsController = {
         })
 
         if(repairTargets.length){
-          repairTargets.sort(function(a, b){
+          repairTargets.sort(function(a: Structure, b: Structure){
             return a.hits - b.hits
           })
 
-          tower.repair(repairTargets[0])
+          tower.repair(<Structure>repairTargets[0])
         }
       }
     })

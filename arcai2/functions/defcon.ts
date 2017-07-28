@@ -1,6 +1,6 @@
-const Utils = require ('../utils')
+import {Utils} from '../utils'
 
-module.exports = {
+module.exports = <DefconSystem>{
   run: function(rooms, structureTotal){
     if(!Memory.defcon){
       Memory.defcon = {}
@@ -18,7 +18,7 @@ module.exports = {
 
       roomDefcon.structureCount = structureTotal[roomObject.name]
 
-      var hostileCreeps = Utils.findHostileCreeps({room: room})
+      var hostileCreeps = Utils.findHostileCreeps(<RoomObject>{room: room})
 
       if(hostileCreeps.length == 0){
         roomDefcon.defcon = 0
@@ -48,11 +48,11 @@ module.exports = {
         roomDefcon.count = 0
       }
 
-      if(roomDefcon.count == 50){
+      if(roomDefcon.count == 50 && room.controller){
         room.controller.activateSafeMode()
       }
 
-      if(roomDefcon.defcon >= 1 && (roomDefcon.structureCount < Memory.defcon[room.name].structureCount)){
+      if(roomDefcon.defcon >= 1 && room.controller && (roomDefcon.structureCount < Memory.defcon[room.name].structureCount)){
         room.controller.activateSafeMode()
       }
 

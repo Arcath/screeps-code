@@ -22,14 +22,15 @@ module.exports = function(grunt){
       }
     },
     shell: {
-      webpack: path.join('.', 'node_modules', '.bin', 'webpack')
+      webpack: path.join('.', 'node_modules', '.bin', 'webpack'),
+      typescript: path.join('.', 'node_modules', '.bin', 'tsc')
     },
     file_append: {
       versioning: {
         files: [
           {
             prepend: "\nmodule.exports = "+ currentdate.getTime() + "\n",
-            input: 'arcai2/version.js',
+            input: 'lib/version.js',
             output: 'dist/version.js'
           }
         ]
@@ -37,5 +38,5 @@ module.exports = function(grunt){
     }
   })
 
-  grunt.registerTask('publish', ['shell:webpack', 'file_append', 'screeps'])
+  grunt.registerTask('publish', ['shell:typescript', 'shell:webpack', 'file_append', 'screeps'])
 }

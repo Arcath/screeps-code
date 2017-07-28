@@ -1,21 +1,19 @@
-var SODB = require('sodb')
-
 var CreepDesigner = require('../functions/creepDesigner')
-var Utils = require('../utils')
+import {Utils} from '../utils'
 
 module.exports = {
-  run: function(rooms, jobs, spawnQueue){
-    var myRooms = rooms.where({mine: true})
+  run: function(rooms: SODB, jobs: SODB, spawnQueue: SODB){
+    var myRooms = <ObjectRoom[]>rooms.where({mine: true})
 
     _.forEach(myRooms, function(roomObject){
-      var roomJobs = jobs.where({room: roomObject.name})
+      var roomJobs = <ObjectJob[]>jobs.where({room: roomObject.name})
 
-      var distroJobs = jobs.refineSearch(roomJobs, {collect: 'distribute'})
-      var harvestJobs = jobs.refineSearch(roomJobs, {collect: 'harvest'})
-      var siteJobs = jobs.refineSearch(roomJobs, {act: 'build'})
-      var extractJobs = jobs.refineSearch(roomJobs, {collect: 'extract'})
-      var supplyJobs = jobs.refineSearch(roomJobs, {collect: 'supply'})
-      var repairJobs = jobs.refineSearch(roomJobs, {act: 'repair'})
+      var distroJobs = <DistroJob[]>jobs.refineSearch(roomJobs, {collect: 'distribute'})
+      var harvestJobs = <HarvestJob[]>jobs.refineSearch(roomJobs, {collect: 'harvest'})
+      var siteJobs = <ObjectJob[]>jobs.refineSearch(roomJobs, {act: 'build'})
+      var extractJobs = <ObjectJob[]>jobs.refineSearch(roomJobs, {collect: 'extract'})
+      var supplyJobs = <ObjectJob[]>jobs.refineSearch(roomJobs, {collect: 'supply'})
+      var repairJobs = <ObjectJob[]>jobs.refineSearch(roomJobs, {act: 'repair'})
 
       if(supplyJobs.length > 0){
         var supplyCreeps = _.filter(Game.creeps, function(creep){
@@ -40,7 +38,7 @@ module.exports = {
       _.forEach(harvestJobs, function(job){
         var creeps = Utils.findCreepsForJob(job)
         var workRate = Utils.workRate(creeps, 2)
-        var source = Game.getObjectById(job.source)
+        var source = <Source>Game.getObjectById(job.source)
 
         totalWorkRate += workRate
 
@@ -88,7 +86,9 @@ module.exports = {
           return (cr.room.name == roomObject.name && cr.memory.actFilter == 'deliver')
         })
 
-        if(creepsInRoom.length == 0){
+        var container = <StructureContainer>Game.getObjectById(job.from)
+
+        if(creepsInRoom.length == 0 && container.store.energy > 400){
           var canAffordOnly = true
         }else{
           var canAffordOnly = false
@@ -114,7 +114,7 @@ module.exports = {
       })
 
       if(siteJobs.length > 0){
-        var numBuilders = _.min([parseInt((siteJobs.length / 10) + 1), 3])
+        var numBuilders = _.min([(siteJobs.length / 10) + 1, 3])
 
         var builderCreeps = _.filter(Game.creeps, function(creep){
           return (creep.memory.actFilter == 'build' && creep.room.name == roomObject.name)
@@ -157,7 +157,7 @@ module.exports = {
       }
 
       if(upgraderCreeps.length < upgraderCount && roomObject.recycleContainers.length > 0){
-        var upgradeJob = jobs.refineSearch(roomJobs, {act: 'upgrade'})[0]
+        var upgradeJob = <ObjectJob>jobs.refineSearch(roomJobs, {act: 'upgrade'})[0]
 
         spawnQueue.add({
           creepType: 'upgrader',

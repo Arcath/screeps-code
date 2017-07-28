@@ -1,5 +1,5 @@
 module.exports = {
-  buildCostMatrix: function(flags){
+  buildCostMatrix: function(flags: SODB){
     var pathingFlags = flags.where({color: COLOR_ORANGE}, {secondaryColor: COLOR_WHITE})
 
     _.forEach(pathingFlags, function(flagObject){
@@ -10,7 +10,7 @@ module.exports = {
       }else{
         var matrix = new PathFinder.CostMatrix
 
-        var sourceKeepers = _.filter(flag.room.find(FIND_STRUCTURES), function(structure){
+        var sourceKeepers = _.filter(flag.room.find(FIND_STRUCTURES), function(structure: Structure){
           return (structure.structureType == STRUCTURE_KEEPER_LAIR)
         })
 
@@ -18,9 +18,9 @@ module.exports = {
           var sources = flag.room.find(FIND_SOURCES)
           var minerals = flag.room.find(FIND_MINERALS)
 
-          var avoids = [].concat(sources, minerals)
+          var avoids = [].concat(<never[]>sources, <never[]>minerals)
 
-          _.forEach(avoids, function(avoid){
+          _.forEach(avoids, function(avoid: RoomObject){
             var x = avoid.pos.x - 5
             var yStart = avoid.pos.y - 5
 

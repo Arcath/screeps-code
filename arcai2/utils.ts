@@ -1,26 +1,39 @@
 var SHA1 = require('crypto-js/sha1')
 
-module.exports = {
-  inflate: function(ids){
-    return _.transform(ids, function(result, id){
-      result.push(Game.getObjectById(id))
-    })
-  },
+/** Takes an array of game ids and returns an array of game objects */
+function inflateFunction(ids: SerializedContainers): StructureContainer[]
+function inflateFunction(ids: SerializedExtensions): StructureExtension[]
+function inflateFunction(ids: SerializedExtractors): StructureExtractor[]
+function inflateFunction(ids: SerializedLinks): StructureLink[]
+function inflateFunction(ids: SerializedMinerals): Mineral[]
+function inflateFunction(ids: SerializedRamparts): StructureRampart[]
+function inflateFunction(ids: SerializedSources): Source[]
+function inflateFunction(ids: SerializedSpawns): StructureSpawn[]
+function inflateFunction(ids: SerializedTowers): StructureTower[]
+function inflateFunction(ids: SerializedWalls): StructureWall[]
+function inflateFunction(ids: string[]): any[]{
+  return _.transform(ids, function(result, id){
+    result.push(Game.getObjectById(id))
+  })
+}
 
-  deflate: function(objects){
-    return _.transform(objects, function(result, object){
+export const Utils = {
+  inflate: inflateFunction,
+
+  deflate: function(objects: any[]){
+    return <string[]>_.transform(objects, function(result, object){
       result.push(object.id)
     })
   },
 
-  hash: function(object){
+  hash: function(object: object){
     var string = JSON.stringify(object)
     var hash = SHA1(string)
 
     return hash.toString()
   },
 
-  addWithHash: function(object, database){
+  addWithHash: function(object: ObjectJob, database: SODB){
     // Create a Hash of the object
     var hash = this.hash(object)
 
@@ -31,7 +44,7 @@ module.exports = {
     database.add(object)
   },
 
-  addIfNotExist: function(object, database){
+  addIfNotExist: function(object: ObjectJob, database: SODB){
     var hash = this.hash(object)
     object.hash = hash
 
@@ -42,7 +55,7 @@ module.exports = {
     }
   },
 
-  findCreepsForJob: function(job, ttl = 0){
+  findCreepsForJob: function(job: ObjectJob, ttl = 0){
     return _.filter(Game.creeps, function(creep){
       if(creep.memory.jobHash == job.hash){
         if(creep.ticksToLive){
@@ -56,15 +69,15 @@ module.exports = {
     })
   },
 
-  findCreepForJob: function(job, ttl = 0){
+  findCreepForJob: function(job: ObjectJob, ttl = 0){
     return this.findCreepsForJob(job, ttl)[0]
   },
 
-  jobForTarget: function(target, jobs){
-    return jobs.findOne({target: target.id})
+  jobForTarget: function(target: GameObject, jobs: SODB){
+    return <ObjectJob>jobs.findOne({target: target.id})
   },
 
-  workRate: function(creeps, perWorkPart){
+  workRate: function(creeps: Creep[], perWorkPart: number){
     var workRate = 0
 
     _.forEach(creeps, function(creep){
@@ -78,14 +91,14 @@ module.exports = {
     return workRate
   },
 
-  myNearestRoom: function(roomName, rooms, minCost = 0){
+  myNearestRoom: function(roomName: string, rooms: SODB, minCost = 0){
     var myRooms = rooms.where({mine: true}, {spawnable: true}, {name: {isnot: roomName}})
 
-    var nearestRoom
+    var nearestRoom = ''
     var nearestRoomDistance = 999
     var nearestRCL = 0
 
-    _.forEach(myRooms, function(room){
+    _.forEach(myRooms, function(room: ObjectRoom){
       var distance = Game.map.getRoomLinearDistance(roomName, room.name)
 
       var roomInstance = Game.rooms[room.name]
@@ -99,10 +112,17 @@ module.exports = {
       }
     })
 
-    return nearestRoom
+    return <string>nearestRoom
   },
 
-  moveCreep: function(creep, target, color, options = {}){
+  moveCreep: function(
+    creep: Creep,
+    target: RoomPosition,
+    color: string,
+    options:{
+      waypoint?: string
+    } = {}
+  ){
     if(options.waypoint && !creep.memory.waypointed && Game.flags[options.waypoint]){
       if(creep.pos.inRangeTo(Game.flags[options.waypoint].pos, 1)){
         creep.memory.waypointed = true
@@ -122,7 +142,7 @@ module.exports = {
         },
         costCallback: function(roomName, costMatrix){
           if(!Memory.costMatrix[roomName]){
-            return
+            return costMatrix
           }else{
             var myMatrix = PathFinder.CostMatrix.deserialize(Memory.costMatrix[roomName])
 
@@ -134,13 +154,18 @@ module.exports = {
     }
   },
 
-  findHostileCreeps: function(unit){
-    return _.filter(unit.room.find(FIND_HOSTILE_CREEPS), function(creep){
+  findHostileCreeps: function(unit: RoomObject){
+    if(unit.room){
+      var creeps = <Creep[]>unit.room.find(FIND_HOSTILE_CREEPS)
+    }else{
+      var creeps = <Creep[]>[]
+    }
+    return _.filter(creeps, function(creep){
       return (Memory.allianceData.doNotAgress.indexOf(creep.owner.username) == -1)
     })
   },
 
-  hasBodyPart: function(body, part){
+  hasBodyPart: function(body: BodyPartDefinition[], part: string){
     for(var bodyPart in body){
       if(body[bodyPart].type == part){
         return true

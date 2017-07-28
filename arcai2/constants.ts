@@ -1,4 +1,4 @@
-var constants = {
+var constants: Constants = {
   parties: {}
 }
 
