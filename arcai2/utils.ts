@@ -4,6 +4,7 @@ var SHA1 = require('crypto-js/sha1')
 function inflateFunction(ids: SerializedContainers): StructureContainer[]
 function inflateFunction(ids: SerializedExtensions): StructureExtension[]
 function inflateFunction(ids: SerializedExtractors): StructureExtractor[]
+function inflateFunction(ids: SerializedLabs): StructureLab[]
 function inflateFunction(ids: SerializedLinks): StructureLink[]
 function inflateFunction(ids: SerializedMinerals): Mineral[]
 function inflateFunction(ids: SerializedRamparts): StructureRampart[]

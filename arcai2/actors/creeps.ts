@@ -529,6 +529,20 @@ var CreepsActor = {
         if(creep.withdraw(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
           Utils.moveCreep(creep, flag.pos, '#f1c40f')
         }
+      }else{
+        if(creep.room.name == flag.room.name){
+          let power = <Resource[]>_.filter(creep.room.find(FIND_DROPPED_RESOURCES), function(resource: Resource){
+            return (resource.resourceType == RESOURCE_POWER)
+          })
+
+          if(power.length){
+            if(creep.pickup(power[0]) == ERR_NOT_IN_RANGE){
+              Utils.moveCreep(creep, power[0].pos, '#f1c40f')
+            }
+          }else{
+            Utils.moveCreep(creep, flag.pos, '#f1c40f')
+          }
+        }
       }
     }else{
       Utils.moveCreep(creep, flag.pos, '#f1c40f')

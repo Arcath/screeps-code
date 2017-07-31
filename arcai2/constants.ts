@@ -33,8 +33,8 @@ constants.parties[COLOR_RED] = [
   ]
 ]
 
-constants.parties[COLOR_RED][1]= constants.parties[COLOR_RED][0]
-constants.parties[COLOR_RED][2]= constants.parties[COLOR_RED][0]
+constants.parties[COLOR_RED][1] = constants.parties[COLOR_RED][0]
+constants.parties[COLOR_RED][2] = constants.parties[COLOR_RED][0]
 
 constants.parties[COLOR_GREEN] = [
   [
@@ -57,7 +57,44 @@ constants.parties[COLOR_GREEN] = [
   ]
 ]
 
-constants.parties[COLOR_GREEN][1]= constants.parties[COLOR_GREEN][0]
-constants.parties[COLOR_GREEN][2]= constants.parties[COLOR_GREEN][0]
+constants.parties[COLOR_GREEN][1] = constants.parties[COLOR_GREEN][0]
+constants.parties[COLOR_GREEN][2] = constants.parties[COLOR_GREEN][0]
+
+constants.parties[COLOR_BROWN] = [
+  [
+    MOVE,
+    MOVE,
+    MOVE,
+    MOVE,
+    MOVE,
+    MOVE,
+    MOVE,
+    MOVE,
+    MOVE,
+    MOVE,
+    ATTACK,
+    ATTACK,
+    ATTACK,
+    ATTACK,
+    ATTACK,
+    ATTACK,
+    ATTACK,
+    ATTACK,
+    ATTACK,
+    ATTACK,
+    ATTACK,
+    ATTACK,
+    ATTACK,
+    ATTACK,
+    ATTACK,
+    ATTACK,
+    ATTACK,
+    ATTACK,
+    ATTACK,
+    ATTACK
+  ],
+  constants.parties[COLOR_GREEN][0],
+  constants.parties[COLOR_GREEN][0]
+]
 
 module.exports = constants

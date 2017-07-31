@@ -415,6 +415,7 @@ var FlagsController = {
               jobHash: job.hash
             },
             spawned: false,
+            priority: 30,
             room: Utils.myNearestRoom(flagObject.room, rooms, creepCost)
           })
         }else{

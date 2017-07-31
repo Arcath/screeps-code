@@ -123,6 +123,14 @@ var JobsController = {
 
       energyJobsProfiler[room.name + 'storage'] = Game.cpu.getUsed() - _.sum(energyJobsProfiler)
       Memory.stats['methodProfiles.energyJobs.' + room.name + 'storage'] = energyJobsProfiler[room.name + 'storage']
+
+      var labs = Utils.inflate(room.labs)
+      _.forEach(labs, function(lab){
+        JobsController.energyJobForBuilding(lab, 91, jobs, room.name)
+      })
+
+      energyJobsProfiler[room.name + 'labs'] = Game.cpu.getUsed() - _.sum(energyJobsProfiler)
+      Memory.stats['methodProfiles.energyJobs.' + room.name + 'labs'] = energyJobsProfiler[room.name + 'labs']
     })
   },
 

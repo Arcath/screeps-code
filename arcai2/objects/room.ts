@@ -139,6 +139,10 @@ module.exports = function(room: Room){
     var level = 0
   }
 
+  var labs = _.filter(structures, function(structure: Structure){
+    return (structure.structureType == STRUCTURE_LAB)
+  })
+
   var objectRoom: ObjectRoom = {
     coreLinks: <SerializedLinks>Utils.deflate(coreLinks),
     energyAvailable: room.energyAvailable,
@@ -148,6 +152,7 @@ module.exports = function(room: Room){
     extensions: <SerializedExtensions>Utils.deflate(extensions),
     extractors: <SerializedExtractors>Utils.deflate(extractors),
     generalContainers: <SerializedContainers>Utils.deflate(generalContainers),
+    labs: <SerializedLabs>Utils.deflate(labs),
     links: <SerializedLinks>Utils.deflate(links),
     minerals: <SerializedMinerals>Utils.deflate(room.find(FIND_MINERALS)),
     mine: mine,

@@ -62,6 +62,7 @@ interface SerializedIds extends Array<string> { _type: string }
 interface SerializedContainers extends SerializedIds { _type: 'container' }
 interface SerializedExtensions extends SerializedIds { _type: 'extension' }
 interface SerializedExtractors extends SerializedIds { _type: 'extractor' }
+interface SerializedLabs extends SerializedIds { _type: 'lab' }
 interface SerializedLinks extends SerializedIds { _type: 'link' }
 interface SerializedMinerals extends SerializedIds { _type: 'mineral' }
 interface SerializedRamparts extends SerializedIds { _type: 'rampart' }
@@ -83,6 +84,7 @@ interface ObjectRoom{
   extensions: SerializedExtensions
   extractors: SerializedExtractors
   generalContainers: SerializedContainers
+  labs: SerializedLabs
   links: SerializedLinks
   minerals: SerializedMinerals
   mine: boolean
