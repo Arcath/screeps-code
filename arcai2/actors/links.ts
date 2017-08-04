@@ -15,7 +15,7 @@ module.exports = {
             var needed = coreLink.energyCapacity - coreLink.energy - 30
 
             _.forEach(sourceLinks, function(sourceLink){
-              if(needed > 0){
+              if(needed > 0 && sourceLink.cooldown == 0){
                 var energy = sourceLink.energy
                 sourceLink.transferEnergy(coreLink)
 
@@ -24,7 +24,7 @@ module.exports = {
             })
 
             _.forEach(exitLinks, function(exitLink){
-              if(needed > 0){
+              if(needed > 0 && exitLink.cooldown == 0){
                 var energy = exitLink.energy
                 exitLink.transferEnergy(coreLink)
 

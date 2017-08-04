@@ -11,6 +11,7 @@ module.exports = {
     Memory.stats['cpu.limit'] = Game.cpu.limit
     Memory.stats['cpu.bucket'] = Game.cpu.bucket
     Memory.stats['memory.size'] = RawMemory.get().length
+    Memory.stats['market.credits'] = Game.market.credits
 
 
     Memory.stats['jobs.count'] = jobs.count()
@@ -23,6 +24,7 @@ module.exports = {
       if(room.controller){
         Memory.stats['room.' + room.name + '.controllerProgress'] = room.controller.progress
         Memory.stats['room.' + room.name + '.controllerProgressTotal'] = room.controller.progressTotal
+        Memory.stats['room.' + room.name + '.level'] = room.controller.level
       }
 
       var roomJobs = jobs.where({room: room.name})

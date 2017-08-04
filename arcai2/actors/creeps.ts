@@ -155,6 +155,10 @@ var CreepsActor = {
       actJobs = <ObjectJob[]>jobs.refineSearch(actJobs, {act: creep.memory.actFilter})
     }
 
+    if(creep.memory.collectFilter){
+      actJobs = <ObjectJob[]>jobs.refineSearch(actJobs, {collect: creep.memory.collectFilter})
+    }
+
     actJobs.sort(function(a, b){
       return (a.priority! - b.priority!)
     }).reverse()
@@ -216,6 +220,10 @@ var CreepsActor = {
       openJobs = <ObjectJob[]>jobs.refineSearch(openJobs, {act: creep.memory.actFilter})
     }
 
+    if(creep.memory.collectFilter){
+      openJobs = <ObjectJob[]>jobs.refineSearch(openJobs, {collect: creep.memory.collectFilter})
+    }
+
     if(openJobs[0]){
       creep.memory.jobHash = openJobs[0].hash
     }else{
@@ -266,8 +274,19 @@ var CreepsActor = {
   },
 
   upgrade: function(creep: Creep){
-    if(creep.room && creep.room.controller && creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE){
-      Utils.moveCreep(creep, creep.room.controller.pos, '#2ecc71')
+    if(Memory.labAssignments[creep.room.name][RESOURCE_CATALYZED_GHODIUM_ACID] && !creep.memory.boosted){
+      var lab = <StructureLab>Game.getObjectById(Memory.labAssignments[creep.room.name][RESOURCE_CATALYZED_GHODIUM_ACID][0])
+
+      if(creep.pos.isNearTo(lab)){
+        lab.boostCreep(creep)
+        creep.memory.boosted = true
+      }else{
+        Utils.moveCreep(creep, lab.pos, '#16a085')
+      }
+    }else{
+      if(creep.room && creep.room.controller && creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE){
+        Utils.moveCreep(creep, creep.room.controller.pos, '#2ecc71')
+      }
     }
   },
 
@@ -477,6 +496,12 @@ var CreepsActor = {
   supply: function(creep: Creep, job: SupplyJob){
     var container = <StructureContainer>Game.getObjectById(job.from)
 
+    if(creep.room.storage){
+      let carrying = Utils.creepCarrying(creep)
+
+      console.log(carrying)
+    }
+
     if(container){
       switch(creep.withdraw(container, job.resource)){
         case ERR_NOT_IN_RANGE:
@@ -492,6 +517,27 @@ var CreepsActor = {
 
   deliverResource: function(creep: Creep, job: DeliverResourceJob){
     var target = <StructureContainer>Game.getObjectById(job.target)
+
+    if(creep.room.storage && !job.skipCheck){
+      let carrying = Utils.creepCarrying(creep)
+      let end = false
+
+      _.forEach(carrying, function(resourceType){
+        if(resourceType != job.resource){
+          CreepsActor.deliverResource(creep, {
+            resource: resourceType,
+            target: creep.room.storage!.id,
+            priority: job.priority,
+            collect: 'supply',
+            skipCheck: true
+          })
+          end = true
+        }
+      })
+
+      if(end){ return }
+    }
+
     if(target){
       switch(creep.transfer(target, job.resource)){
         case ERR_NOT_IN_RANGE:

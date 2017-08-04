@@ -14,6 +14,7 @@ module.exports = {
       var extractJobs = <ObjectJob[]>jobs.refineSearch(roomJobs, {collect: 'extract'})
       var supplyJobs = <ObjectJob[]>jobs.refineSearch(roomJobs, {collect: 'supply'})
       var repairJobs = <ObjectJob[]>jobs.refineSearch(roomJobs, {act: 'repair'})
+      var creepTypeJobs = <ObjectJob[]>jobs.refineSearch(roomJobs, {creepType: {defined: true}})
 
       if(supplyJobs.length > 0){
         var supplyCreeps = _.filter(Game.creeps, function(creep){
@@ -210,6 +211,24 @@ module.exports = {
             room: roomObject.name
           })
         }
+      }
+
+      if(creepTypeJobs.length > 0){
+        _.forEach(creepTypeJobs, function(job){
+          let creeps = Utils.findCreepsForJob(job)
+
+          if(creeps.length < job.creepCount!){
+            spawnQueue.add({
+              creepType: job.creepType,
+              memory: {
+                jobHash: job.hash
+              },
+              priority: job.priority,
+              spawned: false,
+              room: roomObject.name
+            })
+          }
+        })
       }
     })
   }

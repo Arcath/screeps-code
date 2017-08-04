@@ -43,7 +43,7 @@ var FlagsController = {
       }
 
       if(!Utils.findCreepForJob(siteJob, 200)){
-        var nearestRoom = Utils.myNearestRoom(flag.room!.name, rooms)
+        var nearestRoom = Utils.myNearestRoom(flag.room!.name, rooms, 600)
 
         spawnQueue.add({
           creep: CreepDesigner.createCreep({
@@ -407,17 +407,26 @@ var FlagsController = {
         var creeps = Utils.findCreepsForJob(job)
 
         if(creeps.length < party.length){
-          var creepCost = CreepDesigner.creepCost(party[creeps.length])
+          for(let i = 0; i < party.length; i++){
+            var thisCreep = _.filter(creeps, function(creep){
+              return (creep.memory.partyIndex == i)
+            })
 
-          spawnQueue.add({
-            creep: party[creeps.length],
-            memory: {
-              jobHash: job.hash
-            },
-            spawned: false,
-            priority: 30,
-            room: Utils.myNearestRoom(flagObject.room, rooms, creepCost)
-          })
+            if(!thisCreep.length){
+              var creepCost = CreepDesigner.creepCost(party[i])
+
+              spawnQueue.add({
+                creep: party[i],
+                memory: {
+                  jobHash: job.hash,
+                  partyIndex: i
+                },
+                spawned: false,
+                priority: 30,
+                room: Utils.myNearestRoom(flagObject.room, rooms, creepCost)
+              })
+            }
+          }
         }else{
           var readyCount = 0
           _.forEach(creeps, function(creep){

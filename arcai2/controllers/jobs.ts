@@ -38,12 +38,26 @@ var JobsController = {
       })
 
       _.forEach(roomObject.coreLinks, function(link){
-        Utils.addWithHash(<DistroJob>{
-          collect: 'distribute',
-          from: link,
-          room: roomObject.name,
-          priority: 90
-        }, jobs)
+        if(roomObject.storage){
+          Utils.addWithHash(<DistroJob>{
+            collect: 'sourceCollect',
+            from: link,
+            priority: 90,
+            act: 'deliverResource',
+            resource: RESOURCE_ENERGY,
+            target: roomObject.storage,
+            room: roomObject.name,
+            creepType: 'move',
+            creepCount: 1
+          }, jobs)
+        }else{
+          Utils.addWithHash(<DistroJob>{
+            collect: 'distribute',
+            from: link,
+            room: roomObject.name,
+            priority: 90
+          }, jobs)
+        }
       })
 
       // Create the permermant upgrade job
@@ -131,6 +145,25 @@ var JobsController = {
 
       energyJobsProfiler[room.name + 'labs'] = Game.cpu.getUsed() - _.sum(energyJobsProfiler)
       Memory.stats['methodProfiles.energyJobs.' + room.name + 'labs'] = energyJobsProfiler[room.name + 'labs']
+
+      if(room.terminal){
+        let terminal = <StructureTerminal>Game.getObjectById(room.terminal)
+
+        JobsController.energyJobForBuilding(terminal, 91, jobs, room.name)
+
+        var storage = <StructureStorage>Game.getObjectById(room.storage)
+
+        if(storage){
+          if(storage.store.energy < 300000 && terminal.store.energy > 50000){
+            Utils.addIfNotExist(<DistroJob>{
+              collect: 'distribute',
+              from: room.terminal,
+              room: room.name,
+              priority: 90
+            }, jobs)
+          }
+        }
+      }
     })
   },
 
@@ -152,6 +185,10 @@ var JobsController = {
       if(Memory.defcon[roomName].defcon != 0){
         priority = 200
       }
+    }
+
+    if(building.structureType == STRUCTURE_TERMINAL){
+      capacity = 5000
     }
 
     if(Memory.jobPremades[building.id]){

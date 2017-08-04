@@ -16,12 +16,14 @@ var Defcon = require('./functions/defcon')
 var FlagObject = require('./objects/flag')
 var FlagsController = require('./controllers/flags')
 var JobsController = require('./controllers/jobs')
+var LabsController = require('./controllers/labs')
 var LinksActor = require('./actors/links')
 var Pathing = require('./functions/pathing')
 var ResourceController = require('./controllers/resources')
 var ObjectRoom = require('./objects/room')
 var SiteObject = require('./objects/site')
 var Stats = require('./functions/stats')
+var TerminalActor = require('./actors/terminals')
 import {Utils} from './utils'
 
 
@@ -249,6 +251,12 @@ module.exports.loop = function(){
   Pathing.buildCostMatrix(flags)
 
   profiler.pathing = Game.cpu.getUsed() - _.sum(profiler)
+
+  // Run the labs system
+  LabsController.run(rooms)
+
+  // Run the Terminal actors
+  TerminalActor.run(rooms)
 
   // Run the Creeps Controller
   CreepsController.run(rooms, jobs, spawnQueue)

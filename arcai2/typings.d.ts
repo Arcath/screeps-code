@@ -115,6 +115,9 @@ interface ObjectJob{
   target?: string
   room?: string
   changed?: boolean
+  creepType?: string
+  creepCount?: number
+  skipCheck?: boolean
 }
 
 interface DismantleJob extends ObjectJob { dismantle: string }

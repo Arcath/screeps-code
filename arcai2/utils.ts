@@ -174,5 +174,35 @@ export const Utils = {
     }
 
     return false
+  },
+
+  buyResource(roomName: string, resource: string){
+    let orders = _.filter(Game.market.getAllOrders(), function(order){
+      return (
+        order.resourceType == resource
+        &&
+        order.type == ORDER_SELL
+        &&
+        Game.market.calcTransactionCost(1000, roomName, order.roomName!) < 1000
+      )
+    })
+
+    if(orders.length){
+      let cheapest = _.sortBy(orders, 'amount')[0]
+
+      Game.market.deal(cheapest.id, _.min([cheapest.amount, 1000]), roomName)
+    }
+  },
+
+  creepCarrying(creep: Creep){
+    let carrying = <string[]>[]
+
+    _.forEach(Object.keys(creep.carry), function(resourceType){
+      if(creep.carry[resourceType] && creep.carry[resourceType] != 0){
+        carrying.push(resourceType)
+      }
+    })
+
+    return carrying
   }
 }
