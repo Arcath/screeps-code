@@ -1,6 +1,6 @@
 module.exports = function(site: ConstructionSite){
   if(site.structureType == STRUCTURE_EXTENSION){
-    if(site.room && site.room.controller && site.room.controller.level < 3){
+    if(site.room && site.room.controller && site.room.controller.level < 4){
       var priority = 110
     }else{
       var priority = 50
