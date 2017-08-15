@@ -17,25 +17,27 @@ let TerminalActor = {
         }
       }
 
-      _.forEach(Object.keys(terminal.store), function(resource){
-        if(resource != RESOURCE_ENERGY && terminal.store[resource] > 1001){
-          let orders = _.filter(Game.market.getAllOrders(), function(order){
-            return (
-              order.resourceType == resource
-              &&
-              order.type == ORDER_BUY
-              &&
-              Game.market.calcTransactionCost(1000, terminal.room.name, order.roomName!) < 5000
-            )
-          })
+      if(terminal.store.energy > 2000){
+        _.forEach(Object.keys(terminal.store), function(resource){
+          if(resource != RESOURCE_ENERGY && terminal.store[resource] > 1001){
+            let orders = _.filter(Game.market.getAllOrders(), function(order){
+              return (
+                order.resourceType == resource
+                &&
+                order.type == ORDER_BUY
+                &&
+                Game.market.calcTransactionCost(1000, terminal.room.name, order.roomName!) < 5000
+              )
+            })
 
-          if(orders.length){
-            let best = _.sortBy(orders, 'price')[0]
+            if(orders.length){
+              let best = _.sortBy(orders, 'price')[0]
 
-            Game.market.deal(best.id, _.min([best.amount, terminal.store[resource]]), terminal.room.name)
+              Game.market.deal(best.id, _.min([best.amount, terminal.store[resource]]), terminal.room.name)
+            }
           }
-        }
-      })
+        })
+      }
     })
 
     _.forEach(recRooms, function(recTerm){
