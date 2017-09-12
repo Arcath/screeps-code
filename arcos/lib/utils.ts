@@ -1,6 +1,7 @@
 import {CreepBuilder} from './creepBuilder'
 import {Kernel} from '../os/kernel'
 import {Process} from '../os/process'
+import {RoomPathFinder} from './roomPathFinder'
 
 export const Utils = {
   clearDeadCreeps: function(list: string[]){
@@ -58,6 +59,23 @@ export const Utils = {
     }
 
     return <Structure>creep.pos.findClosestByRange(withdraws)
+  },
+
+  /** Returns the room closest to the source room with the required spawn energy */
+  nearestRoom(sourceRoom: string, minSpawnEnergy = 0){
+    let paths: {}[] = []
+
+    _.forEach(Game.rooms, function(room){
+      if(room.controller && room.controller.my){
+        if(room.energyCapacityAvailable > minSpawnEnergy){
+          let path = new RoomPathFinder(sourceRoom, room.name)
+
+          paths.push(path.results())
+        }
+      }
+    })
+
+    console.log(JSON.stringify(paths))
   }
 
   /*roomDeliveryTarget(kernel: Kernel, roomName: string){
