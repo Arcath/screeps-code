@@ -12,9 +12,10 @@ module.exports = function(grunt){
   grunt.initConfig({
     screeps: {
       options: {
+        server: data.server,
         email: data.email,
         password: data.password,
-        branch: 'arcai3',
+        branch: data.branch,
         ptr: false
       },
       dist: {
