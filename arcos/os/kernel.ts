@@ -18,6 +18,8 @@ import {SuspensionProcess} from '../processTypes/system/suspension'
 import {UpgradeProcess} from '../processTypes/creepActions/upgrade'
 import {UpgraderLifetimeProcess} from '../processTypes/lifetimes/upgrader'
 
+import {Stats} from '../lib/stats'
+
 const processTypes = <{[type: string]: any}>{
   'build': BuildProcess,
   'blf': BuilderLifetimeProcess,
@@ -61,7 +63,8 @@ export class Kernel{
     usedSpawns: []
   }
 
-  execOrder: string[] = []
+  execOrder: {}[] = []
+  suspendCount = 0
 
   /**  Creates a new kernel ensuring that memory exists and re-loads the process table from the last. */
   constructor(){
@@ -108,6 +111,8 @@ export class Kernel{
     //  console.log(JSON.stringify(this.execOrder))
     //}
 
+    Stats.build(this)
+
     Memory.arcos.processTable = list
   }
 
@@ -131,7 +136,11 @@ export class Kernel{
       console.log('process ' + process.name + ' failed with error ' + e)
     }
 
-    this.execOrder.push(process.name + '(' + Math.round((Game.cpu.getUsed() - cpuUsed) * 10) / 10 + ')')
+    this.execOrder.push({
+      name: process.name,
+      cpu: Game.cpu.getUsed() - cpuUsed,
+      type: process.type
+    })
 
     process.ticked = true
 

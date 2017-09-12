@@ -5,8 +5,10 @@ export class SuspensionProcess extends Process{
   /** Run the SuspensionProcess process */
   run(){
     let proc = this
+    proc.kernel.suspendCount = 0
     _.forEach(proc.kernel.processTable, function(process){
       if(!process.suspend === false){
+        proc.kernel.suspendCount += 1
         if(typeof process.suspend === 'number' && proc.metaData.master){
           process.suspend -= 1
           if(process.suspend === 0){
