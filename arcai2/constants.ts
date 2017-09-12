@@ -94,6 +94,7 @@ constants.parties[COLOR_BROWN] = [
     ATTACK
   ],
   constants.parties[COLOR_GREEN][0],
+  constants.parties[COLOR_GREEN][0],
   constants.parties[COLOR_GREEN][0]
 ]
 
