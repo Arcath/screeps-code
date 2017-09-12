@@ -7,6 +7,8 @@ import {StructureManagementProcess} from '../management/structure'
 import {SuspensionProcess} from './suspension'
 
 export class InitProcess extends Process{
+  type = 'init'
+
   /** Run the init process */
   run(){
     let proc = this

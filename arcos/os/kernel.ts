@@ -144,7 +144,7 @@ export class Kernel{
 
     process.ticked = true
 
-    if(process.completed){
+    if(process.completed && process.type != 'suspend' && process.type != 'init'){
       this.addProcess(SuspensionProcess, 'suspension-post-' + process.name, 99, {master: false})
     }
   }
