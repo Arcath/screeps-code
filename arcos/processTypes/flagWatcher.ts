@@ -1,4 +1,4 @@
-import {ClaimProcess} from './creepActions/claim'
+import {ClaimProcess} from './empireActions/claim'
 import {Process} from '../os/process'
 
 export class FlagWatcherProcess extends Process{

@@ -2,7 +2,7 @@ import {Process} from './process'
 
 import {BuildProcess} from '../processTypes/creepActions/build'
 import {BuilderLifetimeProcess} from '../processTypes/lifetimes/builder'
-import {ClaimProcess} from '../processTypes/creepActions/claim'
+import {ClaimProcess} from '../processTypes/empireActions/claim'
 import {CollectProcess} from '../processTypes/creepActions/collect'
 import {DeliverProcess} from '../processTypes/creepActions/deliver'
 import {DistroLifetimeProcess} from '../processTypes/lifetimes/distro'
@@ -11,6 +11,7 @@ import {InitProcess} from '../processTypes/system/init'
 import {HarvestProcess} from '../processTypes/creepActions/harvest'
 import {HarvesterLifetimeProcess} from '../processTypes/lifetimes/harvester'
 import {MoveProcess} from '../processTypes/creepActions/move'
+import {RemoteBuilderLifetimeProcess} from '../processTypes/lifetimes/remoteBuilder'
 import {RepairProcess} from '../processTypes/creepActions/repair'
 import {RepairerLifetimeProcess} from '../processTypes/lifetimes/repairer'
 import {StructureManagementProcess} from '../processTypes/management/structure'
@@ -31,6 +32,7 @@ const processTypes = <{[type: string]: any}>{
   'harvest': HarvestProcess,
   'hlf': HarvesterLifetimeProcess,
   'move': MoveProcess,
+  'rblf': RemoteBuilderLifetimeProcess,
   'repair': RepairProcess,
   'rlf': RepairerLifetimeProcess,
   'sm': StructureManagementProcess,

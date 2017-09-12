@@ -1,6 +1,6 @@
 import {Process} from '../../os/process'
-import {MoveProcess} from './move'
-//import {Utils} from '../lib/utils'
+import {MoveProcess} from '../creepActions/move'
+import {Utils} from '../../lib/utils'
 
 interface ClaimProcessMetaData{
   creep: string
@@ -25,10 +25,10 @@ export class ClaimProcess extends Process{
     }
 
     if(!creep){
-      /*let creepName = 'claim-' + this.metaData.targetRoom + '-' + Game.time
+      let creepName = 'claim-' + this.metaData.targetRoom + '-' + Game.time
       let spawned = Utils.spawn(
         this.kernel,
-        '',
+        Utils.nearestRoom(this.metaData.targetRoom, 550),
         'claimer',
         creepName,
         {}
@@ -36,7 +36,7 @@ export class ClaimProcess extends Process{
 
       if(spawned){
         this.metaData.creep = creepName
-      }*/
+      }
 
       return
     }
@@ -52,7 +52,9 @@ export class ClaimProcess extends Process{
 
       this.suspend = 'move-' + creep.name
     }else{
-      creep.say('claim?')
+      creep.claimController(creep.room.controller!)
+      this.completed = true
+      flag.remove()
     }
   }
 }

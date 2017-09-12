@@ -63,19 +63,23 @@ export const Utils = {
 
   /** Returns the room closest to the source room with the required spawn energy */
   nearestRoom(sourceRoom: string, minSpawnEnergy = 0){
-    let paths: {}[] = []
+    let bestRoom = ''
+    let bestDistance = 999
 
     _.forEach(Game.rooms, function(room){
       if(room.controller && room.controller.my){
         if(room.energyCapacityAvailable > minSpawnEnergy){
-          let path = new RoomPathFinder(sourceRoom, room.name)
+          let path = new RoomPathFinder(sourceRoom, room.name).results()
 
-          paths.push(path.results())
+          if(path.length < bestDistance){
+            bestDistance = path.length
+            bestRoom = room.name
+          }
         }
       }
     })
 
-    console.log(JSON.stringify(paths))
+    return bestRoom
   }
 
   /*roomDeliveryTarget(kernel: Kernel, roomName: string){

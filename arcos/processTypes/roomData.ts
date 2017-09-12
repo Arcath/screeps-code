@@ -1,5 +1,7 @@
 import {Process} from '../os/process'
 
+import {SpawnRemoteBuilderProcess} from './system/spawnRemoteBuilder'
+
 interface RoomDataMeta{
   roomName: string
 }
@@ -18,6 +20,15 @@ export class RoomDataProcess extends Process{
     let room = Game.rooms[this.metaData.roomName]
 
     this.importFromMemory(room)
+
+    if(this.kernel.data.roomData[this.metaData.roomName].spawns.length === 0){
+      if(this.kernel.data.roomData[this.metaData.roomName].constructionSites[0].structureType === STRUCTURE_SPAWN){
+        this.kernel.addProcess(SpawnRemoteBuilderProcess, 'srm-' + this.metaData.roomName, 90, {
+          site: this.kernel.data.roomData[this.metaData.roomName].constructionSites[0].id,
+          roomName: this.metaData.roomName
+        })
+      }
+    }
 
     this.completed = true
   }
@@ -112,6 +123,11 @@ export class RoomDataProcess extends Process{
     }
     let run = true
     let i = 0
+
+    if(Memory.arcos.numSites != Object.keys(Game.constructionSites).length){
+      delete room.memory.constructionSites
+      Memory.arcos.numSites = Object.keys(Game.constructionSites).length
+    }
 
     while(run){
       let field = this.fields[i]
