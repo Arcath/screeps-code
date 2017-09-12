@@ -76,14 +76,16 @@ export class StructureManagementProcess extends Process{
           if(spawned){
             this.metaData.repairCreeps.push(creepName)
             this.kernel.addProcess(RepairerLifetimeProcess, 'rlf-' + creepName, 29, {
-              creep: creepName
+              creep: creepName,
+              roomName: this.metaData.roomName
             })
           }
         }else{
           let creepName = <string>this.metaData.spareCreeps.pop()
           this.metaData.repairCreeps.push(creepName)
           this.kernel.addProcess(RepairerLifetimeProcess, 'rlf-' + creepName, 29, {
-            creep: creepName
+            creep: creepName,
+            roomName: this.metaData.roomName
           })
         }
       }
