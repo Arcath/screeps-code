@@ -52,5 +52,5 @@ private.json
 node_modules/
 dist/
 scratch.md
-lib/
+/lib/
 main.js.backup
