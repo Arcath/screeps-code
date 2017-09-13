@@ -124,9 +124,9 @@ export class RoomDataProcess extends Process{
     let run = true
     let i = 0
 
-    if(Memory.arcos.numSites != Object.keys(Game.constructionSites).length){
+    if(room.memory.numSites != Object.keys(Game.constructionSites).length){
       delete room.memory.constructionSites
-      Memory.arcos.numSites = Object.keys(Game.constructionSites).length
+      room.memory.numSites = Object.keys(Game.constructionSites).length
     }
 
     while(run){
