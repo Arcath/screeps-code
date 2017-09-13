@@ -19,6 +19,7 @@ interface SerializedProcess{
   priority: number
   metaData: object
   suspend: string | number | boolean
+  parent: string | undefined
 }
 
 interface RoomData{

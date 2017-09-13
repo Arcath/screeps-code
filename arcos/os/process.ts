@@ -23,6 +23,10 @@ export class Process{
   If a string this process is suspended untill the named process is finished.
   */
   suspend: string | number | boolean = false
+  /** The Processes Parent Process */
+  parent: Process | undefined
+  /** Messages */
+  messages: {[name: string]: any} = {}
 
   /** Creates a new Process from the entry supplied */
   constructor(entry: SerializedProcess, kernel: Kernel){
@@ -31,6 +35,10 @@ export class Process{
     this.metaData = entry.metaData
     this.kernel = kernel
     this.suspend = entry.suspend
+
+    if(entry.parent){
+      this.parent = this.kernel.getProcessByName(entry.parent)
+    }
   }
 
   /** Run the process */
@@ -42,12 +50,44 @@ export class Process{
 
   /** Serialize this process */
   serialize(){
+    let parent
+    if(this.parent){
+      parent = this.parent.name
+    }
+
     return <SerializedProcess>{
       priority: this.priority,
       name: this.name,
       metaData: this.metaData,
       type: this.type,
-      suspend: this.suspend
+      suspend: this.suspend,
+      parent: parent
+    }
+  }
+
+  /** Create a new process on the kernel with this process as its parent and suspend the current process until it completes */
+  fork(processType: any, name: string, priority: number, meta: any){
+    this.kernel.addProcess(processType, name, priority, meta, this.name)
+
+    this.suspend = name
+  }
+
+  /** Send the process a message */
+  sendMessage(name: string, data: any){
+    this.messages[name] = data
+  }
+
+  /** Resume the process */
+  resume(thisTick = false){
+    this.suspend = false
+
+    if(thisTick){ this.ticked = false }
+  }
+
+  /** Resume the parent if the process has a parent */
+  resumeParent(thisTick = false){
+    if(this.parent){
+      this.parent.resume(thisTick)
     }
   }
 }

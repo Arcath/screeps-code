@@ -13,12 +13,10 @@ export class HarvesterLifetimeProcess extends LifetimeProcess{
     if(!creep){ return }
 
     if(_.sum(creep.carry) === 0){
-      this.kernel.addProcess(HarvestProcess, 'harvest-' + creep.name, this.priority - 1, {
+      this.fork(HarvestProcess, 'harvest-' + creep.name, this.priority - 1, {
         source: this.metaData.source,
         creep: creep.name
       })
-
-      this.suspend = 'harvest-' + creep.name
 
       return
     }
@@ -28,13 +26,12 @@ export class HarvesterLifetimeProcess extends LifetimeProcess{
       let container = this.kernel.data.roomData[creep.room.name].sourceContainerMaps[this.metaData.source]
 
       if(_.sum(container.store) < container.storeCapacity){
-        this.kernel.addProcess(DeliverProcess, 'deliver-' + creep.name, this.priority - 1, {
+        this.fork(DeliverProcess, 'deliver-' + creep.name, this.priority - 1, {
           target: container.id,
           creep: creep.name,
           resource: RESOURCE_ENERGY
         })
 
-        this.suspend = 'deliver-' + creep.name
         return
       }
     }
@@ -62,12 +59,10 @@ export class HarvesterLifetimeProcess extends LifetimeProcess{
     // Find the nearest target
     let target = <Structure>creep.pos.findClosestByPath(deliverTargets)
 
-    this.kernel.addProcess(DeliverProcess, creep.name + '-deliver', this.priority, {
+    this.fork(DeliverProcess, creep.name + '-deliver', this.priority, {
       creep: creep.name,
       target: target.id,
       resource: RESOURCE_ENERGY
     })
-
-    this.suspend = creep.name + '-deliver'
   }
 }

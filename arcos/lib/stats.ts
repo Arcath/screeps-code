@@ -8,6 +8,7 @@ export const Stats = {
     Memory.stats['cpu.getUsed'] = Game.cpu.getUsed()
     Memory.stats['cpu.limit'] = Game.cpu.limit
     Memory.stats['cpu.bucket'] = Game.cpu.bucket
+    Memory.stats['cpu.kernelLimit'] = kernel.limit
     Memory.stats['memory.size'] = RawMemory.get().length
     Memory.stats['market.credits'] = Game.market.credits
 

@@ -16,13 +16,12 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
       let target = Utils.withdrawTarget(creep, this)
 
       if(target){
-        this.kernel.addProcess(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
+        this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
           creep: creep.name,
           target: target.id,
           resource: RESOURCE_ENERGY
         })
 
-        this.suspend = 'collect-' + creep.name
         return
       }else{
         this.suspend = 10
@@ -47,11 +46,10 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
     if(repairTargets.length > 0){
       let target = creep.pos.findClosestByPath(repairTargets)
 
-      this.kernel.addProcess(RepairProcess, 'repair-' + creep.name, this.priority - 1, {
+      this.fork(RepairProcess, 'repair-' + creep.name, this.priority - 1, {
         creep: creep.name,
         target: target.id
       })
-      this.suspend = 'repair-' + creep.name
     }else{
       this.suspend = shortestDecay
       return

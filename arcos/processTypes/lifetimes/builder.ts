@@ -16,13 +16,12 @@ export class BuilderLifetimeProcess extends LifetimeProcess{
       let target = Utils.withdrawTarget(creep, this)
 
       if(target){
-        this.kernel.addProcess(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
+        this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
           creep: creep.name,
           target: target.id,
           resource: RESOURCE_ENERGY
         })
 
-        this.suspend = 'collect-' + creep.name
         return
       }else{
         this.suspend = 10
@@ -34,12 +33,11 @@ export class BuilderLifetimeProcess extends LifetimeProcess{
     let target = creep.pos.findClosestByRange(this.kernel.data.roomData[creep.room.name].constructionSites)
 
     if(target){
-      this.kernel.addProcess(BuildProcess, 'build-' + creep.name, this.priority - 1, {
+      this.fork(BuildProcess, 'build-' + creep.name, this.priority - 1, {
         creep: creep.name,
         site: target.id
       })
-
-      this.suspend = 'build-' + creep.name
+      
       return
     }else{
       creep.say('spare')

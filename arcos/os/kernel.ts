@@ -53,8 +53,8 @@ interface ProcessTable{
 }
 
 export class Kernel{
-  /** The CPU Limit */
-  limit = Game.cpu.limit - 10
+  /** The CPU Limit for this tick */
+  limit = Game.cpu.limit * 0.9
   /** The process table */
   processTable: ProcessTable = {}
   /** IPC Messages */
@@ -131,33 +131,33 @@ export class Kernel{
   runProcess(){
     let process = this.getHighestProcess()
     let cpuUsed = Game.cpu.getUsed()
+    let faulted = false
 
     try{
       process.run(this)
     }catch (e){
       console.log('process ' + process.name + ' failed with error ' + e)
+      faulted = true
     }
 
     this.execOrder.push({
       name: process.name,
       cpu: Game.cpu.getUsed() - cpuUsed,
-      type: process.type
+      type: process.type,
+      faulted: faulted
     })
 
     process.ticked = true
-
-    if(process.completed && process.type != 'suspend' && process.type != 'init'){
-      this.addProcess(SuspensionProcess, 'suspension-post-' + process.name, 99, {master: false})
-    }
   }
 
   /** Add a process to the process table */
-  addProcess(processClass: any, name: string, priority: number, meta: {}){
+  addProcess(processClass: any, name: string, priority: number, meta: {}, parent?: string | undefined){
     let process = new processClass({
       name: name,
       priority: priority,
       metaData: meta,
-      suspend: false
+      suspend: false,
+      parent: parent
     }, this)
 
     this.processTable[name] = process

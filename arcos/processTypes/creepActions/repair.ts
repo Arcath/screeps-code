@@ -16,6 +16,7 @@ export class RepairProcess extends Process{
 
     if(!target || !creep || _.sum(creep.carry) === 0){
       this.completed = true
+      this.resumeParent(true)
       return
     }
 
@@ -33,6 +34,7 @@ export class RepairProcess extends Process{
     }else{
       if(target.hits === target.hitsMax){
         this.completed = true
+        this.resumeParent(true)
         return
       }
 

@@ -12,13 +12,11 @@ export class DistroLifetimeProcess extends LifetimeProcess{
     if(!creep){ return }
 
     if(_.sum(creep.carry) === 0){
-      this.kernel.addProcess(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
+      this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
         target: this.metaData.sourceContainer,
         creep: creep.name,
         resource: RESOURCE_ENERGY
       })
-
-      this.suspend = 'collect-' + creep.name
 
       return
     }
@@ -47,13 +45,11 @@ export class DistroLifetimeProcess extends LifetimeProcess{
     let target = creep.pos.findClosestByPath(deliverTargets)
 
     if(target){
-      this.kernel.addProcess(DeliverProcess, 'deliver-' + creep.name, this.priority -1, {
+      this.fork(DeliverProcess, 'deliver-' + creep.name, this.priority -1, {
         creep: creep.name,
         target: target.id,
         resource: RESOURCE_ENERGY
       })
-
-      this.suspend = 'deliver-' + creep.name
     }else{
       this.suspend = 20
     }

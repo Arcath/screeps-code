@@ -19,19 +19,17 @@ export class RemoteBuilderLifetimeProcess extends LifetimeProcess{
     if(_.sum(creep.carry) === 0){
       let source = site.pos.findClosestByRange(this.kernel.data.roomData[site.pos.roomName].sources)
 
-      this.kernel.addProcess(HarvestProcess, 'harvest-' + creep.name, this.priority - 1, {
+      this.fork(HarvestProcess, 'harvest-' + creep.name, this.priority - 1, {
         creep: creep.name,
         source: source.id
       })
 
-      this.suspend = 'harvest-' + creep.name
       return
     }
 
-    this.kernel.addProcess(BuildProcess, 'build-' + creep.name, this.priority - 1, {
+    this.fork(BuildProcess, 'build-' + creep.name, this.priority - 1, {
       creep: creep.name,
       site: site.id
     })
-    this.suspend = 'build-' + creep.name
   }
 }

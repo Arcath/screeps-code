@@ -14,6 +14,7 @@ export class UpgradeProcess extends Process{
 
     if(!creep || _.sum(creep.carry) === 0){
       this.completed = true
+      this.resumeParent(true)
       return
     }
 
