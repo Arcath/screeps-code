@@ -19,7 +19,7 @@ export class MoveProcess extends Process{
 
     if(!creep){
       this.completed = true
-      this.resumeParent(true)
+      this.resumeParent()
       return
     }
 
@@ -28,7 +28,7 @@ export class MoveProcess extends Process{
     if(creep.fatigue == 0){
       if(creep.pos.inRangeTo(target, this.metaData.range)){
         this.completed = true
-        this.resumeParent(true)
+        this.resumeParent()
       }else{
         creep.moveTo(target)
       }

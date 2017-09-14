@@ -16,7 +16,7 @@ export class CollectProcess extends Process{
 
     if(!creep){
       this.completed = true
-      this.resumeParent(true)
+      this.resumeParent()
       return
     }
 
@@ -42,7 +42,7 @@ export class CollectProcess extends Process{
     }else{
       creep.withdraw(target, this.metaData.resource)
       this.completed = true
-      this.resumeParent(true)
+      this.resumeParent()
     }
   }
 }

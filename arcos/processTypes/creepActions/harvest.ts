@@ -15,7 +15,7 @@ export class HarvestProcess extends Process{
 
     if(!creep || _.sum(creep.carry) === creep.carryCapacity){
       this.completed = true
-      this.resumeParent(true)
+      this.resumeParent()
       return
     }
 

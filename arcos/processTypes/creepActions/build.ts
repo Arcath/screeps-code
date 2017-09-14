@@ -20,7 +20,7 @@ export class BuildProcess extends Process{
 
     if(!site || !creep || _.sum(creep.carry) === 0){
       this.completed = true
-      this.resumeParent(true)
+      this.resumeParent()
       return
     }
 

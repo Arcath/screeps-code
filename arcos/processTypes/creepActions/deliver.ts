@@ -12,7 +12,7 @@ export class DeliverProcess extends Process{
 
     if(!target || !creep || _.sum(creep.carry) === 0){
       this.completed = true
-      this.resumeParent(true)
+      this.resumeParent()
       return
     }
 
@@ -30,7 +30,7 @@ export class DeliverProcess extends Process{
     }else{
       if(creep.transfer(target, (this.metaData.resource || RESOURCE_ENERGY)) == ERR_FULL){
         this.completed = true
-        this.resumeParent(true)
+        this.resumeParent()
       }
     }
   }
