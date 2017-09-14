@@ -1,6 +1,7 @@
 import {Process} from '../os/process'
 
 import {SpawnRemoteBuilderProcess} from './system/spawnRemoteBuilder'
+import {TowerDefenseProcess} from './buildingProcesses/towerDefense'
 
 interface RoomDataMeta{
   roomName: string
@@ -29,6 +30,8 @@ export class RoomDataProcess extends Process{
         })
       }
     }
+
+    this.enemyDetection(room)
 
     this.completed = true
   }
@@ -212,5 +215,16 @@ export class RoomDataProcess extends Process{
     })
 
     return result
+  }
+
+  /** Find enemies in the room */
+  enemyDetection(room: Room){
+    let enemies = <Creep[]>room.find(FIND_HOSTILE_CREEPS)
+
+    if(enemies.length > 0 && !this.kernel.hasProcess('td-' + this.metaData.roomName)){
+      this.kernel.addProcess(TowerDefenseProcess, 'td-' + this.metaData.roomName, 80, {
+        roomName: this.metaData.roomName
+      })
+    }
   }
 }

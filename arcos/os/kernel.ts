@@ -16,6 +16,7 @@ import {RepairProcess} from '../processTypes/creepActions/repair'
 import {RepairerLifetimeProcess} from '../processTypes/lifetimes/repairer'
 import {StructureManagementProcess} from '../processTypes/management/structure'
 import {SuspensionProcess} from '../processTypes/system/suspension'
+import {TowerDefenseProcess} from '../processTypes/buildingProcesses/towerDefense'
 import {UpgradeProcess} from '../processTypes/creepActions/upgrade'
 import {UpgraderLifetimeProcess} from '../processTypes/lifetimes/upgrader'
 
@@ -37,6 +38,7 @@ const processTypes = <{[type: string]: any}>{
   'rlf': RepairerLifetimeProcess,
   'sm': StructureManagementProcess,
   'suspend': SuspensionProcess,
+  'td': TowerDefenseProcess,
   'upgrade': UpgradeProcess,
   'ulf': UpgraderLifetimeProcess
 }
@@ -110,7 +112,7 @@ export class Kernel{
     })
 
     //if(this.data.usedSpawns.length != 0){
-    //  console.log(JSON.stringify(this.execOrder))
+    //  console.log(this.execOrder.length)
     //}
 
     Stats.build(this)
