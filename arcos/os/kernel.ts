@@ -10,6 +10,8 @@ import {EnergyManagementProcess} from '../processTypes/management/energy'
 import {InitProcess} from '../processTypes/system/init'
 import {HarvestProcess} from '../processTypes/creepActions/harvest'
 import {HarvesterLifetimeProcess} from '../processTypes/lifetimes/harvester'
+import {HoldRoomProcess} from '../processTypes/empireActions/hold'
+import {HoldProcess} from '../processTypes/creepActions/hold'
 import {MoveProcess} from '../processTypes/creepActions/move'
 import {RemoteBuilderLifetimeProcess} from '../processTypes/lifetimes/remoteBuilder'
 import {RepairProcess} from '../processTypes/creepActions/repair'
@@ -32,6 +34,8 @@ const processTypes = <{[type: string]: any}>{
   'em': EnergyManagementProcess,
   'harvest': HarvestProcess,
   'hlf': HarvesterLifetimeProcess,
+  'holdRoom': HoldRoomProcess,
+  'hold': HoldProcess,
   'move': MoveProcess,
   'rblf': RemoteBuilderLifetimeProcess,
   'repair': RepairProcess,
