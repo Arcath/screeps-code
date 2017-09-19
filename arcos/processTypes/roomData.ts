@@ -10,7 +10,7 @@ interface RoomDataMeta{
 export class RoomDataProcess extends Process{
   metaData: RoomDataMeta
   fields = [
-    'constructionSites', 'containers', 'extensions', 'generalContainers', 'roads', 'spawns', 'sources', 'sourceContainers', 'towers'
+    'constructionSites', 'containers', 'extensions', 'generalContainers', 'labs', 'roads', 'spawns', 'sources', 'sourceContainers', 'towers'
   ]
 
   mapFields = [
@@ -71,6 +71,10 @@ export class RoomDataProcess extends Process{
       return (structure.structureType === STRUCTURE_ROAD)
     })
 
+    let labs = <StructureLab[]>_.filter(myStructures, function(structure){
+      return (structure.structureType === STRUCTURE_LAB)
+    })
+
     let roomData: RoomData = {
       constructionSites: <ConstructionSite[]>room.find(FIND_CONSTRUCTION_SITES),
       containers: containers,
@@ -78,6 +82,7 @@ export class RoomDataProcess extends Process{
         return (structure.structureType === STRUCTURE_EXTENSION)
       }),
       generalContainers: generalContainers,
+      labs: labs,
       roads: roads,
       spawns: <StructureSpawn[]>_.filter(myStructures, function(structure){
         return (structure.structureType === STRUCTURE_SPAWN)
@@ -117,6 +122,7 @@ export class RoomDataProcess extends Process{
       containers: [],
       extensions: [],
       generalContainers: [],
+      labs: [],
       roads: [],
       spawns: [],
       sources: [],

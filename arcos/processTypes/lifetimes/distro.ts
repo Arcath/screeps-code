@@ -34,11 +34,16 @@ export class DistroLifetimeProcess extends LifetimeProcess{
 
     if(deliverTargets.length === 0){
       targets = [].concat(
+        <never[]>this.kernel.data.roomData[creep.room.name].labs,
         <never[]>this.kernel.data.roomData[creep.room.name].generalContainers
       )
 
       deliverTargets = _.filter(targets, function(target: DeliveryTarget){
-        return (_.sum(target.store) < target.storeCapacity)
+        if(target.store){
+          return (_.sum(target.store) < target.storeCapacity)
+        }else{
+          return (target.energy < target.energyCapacity)
+        }
       })
     }
 

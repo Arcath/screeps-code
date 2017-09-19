@@ -28,6 +28,7 @@ interface RoomData{
   containers: StructureContainer[]
   extensions: StructureExtension[]
   generalContainers: StructureContainer[]
+  labs: StructureLab[]
   roads: StructureRoad[]
   spawns: StructureSpawn[]
   sources: Source[]
