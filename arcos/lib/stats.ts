@@ -2,6 +2,8 @@ import {Kernel} from '../os/kernel'
 
 export const Stats = {
   build(kernel: Kernel){
+    if(!Memory.stats){ Memory.stats = {}}
+
     Memory.stats['gcl.progress'] = Game.gcl.progress
     Memory.stats['gcl.progressTotal'] = Game.gcl.progressTotal
     Memory.stats['gcl.level'] = Game.gcl.level

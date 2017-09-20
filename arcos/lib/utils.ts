@@ -51,6 +51,13 @@ export const Utils = {
       <never[]>proc.kernel.data.roomData[creep.room.name].generalContainers
     )
 
+    if(creep.room.storage){
+      withdraws = [].concat(
+        withdraws,
+        <never[]>[creep.room.storage]
+      )
+    }
+
     if(withdraws.length === 0){
       withdraws = <never[]>proc.kernel.data.roomData[creep.room.name].spawns
       withdraws = <never[]>_.filter(withdraws, function(spawn: StructureSpawn){

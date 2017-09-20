@@ -37,14 +37,26 @@ export class HarvesterLifetimeProcess extends LifetimeProcess{
     }
 
     // Source Container does not exist OR source container is full
+    let deliverTargets
+
     let targets = [].concat(
       <never[]>this.kernel.data.roomData[creep.room.name].spawns,
       <never[]>this.kernel.data.roomData[creep.room.name].extensions
     )
 
-    let deliverTargets = _.filter(targets, function(target: DeliveryTarget){
+    deliverTargets = _.filter(targets, function(target: DeliveryTarget){
       return (target.energy < target.energyCapacity)
     })
+
+    if(creep.room.storage && deliverTargets.length === 0){
+      let targets = [].concat(
+        <never[]>[creep.room.storage]
+      )
+
+      deliverTargets = _.filter(targets, function(target: DeliveryTarget){
+        return (_.sum(target.store) < target.storeCapacity)
+      })
+    }
 
     if(deliverTargets.length === 0){
       // If there is no where to deliver to
