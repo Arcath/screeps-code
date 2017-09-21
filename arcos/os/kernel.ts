@@ -17,6 +17,8 @@ import {MineralharvesterLifetimeProcess} from '../processTypes/lifetimes/mineral
 import {MineralManagementProcess} from '../processTypes/management/mineral'
 import {MoveProcess} from '../processTypes/creepActions/move'
 import {RemoteBuilderLifetimeProcess} from '../processTypes/lifetimes/remoteBuilder'
+import {RemoteMinerLifetimeProcess} from '../processTypes/lifetimes/remoteMiner'
+import {RemoteMiningManagementProcess} from '../processTypes/management/remoteMining'
 import {RepairProcess} from '../processTypes/creepActions/repair'
 import {RepairerLifetimeProcess} from '../processTypes/lifetimes/repairer'
 import {StructureManagementProcess} from '../processTypes/management/structure'
@@ -44,6 +46,8 @@ const processTypes = <{[type: string]: any}>{
   'mineralManagement': MineralManagementProcess,
   'move': MoveProcess,
   'rblf': RemoteBuilderLifetimeProcess,
+  'rmlf': RemoteMinerLifetimeProcess,
+  'rmmp': RemoteMiningManagementProcess,
   'repair': RepairProcess,
   'rlf': RepairerLifetimeProcess,
   'sm': StructureManagementProcess,

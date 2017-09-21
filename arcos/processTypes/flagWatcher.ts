@@ -1,6 +1,7 @@
 import {ClaimProcess} from './empireActions/claim'
 import {HoldRoomProcess} from './empireActions/hold'
 import {Process} from '../os/process'
+import {RemoteMiningManagementProcess} from './management/remoteMining'
 
 export class FlagWatcherProcess extends Process{
   claimFlag(flag: Flag){
@@ -26,6 +27,17 @@ export class FlagWatcherProcess extends Process{
     )
   }
 
+  remoteMiningFlag(flag: Flag){
+    this.kernel.addProcessIfNotExist(
+      RemoteMiningManagementProcess,
+      'rmmp-' + flag.name,
+      40,
+      {
+        flag: flag.name
+      }
+    )
+  }
+
   run(){
     this.completed = true
 
@@ -42,6 +54,9 @@ export class FlagWatcherProcess extends Process{
               proc.claimFlag(flag)
             break
           }
+        break
+        case COLOR_YELLOW:
+          proc.remoteMiningFlag(flag)
         break
       }
     })
