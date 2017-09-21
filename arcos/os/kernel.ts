@@ -12,6 +12,9 @@ import {HarvestProcess} from '../processTypes/creepActions/harvest'
 import {HarvesterLifetimeProcess} from '../processTypes/lifetimes/harvester'
 import {HoldRoomProcess} from '../processTypes/empireActions/hold'
 import {HoldProcess} from '../processTypes/creepActions/hold'
+import {MineralHarvestProcess} from '../processTypes/creepActions/mineralHarvest'
+import {MineralharvesterLifetimeProcess} from '../processTypes/lifetimes/mineralHarvester'
+import {MineralManagementProcess} from '../processTypes/management/mineral'
 import {MoveProcess} from '../processTypes/creepActions/move'
 import {RemoteBuilderLifetimeProcess} from '../processTypes/lifetimes/remoteBuilder'
 import {RepairProcess} from '../processTypes/creepActions/repair'
@@ -36,6 +39,9 @@ const processTypes = <{[type: string]: any}>{
   'hlf': HarvesterLifetimeProcess,
   'holdRoom': HoldRoomProcess,
   'hold': HoldProcess,
+  'mh': MineralHarvestProcess,
+  'mhlf': MineralharvesterLifetimeProcess,
+  'mineralManagement': MineralManagementProcess,
   'move': MoveProcess,
   'rblf': RemoteBuilderLifetimeProcess,
   'repair': RepairProcess,

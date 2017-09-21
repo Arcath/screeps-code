@@ -1,5 +1,6 @@
 import {Process} from '../os/process'
 
+import {MineralManagementProcess} from './management/mineral'
 import {SpawnRemoteBuilderProcess} from './system/spawnRemoteBuilder'
 import {TowerDefenseProcess} from './buildingProcesses/towerDefense'
 
@@ -17,6 +18,10 @@ export class RoomDataProcess extends Process{
     'sourceContainerMaps'
   ]
 
+  singleFields = [
+    'extractor', 'mineral'
+  ]
+
   run(){
     let room = Game.rooms[this.metaData.roomName]
 
@@ -29,6 +34,12 @@ export class RoomDataProcess extends Process{
           roomName: this.metaData.roomName
         })
       }
+    }
+
+    if(this.roomData().mineral && this.roomData().extractor){
+      this.kernel.addProcessIfNotExist(MineralManagementProcess, 'minerals-' + this.metaData.roomName, 20, {
+        roomName: room.name
+      })
     }
 
     this.enemyDetection(room)
@@ -81,7 +92,11 @@ export class RoomDataProcess extends Process{
       extensions: <StructureExtension[]>_.filter(myStructures, function(structure){
         return (structure.structureType === STRUCTURE_EXTENSION)
       }),
+      extractor: <StructureExtractor>_.filter(myStructures, function(structure){
+        return (structure.structureType === STRUCTURE_EXTRACTOR)
+      })[0],
       generalContainers: generalContainers,
+      mineral: <Mineral>room.find(FIND_MINERALS)[0],
       labs: labs,
       roads: roads,
       spawns: <StructureSpawn[]>_.filter(myStructures, function(structure){
@@ -113,6 +128,12 @@ export class RoomDataProcess extends Process{
 
       room.memory[field] = result
     })
+
+    _.forEach(this.singleFields, function(field){
+      if(roomData[field].id){
+        room.memory[field] = roomData[field].id
+      }
+    })
   }
 
   /** Import the room data from memory */
@@ -121,7 +142,9 @@ export class RoomDataProcess extends Process{
       constructionSites: [],
       containers: [],
       extensions: [],
+      extractor: undefined,
       generalContainers: [],
+      mineral: undefined,
       labs: [],
       roads: [],
       spawns: [],
@@ -188,6 +211,28 @@ export class RoomDataProcess extends Process{
       i += 1
       if(i === this.mapFields.length){ run = false }
     }
+
+    run = true
+    i = 0
+    while(run){
+      let field = this.singleFields[i]
+
+      if(room.memory[field]){
+        let object = Game.getObjectById(room.memory[field])
+
+        if(object){
+          roomData[field] = object
+        }else{
+          run = false
+          this.build(room)
+          return
+        }
+      }
+
+      i += 1
+      if(i === this.singleFields.length){ run = false }
+    }
+
 
     this.kernel.data.roomData[this.metaData.roomName] = roomData
   }

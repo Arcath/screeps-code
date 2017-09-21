@@ -27,7 +27,9 @@ interface RoomData{
   constructionSites: ConstructionSite[]
   containers: StructureContainer[]
   extensions: StructureExtension[]
+  extractor: StructureExtractor | undefined
   generalContainers: StructureContainer[]
+  mineral: Mineral | undefined
   labs: StructureLab[]
   roads: StructureRoad[]
   spawns: StructureSpawn[]

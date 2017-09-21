@@ -90,6 +90,16 @@ export class Process{
       this.parent.resume(thisTick)
     }
   }
+
+  /** Returns the room Data */
+  roomData(){
+    return this.kernel.data.roomData[this.metaData.roomName]
+  }
+
+  /** Use the Kernels Logger */
+  log(message: string){
+    this.kernel.log(this, message)
+  }
 }
 
 export class LifetimeProcess extends Process{
