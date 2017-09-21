@@ -28,7 +28,7 @@ export class RoomDataProcess extends Process{
     this.importFromMemory(room)
 
     if(this.kernel.data.roomData[this.metaData.roomName].spawns.length === 0){
-      if(this.kernel.data.roomData[this.metaData.roomName].constructionSites[0].structureType === STRUCTURE_SPAWN){
+      if(this.kernel.data.roomData[this.metaData.roomName].constructionSites.length > 0 && this.kernel.data.roomData[this.metaData.roomName].constructionSites[0].structureType === STRUCTURE_SPAWN){
         this.kernel.addProcess(SpawnRemoteBuilderProcess, 'srm-' + this.metaData.roomName, 90, {
           site: this.kernel.data.roomData[this.metaData.roomName].constructionSites[0].id,
           roomName: this.metaData.roomName
@@ -112,7 +112,10 @@ export class RoomDataProcess extends Process{
 
     this.kernel.data.roomData[this.metaData.roomName] = roomData
 
-    room.memory = {}
+    room.memory = {
+      numSites: room.memory.numSites
+    }
+
     let proc = this
     _.forEach(this.fields, function(field){
       room.memory[field] = proc.deflate(roomData[field])
