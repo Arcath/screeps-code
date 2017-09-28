@@ -21,6 +21,8 @@ import {RemoteMinerLifetimeProcess} from '../processTypes/lifetimes/remoteMiner'
 import {RemoteMiningManagementProcess} from '../processTypes/management/remoteMining'
 import {RepairProcess} from '../processTypes/creepActions/repair'
 import {RepairerLifetimeProcess} from '../processTypes/lifetimes/repairer'
+import {RoomDataProcess} from '../processTypes/roomData'
+import {RoomLayoutProcess} from '../processTypes/management/roomLayout'
 import {StructureManagementProcess} from '../processTypes/management/structure'
 import {SuspensionProcess} from '../processTypes/system/suspension'
 import {TowerDefenseProcess} from '../processTypes/buildingProcesses/towerDefense'
@@ -50,6 +52,8 @@ const processTypes = <{[type: string]: any}>{
   'rmmp': RemoteMiningManagementProcess,
   'repair': RepairProcess,
   'rlf': RepairerLifetimeProcess,
+  'roomData': RoomDataProcess,
+  'roomLayout': RoomLayoutProcess,
   'sm': StructureManagementProcess,
   'suspend': SuspensionProcess,
   'td': TowerDefenseProcess,
@@ -75,6 +79,8 @@ export class Kernel{
   processTable: ProcessTable = {}
   /** IPC Messages */
   ipc: IPCMessage[] = []
+
+  processTypes = processTypes
 
   data = <KernelData>{
     roomData: {},

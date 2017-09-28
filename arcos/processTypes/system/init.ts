@@ -13,6 +13,10 @@ export class InitProcess extends Process{
   run(){
     let proc = this
 
+    if(Game.cpu.bucket > 3000){
+      this.kernel.limit = (Game.cpu.limit + 500) - 20
+    }
+
     for(var name in Memory.creeps){
       if(!Game.creeps[name]){
         delete Memory.creeps[name]

@@ -73,3 +73,16 @@ interface EnergyManagementMetaData{
   }
   upgradeCreeps: string[]
 }
+
+interface BunkerLayout{
+  buildings: {
+    [structureType: string]: {
+      pos: [
+        {
+          x: number
+          y: number
+        }
+      ]
+    }
+  }
+}

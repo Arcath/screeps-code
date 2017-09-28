@@ -32,7 +32,8 @@ export class MineralManagementProcess extends Process{
           })
         }
       }else{
-        this.log('no minerals')
+        this.log('no minerals, completing')
+        this.completed = true
       }
     }else{
       this.suspend = 200

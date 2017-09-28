@@ -4,6 +4,8 @@ import {Utils} from '../../lib/utils'
 import {RemoteBuilderLifetimeProcess} from '../lifetimes/remoteBuilder'
 
 export class SpawnRemoteBuilderProcess extends Process{
+  type = "spawnRemoteBuilder"
+  
   run(){
     let site = this.metaData.site
 

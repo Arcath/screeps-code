@@ -4,6 +4,8 @@ import {Process} from '../os/process'
 import {RemoteMiningManagementProcess} from './management/remoteMining'
 
 export class FlagWatcherProcess extends Process{
+  type = "flagWatcher"
+
   claimFlag(flag: Flag){
     this.kernel.addProcessIfNotExist(
       ClaimProcess,

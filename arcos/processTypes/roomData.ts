@@ -1,6 +1,7 @@
 import {Process} from '../os/process'
 
 import {MineralManagementProcess} from './management/mineral'
+import {RoomLayoutProcess} from './management/roomLayout'
 import {SpawnRemoteBuilderProcess} from './system/spawnRemoteBuilder'
 import {TowerDefenseProcess} from './buildingProcesses/towerDefense'
 
@@ -9,6 +10,8 @@ interface RoomDataMeta{
 }
 
 export class RoomDataProcess extends Process{
+  type = "roomData"
+
   metaData: RoomDataMeta
   fields = [
     'constructionSites', 'containers', 'extensions', 'generalContainers', 'labs', 'roads', 'spawns', 'sources', 'sourceContainers', 'towers'
@@ -36,8 +39,14 @@ export class RoomDataProcess extends Process{
       }
     }
 
-    if(this.roomData().mineral && this.roomData().extractor){
+    if(room.controller && room.controller.my && this.roomData().mineral && this.roomData().mineral!.mineralAmount > 0 && this.roomData().extractor){
       this.kernel.addProcessIfNotExist(MineralManagementProcess, 'minerals-' + this.metaData.roomName, 20, {
+        roomName: room.name
+      })
+    }
+
+    if(room.controller!.my){
+      this.kernel.addProcessIfNotExist(RoomLayoutProcess, 'room-layout-' + room.name, 20, {
         roomName: room.name
       })
     }
@@ -112,13 +121,11 @@ export class RoomDataProcess extends Process{
 
     this.kernel.data.roomData[this.metaData.roomName] = roomData
 
-    room.memory = {
-      numSites: room.memory.numSites
-    }
+    room.memory.cache = {}
 
     let proc = this
     _.forEach(this.fields, function(field){
-      room.memory[field] = proc.deflate(roomData[field])
+      room.memory.cache[field] = proc.deflate(roomData[field])
     })
 
     _.forEach(this.mapFields, function(field){
@@ -129,18 +136,23 @@ export class RoomDataProcess extends Process{
         result[key] = roomData[field][key].id
       })
 
-      room.memory[field] = result
+      room.memory.cache[field] = result
     })
 
     _.forEach(this.singleFields, function(field){
       if(roomData[field].id){
-        room.memory[field] = roomData[field].id
+        room.memory.cache[field] = roomData[field].id
       }
     })
   }
 
   /** Import the room data from memory */
   importFromMemory(room: Room){
+    if(!room.memory.cache){
+      this.build(room)
+      return
+    }
+
     let roomData: RoomData = {
       constructionSites: [],
       containers: [],
@@ -160,15 +172,15 @@ export class RoomDataProcess extends Process{
     let i = 0
 
     if(room.memory.numSites != Object.keys(Game.constructionSites).length){
-      delete room.memory.constructionSites
+      delete room.memory.cache.constructionSites
       room.memory.numSites = Object.keys(Game.constructionSites).length
     }
 
     while(run){
       let field = this.fields[i]
 
-      if(room.memory[field]){
-        let inflation = this.inflate(room.memory[field])
+      if(room.memory.cache[field]){
+        let inflation = this.inflate(room.memory.cache[field])
         if(inflation.rebuild){
           run = false
           this.build(room)
@@ -192,10 +204,10 @@ export class RoomDataProcess extends Process{
     while(run){
       let field = this.mapFields[i]
 
-      if(room.memory[field]){
-        let keys = Object.keys(room.memory[field])
+      if(room.memory.cache[field]){
+        let keys = Object.keys(room.memory.cache[field])
         _.forEach(keys, function(key){
-          let structure = Game.getObjectById(room.memory[field][key])
+          let structure = Game.getObjectById(room.memory.cache[field][key])
 
           if(structure){
             roomData[field][key] = structure
@@ -220,8 +232,8 @@ export class RoomDataProcess extends Process{
     while(run){
       let field = this.singleFields[i]
 
-      if(room.memory[field]){
-        let object = Game.getObjectById(room.memory[field])
+      if(room.memory.cache[field]){
+        let object = Game.getObjectById(room.memory.cache[field])
 
         if(object){
           roomData[field] = object
