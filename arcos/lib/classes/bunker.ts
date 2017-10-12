@@ -200,7 +200,103 @@ export class Bunker{
         "pos": [
           {"x":0,"y":6}
         ]
+      },
+      "rampart": {
+        "pos":[
+          {"x":-6,"y":-6},
+          {"x":-5,"y":-6},
+          {"x":-4,"y":-6},
+          {"x":-3,"y":-6},
+          {"x":-2,"y":-6},
+          {"x":-1,"y":-6},
+          {"x":0,"y":-6},
+          {"x":1,"y":-6},
+          {"x":2,"y":-6},
+          {"x":3,"y":-6},
+          {"x":4,"y":-6},
+          {"x":5,"y":-6},
+          {"x":6,"y":-6},
+          {"x":-6,"y":-5},
+          {"x":-5,"y":-5},
+          {"x":-4,"y":-5},
+          {"x":-3,"y":-5},
+          {"x":-2,"y":-5},
+          {"x":-1,"y":-5},
+          {"x":0,"y":-5},
+          {"x":1,"y":-5},
+          {"x":2,"y":-5},
+          {"x":3,"y":-5},
+          {"x":4,"y":-5},
+          {"x":5,"y":-5},
+          {"x":6,"y":-5},
+          {"x":-6,"y":-4},
+          {"x":-5,"y":-4},
+          {"x":5,"y":-4},
+          {"x":6,"y":-4},
+          {"x":-6,"y":-3},
+          {"x":-5,"y":-3},
+          {"x":5,"y":-3},
+          {"x":6,"y":-3},
+          {"x":-6,"y":-2},
+          {"x":-5,"y":-2},
+          {"x":5,"y":-2},
+          {"x":6,"y":-2},
+          {"x":-6,"y":-1},
+          {"x":-5,"y":-1},
+          {"x":5,"y":-1},
+          {"x":6,"y":-1},
+          {"x":-6,"y":0},
+          {"x":-5,"y":0},
+          {"x":5,"y":0},
+          {"x":6,"y":0},
+          {"x":-6,"y":1},
+          {"x":-5,"y":1},
+          {"x":5,"y":1},
+          {"x":6,"y":1},
+          {"x":-6,"y":2},
+          {"x":-5,"y":2},
+          {"x":5,"y":2},
+          {"x":6,"y":2},
+          {"x":-6,"y":3},
+          {"x":-5,"y":3},
+          {"x":5,"y":3},
+          {"x":6,"y":3},
+          {"x":-6,"y":4},
+          {"x":-5,"y":4},
+          {"x":5,"y":4},
+          {"x":6,"y":4},
+          {"x":-6,"y":5},
+          {"x":-5,"y":5},
+          {"x":-4,"y":5},
+          {"x":-3,"y":5},
+          {"x":-2,"y":5},
+          {"x":-1,"y":5},
+          {"x":0,"y":5},
+          {"x":1,"y":5},
+          {"x":2,"y":5},
+          {"x":3,"y":5},
+          {"x":4,"y":5},
+          {"x":5,"y":5},
+          {"x":6,"y":5},
+          {"x":-6,"y":6},
+          {"x":-5,"y":6},
+          {"x":-4,"y":6},
+          {"x":-3,"y":6},
+          {"x":-2,"y":6},
+          {"x":-1,"y":6},
+          {"x":0,"y":6},
+          {"x":1,"y":6},
+          {"x":2,"y":6},
+          {"x":3,"y":6},
+          {"x":4,"y":6},
+          {"x":5,"y":6},
+          {"x":6,"y":6}
+        ]
       }
+    },
+    "creeps": {
+      "linker": {"x": 1, "y": 3},
+      "terminator": {"x": -1, "y": 3}
     }
   }
 
@@ -210,7 +306,7 @@ export class Bunker{
     if(Game.rooms[basePos.roomName]){
       let room = Game.rooms[basePos.roomName]
 
-      if(Memory.bunkers[room.name].bunker){
+      if(Memory.bunkers[room.name].bunker && Memory.bunkers[room.name].bunker.creeps){
         this.bunkerMap = Memory.bunkers[room.name].bunker
       }else{
         this.buildMap()
@@ -226,6 +322,11 @@ export class Bunker{
         pos.x = pos.x + proxy.basePos.x
         pos.y = pos.y + proxy.basePos.y
       })
+    })
+
+    _.forEach(Object.keys(this.bunkerMap.creeps), function(creepType){
+      proxy.bunkerMap.creeps[creepType].x = proxy.bunkerMap.creeps[creepType].x + proxy.basePos.x
+      proxy.bunkerMap.creeps[creepType].y = proxy.bunkerMap.creeps[creepType].y + proxy.basePos.y
     })
   }
 
@@ -247,8 +348,14 @@ export class Bunker{
         })
 
         if(structures.length === 0){
-          let pos = new RoomPosition(posEntry.x, posEntry.y, room.name)
-          pos.createConstructionSite(structureType)
+          if(
+            (structureType != STRUCTURE_RAMPART || room.controller!.level >= 3)
+            &&
+            (structureType != STRUCTURE_ROAD || room.controller!.level >= 3)
+          ){
+            let pos = new RoomPosition(posEntry.x, posEntry.y, room.name)
+            pos.createConstructionSite(structureType)
+          }
         }
       })
     })

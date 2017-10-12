@@ -1,5 +1,6 @@
 import {MoveProcess} from './move'
 import {Process} from '../../os/process'
+import {Utils} from '../../lib/utils'
 
 interface RepairProcessMetaData{
   creep: string
@@ -32,7 +33,11 @@ export class RepairProcess extends Process{
       })
       this.suspend = creep.name + '-repair-move'
     }else{
-      if(target.hits === target.hitsMax){
+      if(
+        target.hits === target.hitsMax
+        ||
+        (target.structureType === STRUCTURE_RAMPART && target.hits > Utils.rampartHealth(this.kernel, creep.room.name))
+      ){
         this.completed = true
         this.resumeParent()
         return

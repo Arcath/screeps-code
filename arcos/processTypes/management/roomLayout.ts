@@ -29,7 +29,9 @@ export class RoomLayoutProcess extends Process{
       }
 
       bunker = new Bunker(Memory.bunkers[this.metaData.roomName].bunkerBase)
-      bunker.build(room)
+      if(Game.time % 20 === 0){
+        bunker.build(room)
+      }
     }else{
       if(Game.flags[room.name + 'Bunker']){
         if(this.validateBase(Game.flags[room.name + 'Bunker'].pos, room)){

@@ -11,6 +11,12 @@ export class DistroLifetimeProcess extends LifetimeProcess{
 
     if(!creep){ return }
 
+    let container = <StructureContainer>Game.getObjectById(this.metaData.sourceContainer)
+    if(!container){
+      this.completed = true
+      return
+    }
+
     if(_.sum(creep.carry) === 0){
       this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
         target: this.metaData.sourceContainer,
@@ -22,15 +28,40 @@ export class DistroLifetimeProcess extends LifetimeProcess{
     }
 
     // If the creep has been refilled
+    let sourceContainer = <Structure>Game.getObjectById(this.metaData.sourceContainer)
+    if(sourceContainer.structureType != STRUCTURE_STORAGE && creep.room.storage){
+      if(this.kernel.getProcessByName('em-' + creep.room.name).metaData.distroCreeps[creep.room.storage!.id]){
+        if(_.sum(creep.room.storage!.store) < creep.room.storage!.storeCapacity){
+          this.fork(DeliverProcess, 'deliver-' + creep.name, this.priority - 1, {
+            creep: creep.name,
+            target: creep.room.storage!.id,
+            resource: RESOURCE_ENERGY
+          })
+
+          return
+        }
+      }
+    }
+
+
     let targets = [].concat(
       <never[]>this.kernel.data.roomData[creep.room.name].spawns,
-      <never[]>this.kernel.data.roomData[creep.room.name].extensions,
-      <never[]>this.kernel.data.roomData[creep.room.name].towers
+      <never[]>this.kernel.data.roomData[creep.room.name].extensions
     )
 
     let deliverTargets = _.filter(targets, function(target: DeliveryTarget){
       return (target.energy < target.energyCapacity)
     })
+
+    if(deliverTargets.length === 0){
+      let targets = [].concat(
+        <never[]>this.kernel.data.roomData[creep.room.name].towers
+      )
+
+      deliverTargets = _.filter(targets, function(target: DeliveryTarget){
+        return (target.energy < target.energyCapacity - 250)
+      })
+    }
 
     if(deliverTargets.length === 0){
       targets = [].concat(
@@ -56,7 +87,7 @@ export class DistroLifetimeProcess extends LifetimeProcess{
         resource: RESOURCE_ENERGY
       })
     }else{
-      this.suspend = 20
+      this.suspend = 10
     }
   }
 }

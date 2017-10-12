@@ -5,9 +5,14 @@ import {RemoteBuilderLifetimeProcess} from '../lifetimes/remoteBuilder'
 
 export class SpawnRemoteBuilderProcess extends Process{
   type = "spawnRemoteBuilder"
-  
+
   run(){
     let site = this.metaData.site
+
+    if(!site){
+      this.completed = true
+      return
+    }
 
     if(!this.kernel.hasProcess('rblf-rb-' + site)){
       let spawned = Utils.spawn(

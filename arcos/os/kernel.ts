@@ -16,6 +16,8 @@ import {MineralHarvestProcess} from '../processTypes/creepActions/mineralHarvest
 import {MineralharvesterLifetimeProcess} from '../processTypes/lifetimes/mineralHarvester'
 import {MineralManagementProcess} from '../processTypes/management/mineral'
 import {MoveProcess} from '../processTypes/creepActions/move'
+import {RangerLifetimeProcess} from '../processTypes/lifetimes/ranger'
+import {RangerManagementProcess} from '../processTypes/management/rangers'
 import {RemoteBuilderLifetimeProcess} from '../processTypes/lifetimes/remoteBuilder'
 import {RemoteMinerLifetimeProcess} from '../processTypes/lifetimes/remoteMiner'
 import {RemoteMiningManagementProcess} from '../processTypes/management/remoteMining'
@@ -24,8 +26,10 @@ import {RepairerLifetimeProcess} from '../processTypes/lifetimes/repairer'
 import {RoomDataProcess} from '../processTypes/roomData'
 import {RoomLayoutProcess} from '../processTypes/management/roomLayout'
 import {StructureManagementProcess} from '../processTypes/management/structure'
+import {SpawnRemoteBuilderProcess} from '../processTypes/system/spawnRemoteBuilder'
 import {SuspensionProcess} from '../processTypes/system/suspension'
 import {TowerDefenseProcess} from '../processTypes/buildingProcesses/towerDefense'
+import {TowerRepairProcess} from '../processTypes/buildingProcesses/towerRepair'
 import {UpgradeProcess} from '../processTypes/creepActions/upgrade'
 import {UpgraderLifetimeProcess} from '../processTypes/lifetimes/upgrader'
 
@@ -47,6 +51,8 @@ const processTypes = <{[type: string]: any}>{
   'mhlf': MineralharvesterLifetimeProcess,
   'mineralManagement': MineralManagementProcess,
   'move': MoveProcess,
+  'rangerLifetime': RangerLifetimeProcess,
+  'rangerManagement': RangerManagementProcess,
   'rblf': RemoteBuilderLifetimeProcess,
   'rmlf': RemoteMinerLifetimeProcess,
   'rmmp': RemoteMiningManagementProcess,
@@ -55,8 +61,10 @@ const processTypes = <{[type: string]: any}>{
   'roomData': RoomDataProcess,
   'roomLayout': RoomLayoutProcess,
   'sm': StructureManagementProcess,
+  'spawnRemoteBuilder': SpawnRemoteBuilderProcess,
   'suspend': SuspensionProcess,
   'td': TowerDefenseProcess,
+  'towerRepair': TowerRepairProcess,
   'upgrade': UpgradeProcess,
   'ulf': UpgraderLifetimeProcess
 }
@@ -232,7 +240,7 @@ export class Kernel{
 
   /** output a message to console */
   log(proc: Process, message: any){
-    console.log('[' + proc.name + '] ' + message)
+    console.log('{' + Game.time + '}[' + proc.name + '] ' + message)
   }
 
   /** Remove the process if it exists */
@@ -242,5 +250,12 @@ export class Kernel{
       proc.completed = true
       proc.ticked = true
     }
+  }
+
+  /** Get processes by type */
+  getProcessesByType(type: string){
+    return _.filter(this.processTable, function(process){
+      return (process.type === type)
+    })
   }
 }

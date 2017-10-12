@@ -2,6 +2,7 @@ import {LifetimeProcess} from '../../os/process'
 
 import {DeliverProcess} from '../creepActions/deliver'
 import {HarvestProcess} from '../creepActions/harvest'
+import {MoveProcess} from '../creepActions/move'
 
 export class RemoteMinerLifetimeProcess extends LifetimeProcess{
   type = 'rmlf'
@@ -18,7 +19,35 @@ export class RemoteMinerLifetimeProcess extends LifetimeProcess{
       return
     }
 
+    if(creep.room.name === flag.pos.roomName){
+      if(creep.room.find(FIND_HOSTILE_CREEPS).length > 0){
+        if(!Memory.remoteRoomStatus){
+          Memory.remoteRoomStatus = {}
+        }
+
+        Memory.remoteRoomStatus[creep.room.name] = false
+      }else{
+        if(!Memory.remoteRoomStatus){
+          Memory.remoteRoomStatus = {}
+        }
+        
+        Memory.remoteRoomStatus[creep.room.name] = true
+      }
+    }
+
     if(_.sum(creep.carry) === 0){
+      if(!creep.pos.isNearTo(flag)){
+        this.fork(MoveProcess, 'move-' + creep.name, this.priority - 1, {
+          creep: creep.name,
+          pos: {
+            x: flag.pos.x,
+            y: flag.pos.y,
+            roomName: flag.pos.roomName
+          },
+          range: 1
+        })
+      }
+
       this.fork(HarvestProcess, 'harvest-' + creep.name, this.priority - 1, {
         creep: creep.name,
         source: flag.memory.source

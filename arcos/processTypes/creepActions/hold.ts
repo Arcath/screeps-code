@@ -13,6 +13,22 @@ export class HoldProcess extends Process{
       return
     }
 
+    if(creep.room.name === flag.pos.roomName){
+      if(creep.room.find(FIND_HOSTILE_CREEPS).length > 0){
+        if(!Memory.remoteRoomStatus){
+          Memory.remoteRoomStatus = {}
+        }
+
+        Memory.remoteRoomStatus[creep.room.name] = false
+      }else{
+        if(!Memory.remoteRoomStatus){
+          Memory.remoteRoomStatus = {}
+        }
+
+        Memory.remoteRoomStatus[creep.room.name] = true
+      }
+    }
+
     if(!creep.pos.isNearTo(flag.pos)){
       this.fork(MoveProcess, 'move-' + creep.name, 30, {
         creep: creep.name,

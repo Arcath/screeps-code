@@ -1,6 +1,7 @@
 import {ClaimProcess} from './empireActions/claim'
 import {HoldRoomProcess} from './empireActions/hold'
 import {Process} from '../os/process'
+import {RangerManagementProcess} from './management/rangers'
 import {RemoteMiningManagementProcess} from './management/remoteMining'
 
 export class FlagWatcherProcess extends Process{
@@ -40,6 +41,15 @@ export class FlagWatcherProcess extends Process{
     )
   }
 
+  rangerFlag(flag: Flag){
+    let count = parseInt(flag.name.split('.')[1])
+    this.kernel.addProcessIfNotExist(RangerManagementProcess, flag.name + '-rangers', 70, {
+      flag: flag.name,
+      rangers: [],
+      count: count
+    })
+  }
+
   run(){
     this.completed = true
 
@@ -59,6 +69,9 @@ export class FlagWatcherProcess extends Process{
         break
         case COLOR_YELLOW:
           proc.remoteMiningFlag(flag)
+        break
+        case COLOR_BLUE:
+          proc.rangerFlag(flag)
         break
       }
     })

@@ -96,6 +96,16 @@ export class Process{
     return this.kernel.data.roomData[this.metaData.roomName]
   }
 
+  /** Returns the room instance */
+  room(){
+    return Game.rooms[this.metaData.roomName]
+  }
+
+  /** Returns the flag for this process */
+  flag(){
+    return Game.flags[this.metaData.flag]
+  }
+
   /** Use the Kernels Logger */
   log(message: string){
     this.kernel.log(this, message)

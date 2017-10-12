@@ -2,6 +2,7 @@ import {LifetimeProcess} from '../../os/process'
 
 import {BuildProcess} from '../creepActions/build'
 import {HarvestProcess} from '../creepActions/harvest'
+import {UpgradeProcess} from '../creepActions/upgrade'
 
 export class RemoteBuilderLifetimeProcess extends LifetimeProcess{
   type = 'rblf'
@@ -22,6 +23,14 @@ export class RemoteBuilderLifetimeProcess extends LifetimeProcess{
       this.fork(HarvestProcess, 'harvest-' + creep.name, this.priority - 1, {
         creep: creep.name,
         source: source.id
+      })
+
+      return
+    }
+
+    if(creep.room.controller!.level < 2 || creep.room.controller!.ticksToDowngrade < 4000){
+      this.fork(UpgradeProcess, 'upgrade-' + creep.name, this.priority - 1, {
+        creep: creep.name
       })
 
       return

@@ -25,12 +25,15 @@ interface SerializedProcess{
 interface RoomData{
   [name: string]: any
   constructionSites: ConstructionSite[]
+  coreLink: StructureLink | undefined
   containers: StructureContainer[]
   extensions: StructureExtension[]
   extractor: StructureExtractor | undefined
   generalContainers: StructureContainer[]
   mineral: Mineral | undefined
   labs: StructureLab[]
+  links: StructureLink[]
+  ramparts: StructureRampart[]
   roads: StructureRoad[]
   spawns: StructureSpawn[]
   sources: Source[]
@@ -72,6 +75,12 @@ interface EnergyManagementMetaData{
     [container: string]: string
   }
   upgradeCreeps: string[]
+  linker: string
+  linkRequests: {
+    link: string
+    send: boolean
+    stage: number
+  }[]
 }
 
 interface BunkerLayout{
@@ -83,6 +92,12 @@ interface BunkerLayout{
           y: number
         }
       ]
+    }
+  }
+  creeps: {
+    [creepName: string]: {
+      x: number,
+      y: number
     }
   }
 }
