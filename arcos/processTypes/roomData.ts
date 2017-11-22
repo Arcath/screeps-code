@@ -1,19 +1,10 @@
 import {Process} from '../os/process'
 
-import {MineralManagementProcess} from './management/mineral'
-import {RoomLayoutProcess} from './management/roomLayout'
-import {SpawnRemoteBuilderProcess} from './system/spawnRemoteBuilder'
-import {TowerDefenseProcess} from './buildingProcesses/towerDefense'
-import {TowerRepairProcess} from './buildingProcesses/towerRepair'
-
-interface RoomDataMeta{
-  roomName: string
-}
-
 export class RoomDataProcess extends Process{
-  type = "roomData"
+  type =  AOS_ROOM_DATA_PROCESS
 
-  metaData: RoomDataMeta
+  metaData: MetaData[AOS_ROOM_DATA_PROCESS]
+
   fields = [
     'constructionSites', 'containers', 'extensions', 'generalContainers', 'labs', 'links', 'ramparts', 'roads', 'spawns', 'sources', 'sourceContainers', 'towers'
   ]
@@ -23,7 +14,7 @@ export class RoomDataProcess extends Process{
   ]
 
   singleFields = [
-    'extractor', 'mineral', 'coreLink'
+    'extractor', 'mineral', 'coreLink', 'upgraderLink'
   ]
 
   run(){
@@ -43,7 +34,7 @@ export class RoomDataProcess extends Process{
       })
 
       if(spawnSites.length > 0 && hostiles.length === 0){
-        this.kernel.addProcess(SpawnRemoteBuilderProcess, 'srm-' + this.metaData.roomName, 90, {
+        this.kernel.addProcess(AOS_SPAWN_REMOTE_BUILDER_PROCESS, 'srm-' + this.metaData.roomName, 90, {
           site: spawnSites[0].id,
           roomName: this.metaData.roomName
         })
@@ -51,19 +42,25 @@ export class RoomDataProcess extends Process{
     }
 
     if(room.controller && room.controller.my && this.roomData().mineral && this.roomData().mineral!.mineralAmount > 0 && this.roomData().extractor){
-      this.kernel.addProcessIfNotExist(MineralManagementProcess, 'minerals-' + this.metaData.roomName, 20, {
+      this.kernel.addProcessIfNotExist(AOS_MINERAL_MANAGEMENT_PROCESS, 'minerals-' + this.metaData.roomName, 20, {
+        roomName: room.name
+      })
+    }
+
+    if(room.controller && room.controller.my && room.controller.level >= 6){
+      this.kernel.addProcessIfNotExist(AOS_LAB_MANAGEMENT_PROCESS, 'labs-' + this.metaData.roomName, 20, {
         roomName: room.name
       })
     }
 
     if(room.controller!.my){
-      this.kernel.addProcessIfNotExist(RoomLayoutProcess, 'room-layout-' + room.name, 20, {
+      this.kernel.addProcessIfNotExist(AOS_ROOM_LAYOUT_PROCESS, 'room-layout-' + room.name, 20, {
         roomName: room.name
       })
     }
 
     if(this.kernel.data.roomData[this.metaData.roomName].ramparts.length > 0){
-      this.kernel.addProcessIfNotExist(TowerRepairProcess, 'tower-repair-' + room.name, 20, {
+      this.kernel.addProcessIfNotExist(AOS_TOWER_REPAIR_PROCESS, 'tower-repair-' + room.name, 20, {
         roomName: room.name
       })
     }
@@ -133,6 +130,21 @@ export class RoomDataProcess extends Process{
       }
     })
 
+    let upgraderLink
+    _.forEach(links, function(link){
+      let controllers = link.pos.findInRange(FIND_STRUCTURES, 4, {
+        filter: function(structure: Structure){
+          return (structure.structureType === STRUCTURE_CONTROLLER)
+        }
+      })
+
+      let sources = link.pos.findInRange(FIND_SOURCES, 2)
+
+      if(controllers.length === 1 && sources.length === 0){
+        upgraderLink = link
+      }
+    })
+
     let roomData: RoomData = {
       constructionSites: <ConstructionSite[]>room.find(FIND_CONSTRUCTION_SITES),
       containers: containers,
@@ -157,7 +169,8 @@ export class RoomDataProcess extends Process{
       sourceContainerMaps: sourceContainerMaps,
       towers: <StructureTower[]>_.filter(myStructures, function(structure){
         return (structure.structureType === STRUCTURE_TOWER)
-      })
+      }),
+      upgraderLink: upgraderLink
     }
 
     this.kernel.data.roomData[this.metaData.roomName] = roomData
@@ -210,7 +223,8 @@ export class RoomDataProcess extends Process{
       sources: [],
       sourceContainers: [],
       sourceContainerMaps: <{[id: string]: StructureContainer}>{},
-      towers: []
+      towers: [],
+      upgraderLink: undefined
     }
     let run = true
     let i = 0
@@ -336,27 +350,35 @@ export class RoomDataProcess extends Process{
     let enemies = <Creep[]>room.find(FIND_HOSTILE_CREEPS)
 
     if(enemies.length > 0 && !this.kernel.hasProcess('td-' + this.metaData.roomName)){
-      this.kernel.addProcess(TowerDefenseProcess, 'td-' + this.metaData.roomName, 80, {
+      this.kernel.addProcess(AOS_TOWER_DEFENSE_PROCESS, 'td-' + this.metaData.roomName, 80, {
         roomName: this.metaData.roomName
       })
     }
 
     if(Memory.bunkers[room.name]){
-      let bunkerPos = new RoomPosition(
-        Memory.bunkers[room.name].bunkerBase.x,
-        Memory.bunkers[room.name].bunkerBase.y,
-        Memory.bunkers[room.name].bunkerBase.roomName
-      )
+      if(Memory.bunkers[room.name].bunkerBase){
+        let bunkerPos = new RoomPosition(
+          Memory.bunkers[room.name].bunkerBase.x,
+          Memory.bunkers[room.name].bunkerBase.y,
+          Memory.bunkers[room.name].bunkerBase.roomName
+        )
 
-      _.forEach(enemies, function(enemy){
-        if(enemy.pos.getRangeTo(bunkerPos) < 7){
-          room.controller!.activateSafeMode()
-        }
-      })
+        _.forEach(enemies, function(enemy){
+          if(enemy.pos.getRangeTo(bunkerPos) < 7){
+            room.controller!.activateSafeMode()
+          }
+        })
+      }
     }
 
     if(room.controller!.level === 2 && room.controller!.ticksToDowngrade < 30){
       room.controller!.activateSafeMode()
+    }
+
+    if(enemies.length > 0 && this.kernel.data.roomData[room.name].towers.length === 1){
+      if(this.kernel.data.roomData[room.name].towers[0].energy === 0 && !room.storage){
+        room.controller!.activateSafeMode()
+      }
     }
   }
 }

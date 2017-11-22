@@ -1,7 +1,8 @@
 import {Process} from '../../os/process'
 
 export class TowerRepairProcess extends Process{
-  type = "towerRepair"
+  type = AOS_TOWER_REPAIR_PROCESS
+  metaData: MetaData[AOS_TOWER_REPAIR_PROCESS]
 
   run(){
     if(!Game.rooms[this.metaData.roomName]){

@@ -1,7 +1,9 @@
 import {Process} from '../../os/process'
 
 export class SuspensionProcess extends Process{
-  type = 'suspend'
+  type = AOS_SUSPENSION_PROCESS
+  metaData: MetaData[AOS_SUSPENSION_PROCESS]
+
   /** Run the SuspensionProcess process */
   run(){
     let proc = this

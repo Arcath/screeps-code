@@ -1,9 +1,8 @@
-import {MoveProcess} from './move'
 import {Process} from '../../os/process'
 
 export class DeliverProcess extends Process{
-  metaData: DeliverProcessMetaData
-  type = 'deliver'
+  metaData: MetaData[AOS_DELIVER_PROCESS]
+  type = AOS_DELIVER_PROCESS
 
   run(){
     let creep = Game.creeps[this.metaData.creep]
@@ -17,7 +16,7 @@ export class DeliverProcess extends Process{
     }
 
     if(!creep.pos.inRangeTo(target, 1)){
-      this.kernel.addProcess(MoveProcess, creep.name + '-deliver-move', this.priority + 1, {
+      this.fork(AOS_MOVE_PROCESS, creep.name + '-deliver-move', this.priority + 1, {
         creep: creep.name,
         pos: {
           x: target.pos.x,
@@ -26,7 +25,6 @@ export class DeliverProcess extends Process{
         },
         range: 1
       })
-      this.suspend = creep.name + '-deliver-move'
     }else{
       if(creep.transfer(target, (this.metaData.resource || RESOURCE_ENERGY)) == ERR_FULL){
         this.completed = true

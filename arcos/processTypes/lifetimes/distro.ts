@@ -1,10 +1,8 @@
 import {LifetimeProcess} from '../../os/process'
 
-import {CollectProcess} from '../creepActions/collect'
-import {DeliverProcess} from '../creepActions/deliver'
-
 export class DistroLifetimeProcess extends LifetimeProcess{
-  type = 'dlf'
+  type = AOS_DISTRO_LIFETIME_PROCESS
+  metaData: MetaData[AOS_DISTRO_LIFETIME_PROCESS]
 
   run(){
     let creep = this.getCreep()
@@ -18,7 +16,7 @@ export class DistroLifetimeProcess extends LifetimeProcess{
     }
 
     if(_.sum(creep.carry) === 0){
-      this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
+      this.fork(AOS_COLLECT_PROCESS, 'collect-' + creep.name, this.priority - 1, {
         target: this.metaData.sourceContainer,
         creep: creep.name,
         resource: RESOURCE_ENERGY
@@ -32,7 +30,7 @@ export class DistroLifetimeProcess extends LifetimeProcess{
     if(sourceContainer.structureType != STRUCTURE_STORAGE && creep.room.storage){
       if(this.kernel.getProcessByName('em-' + creep.room.name).metaData.distroCreeps[creep.room.storage!.id]){
         if(_.sum(creep.room.storage!.store) < creep.room.storage!.storeCapacity){
-          this.fork(DeliverProcess, 'deliver-' + creep.name, this.priority - 1, {
+          this.fork(AOS_DELIVER_PROCESS, 'deliver-' + creep.name, this.priority - 1, {
             creep: creep.name,
             target: creep.room.storage!.id,
             resource: RESOURCE_ENERGY
@@ -53,7 +51,9 @@ export class DistroLifetimeProcess extends LifetimeProcess{
       return (target.energy < target.energyCapacity)
     })
 
-    if(deliverTargets.length === 0){
+    if(
+      deliverTargets.length === 0
+    ){
       let targets = [].concat(
         <never[]>this.kernel.data.roomData[creep.room.name].towers
       )
@@ -81,7 +81,7 @@ export class DistroLifetimeProcess extends LifetimeProcess{
     let target = creep.pos.findClosestByPath(deliverTargets)
 
     if(target){
-      this.fork(DeliverProcess, 'deliver-' + creep.name, this.priority -1, {
+      this.fork(AOS_DELIVER_PROCESS, 'deliver-' + creep.name, this.priority -1, {
         creep: creep.name,
         target: target.id,
         resource: RESOURCE_ENERGY

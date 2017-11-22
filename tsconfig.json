@@ -10,20 +10,22 @@
     "noUnusedParameters": true,
     "noUnusedLocals": true,
     "sourceMap": true,
-    "baseUrl": "./src/",
+    "baseUrl": "./arcos/",
     "outDir": "./lib/",
     "allowUnusedLabels": true
   },
   "compileOnSave": false,
   "include": [
     "arcos/**/*.ts",
-    "arcos/**/*.d.ts",
-    "typings/**/*.d.ts"
+    "arcos/**/*.d.ts"
   ],
   "exclude": [
     "dist",
     "node_modules",
     "src/snippets",
     "arcai2"
-  ]
+  ],
+  "compilerOptions": {
+    "types": ["@types/lodash", "typed-screeps", "@types/node"]
+  }
 }

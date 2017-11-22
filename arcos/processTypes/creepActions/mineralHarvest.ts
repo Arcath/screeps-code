@@ -1,9 +1,8 @@
 import {Process} from '../../os/process'
 
-import {MoveProcess} from './move'
-
 export class MineralHarvestProcess extends Process{
-  type = 'mh'
+  type = AOS_MINERAL_HARVEST_PROCESS
+  metaData: MetaData[AOS_MINERAL_HARVEST_PROCESS]
 
   run(){
     let creep = Game.creeps[this.metaData.creep]
@@ -17,7 +16,7 @@ export class MineralHarvestProcess extends Process{
     let mineral = <Mineral>Game.getObjectById(this.metaData.mineral)
 
     if(!creep.pos.isNearTo(mineral.pos)){
-      this.fork(MoveProcess, 'move-' + creep.name, this.priority - 1, {
+      this.fork(AOS_MOVE_PROCESS, 'move-' + creep.name, this.priority - 1, {
         creep: creep.name,
         pos: {
           x: mineral.pos.x,

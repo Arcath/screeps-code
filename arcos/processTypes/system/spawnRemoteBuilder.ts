@@ -1,10 +1,9 @@
 import {Process} from '../../os/process'
 import {Utils} from '../../lib/utils'
 
-import {RemoteBuilderLifetimeProcess} from '../lifetimes/remoteBuilder'
-
 export class SpawnRemoteBuilderProcess extends Process{
-  type = "spawnRemoteBuilder"
+  type = AOS_SPAWN_REMOTE_BUILDER_PROCESS
+  metaData: MetaData[AOS_SPAWN_REMOTE_BUILDER_PROCESS]
 
   run(){
     let site = this.metaData.site
@@ -24,7 +23,7 @@ export class SpawnRemoteBuilderProcess extends Process{
       )
 
       if(spawned){
-        this.kernel.addProcess(RemoteBuilderLifetimeProcess, 'rblf-rb-' + site, 70, {
+        this.kernel.addProcess(AOS_REMOTE_BUILDER_LIFETIME_PROCESS, 'rblf-rb-' + site, 70, {
           creep: 'rb-' + Game.time,
           site: site
         })

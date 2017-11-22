@@ -1,15 +1,9 @@
-import {MoveProcess} from './move'
 import {Process} from '../../os/process'
 import {Utils} from '../../lib/utils'
 
-interface RepairProcessMetaData{
-  creep: string
-  target: string
-}
-
 export class RepairProcess extends Process{
-  metaData: RepairProcessMetaData
-  type = 'repair'
+  metaData: MetaData[AOS_REPAIR_PROCESS]
+  type = AOS_REPAIR_PROCESS
 
   run(){
     let creep = Game.creeps[this.metaData.creep]
@@ -22,7 +16,7 @@ export class RepairProcess extends Process{
     }
 
     if(!creep.pos.inRangeTo(target, 3)){
-      this.kernel.addProcess(MoveProcess, creep.name + '-repair-move', this.priority + 1, {
+      this.fork(AOS_MOVE_PROCESS, creep.name + '-repair-move', this.priority + 1, {
         creep: creep.name,
         pos: {
           x: target.pos.x,
@@ -31,7 +25,6 @@ export class RepairProcess extends Process{
         },
         range: 3
       })
-      this.suspend = creep.name + '-repair-move'
     }else{
       if(
         target.hits === target.hitsMax

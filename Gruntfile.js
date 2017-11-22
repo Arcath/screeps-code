@@ -4,6 +4,7 @@ module.exports = function(grunt){
   grunt.loadNpmTasks('grunt-screeps')
   grunt.loadNpmTasks('grunt-shell')
   grunt.loadNpmTasks('grunt-file-append')
+  grunt.loadNpmTasks('grunt-contrib-copy')
 
   data = require('./private.json')
 
@@ -24,7 +25,8 @@ module.exports = function(grunt){
     },
     shell: {
       webpack: path.join('.', 'node_modules', '.bin', 'webpack'),
-      typescript: path.join('.', 'node_modules', '.bin', 'tsc')
+      typescript: path.join('.', 'node_modules', '.bin', 'tsc'),
+      mocha: path.join('.', 'node_modules', '.bin', 'mocha') + ' -c tests/*_tests.js'
     },
     file_append: {
       versioning: {
@@ -36,8 +38,16 @@ module.exports = function(grunt){
           }
         ]
       }
+    },
+    copy: {
+      vendor: {
+        files: [
+          {expand: true, src: '*.js', dest: 'lib/vendor/', filter: 'isFile', 'cwd': 'arcos/vendor'}
+        ]
+      }
     }
   })
 
-  grunt.registerTask('publish', ['shell:typescript', 'shell:webpack', 'file_append', 'screeps'])
+  grunt.registerTask('publish', ['shell:typescript', 'copy:vendor', 'shell:mocha', 'shell:webpack', 'file_append', 'screeps'])
+  grunt.registerTask('test', ['shell:typescript', 'copy:vendor', 'shell:mocha'])
 }

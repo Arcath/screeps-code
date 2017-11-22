@@ -1,6 +1,8 @@
 {
   "private": true,
   "dependencies": {
+    "@types/lodash": "^3.10.1",
+    "@types/node": "^8.0.50",
     "colors": "^1.1.2",
     "commander": "^2.11.0",
     "console.table": "^0.8.0",
@@ -13,10 +15,15 @@
     "sodb": "^1.2.5",
     "source-list-map": "^2.0.0",
     "table": "^4.0.1",
+    "typed-screeps": "^1.0.4",
     "webpack": "^3.0.0",
     "webpack-sources": "^1.0.1"
   },
   "devDependencies": {
+    "chai": "^4.1.2",
+    "grunt-contrib-copy": "^1.0.0",
+    "lodash": "^3.10.1",
+    "mocha": "^4.0.1",
     "typescript": "^2.5.2",
     "typings": "^2.1.1"
   }

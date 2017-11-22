@@ -1,6 +1,6 @@
 import {CreepBuilder} from './creepBuilder'
 import {Kernel} from '../os/kernel'
-import {Process} from '../os/process'
+import {Process, LifetimeProcess} from '../os/process'
 import {RoomPathFinder} from './roomPathFinder'
 
 export const Utils = {
@@ -31,7 +31,7 @@ export const Utils = {
   },
 
   spawn(kernel: Kernel, roomName: string, creepType: string, name: string, memory: any): boolean{
-    let body = CreepBuilder.design(creepType, Game.rooms[roomName])
+    let body = CreepBuilder.design(creepType, Game.rooms[roomName], kernel)
     let spawns = kernel.data.roomData[roomName].spawns
     let outcome = false
 
@@ -48,7 +48,18 @@ export const Utils = {
 
   withdrawTarget(creep: Creep, proc: Process){
     let withdraws = [].concat(
-      <never[]>proc.kernel.data.roomData[creep.room.name].generalContainers
+      <never[]>_.filter(proc.kernel.data.roomData[creep.room.name].generalContainers, function(container){
+        return (container.store.energy > 0)
+      })
+    )
+
+    let sourceContainers = <never[]>_.filter(proc.kernel.data.roomData[creep.room.name].sourceContainers, function(container){
+      return (container.store.energy > 1000)
+    })
+
+    withdraws = [].concat(
+      withdraws,
+      sourceContainers
     )
 
     if(creep.room.storage){
@@ -58,7 +69,17 @@ export const Utils = {
       )
     }
 
-    if(withdraws.length === 0 && proc.kernel.getProcessesByType('hlf').length > 1){
+    let inRoomHLF = _.filter(proc.kernel.getProcessesByType('hlf'), function(process: LifetimeProcess){
+      let crp = process.getCreep()
+
+      if(!crp){
+        return false
+      }
+
+      return creep.room.name === crp.room.name
+    })
+
+    if(withdraws.length === 0 && inRoomHLF.length > 1){
       withdraws = <never[]>proc.kernel.data.roomData[creep.room.name].spawns
       withdraws = <never[]>_.filter(withdraws, function(spawn: StructureSpawn){
         return (spawn.energy > 250 && spawn.room.energyAvailable > (spawn.room.energyCapacityAvailable - 50))
@@ -69,12 +90,11 @@ export const Utils = {
   },
 
   /** Returns the room closest to the source room with the required spawn energy */
-  nearestRoom(sourceRoom: string, minSpawnEnergy = 0){
+  nearestRoom(sourceRoom: string, minSpawnEnergy = 0, bestDistance = 999){
     let bestRoom = ''
-    let bestDistance = 999
 
     _.forEach(Game.rooms, function(room){
-      if(room.controller && room.controller.my){
+      if(room.controller && room.controller.my && room.name != sourceRoom){
         if(room.energyCapacityAvailable >= minSpawnEnergy){
           let path = new RoomPathFinder(sourceRoom, room.name).results()
 
@@ -90,7 +110,7 @@ export const Utils = {
   },
 
   /** Finds a room that can supply the given resource/amount */
-  findResource(room: string, resource: string, amount: number){
+  findResource(room: string, resource: ResourceConstant, amount: number){
     let rooms = <{
       name: string
       distance: number
@@ -133,5 +153,17 @@ export const Utils = {
         return target
       }
     }
+  },
+
+  /** Find hostile creeps, excludes creeps in the same alliance */
+  filterHostileCreeps(creeps: Creep[]){
+    return _.filter(creeps, function(creep){
+      if(Memory.loanData){
+        return !(_.include(Memory.loanData[AOS_ALLIANCE], creep.owner.username)) && (!_.include(AOS_NO_AGRESS, creep.owner.username))
+      }else{
+        console.log('LOAN Data not loaded')
+        return true
+      }
+    })
   }
 }

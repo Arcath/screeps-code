@@ -1,23 +1,33 @@
 interface PartList{
-  [name: string]: string[]
+  [name: string]: BodyPartConstant[]
 }
 
 interface WeightList{
   [part: string]: number
 }
 
+import {Kernel} from '../os/kernel'
+
 export const CreepBuilder = {
-  design: function(creepType: string, room: Room){
-    let body = <string[]>[].concat(<never[]>CreepBuilder.typeStarts[creepType])
+  design: function(creepType: string, room: Room, kernel: Kernel){
+    let body = <BodyPartConstant[]>[].concat(<never[]>CreepBuilder.typeStarts[creepType])
     let spendCap
 
-    let creepCount = _.filter(Game.creeps, function(creep){
-      return creep.room.name === room.name
-    }).length
-    let emergancy = (creepType === 'harvester' && creepCount < 2)
+    let creepCount = 0
+    let proc = kernel.getProcessByName('em-' + room.name)
+    _.forEach(Object.keys(proc.metaData.harvestCreeps), function(sourceId: string){
+      creepCount += proc.metaData.harvestCreeps[sourceId].length
+    })
+    let emergancy = (creepType === 'harvester' && creepCount === 0)
+
+    if(room.storage){
+      if(!proc.metaData.distroCreeps[room.storage.id] && creepType === 'mover'){
+        emergancy = true
+      }
+    }
 
     if(emergancy){
-      spendCap = 300
+      spendCap = room.energyAvailable
     }else{
       spendCap = room.energyCapacityAvailable
     }
@@ -50,7 +60,7 @@ export const CreepBuilder = {
     })
   },
 
-  bodyCost: function(body: string[]){
+  bodyCost: function(body: BodyPartConstant[]){
     let cost = 0
 
     for(let part in body){
@@ -73,31 +83,40 @@ export const CreepBuilder = {
 
   typeStarts: <PartList>{
     'claimer': [CLAIM, MOVE],
+    'defender': [RANGED_ATTACK, MOVE],
     'harvester': [WORK, WORK, CARRY, MOVE],
     'hold': [CLAIM, CLAIM, MOVE, MOVE],
     'mover': [CARRY, MOVE],
     'bunkerMover': [MOVE, CARRY],
     'ranger': [RANGED_ATTACK, TOUGH, MOVE, MOVE],
-    'worker': [WORK, CARRY, MOVE, MOVE]
+    'worker': [WORK, CARRY, MOVE, MOVE],
+    'transporter': [CARRY, MOVE],
+    'upgrader': [WORK, CARRY, MOVE, MOVE]
   },
 
   typeExtends: <PartList>{
-    'claimer': [],
+    'claimer': [MOVE],
+    'defender': [RANGED_ATTACK, MOVE],
     'harvester': [WORK, MOVE],
     'hold': [],
     'mover': [CARRY, MOVE],
     'bunkerMover': [CARRY],
-    'ranger': [RANGED_ATTACK, TOUGH, MOVE, MOVE],
-    'worker': [WORK, CARRY, MOVE, MOVE]
+    'ranger': [RANGED_ATTACK, TOUGH, MOVE, MOVE, HEAL],
+    'worker': [WORK, CARRY, MOVE, MOVE],
+    'transporter': [CARRY, MOVE],
+    'upgrader': [WORK, CARRY, MOVE]
   },
 
   typeLengths: <{[name: string]: number}>{
-    'claimer': 2,
+    'claimer': 5,
+    'defender': 20,
     'harvester': 12,
     'hold': 4,
-    'mover': 14,
+    'mover': 20,
     'bunkerMover': 17,
-    'ranger': 20,
-    'worker': 16
+    'ranger': 35,
+    'worker': 16,
+    'transporter': 28,
+    'upgrader': 24
   }
 }

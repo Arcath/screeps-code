@@ -1,13 +1,8 @@
-import {MoveProcess} from './move'
 import {Process} from '../../os/process'
 
-interface UpgradeProcessMetaData{
-  creep: string
-}
-
 export class UpgradeProcess extends Process{
-  metaData: UpgradeProcessMetaData
-  type = 'upgrade'
+  metaData: MetaData[AOS_UPGRADE_PROCESS]
+  type = AOS_UPGRADE_PROCESS
 
   run(){
     let creep = Game.creeps[this.metaData.creep]
@@ -19,7 +14,7 @@ export class UpgradeProcess extends Process{
     }
 
     if(!creep.pos.inRangeTo(creep.room.controller!, 3)){
-      this.kernel.addProcess(MoveProcess, creep.name + '-upgrade-move', this.priority + 1, {
+      this.fork(AOS_MOVE_PROCESS, creep.name + '-upgrade-move', this.priority + 1, {
         creep: creep.name,
         pos: {
           x: creep.room.controller!.pos.x,
@@ -28,7 +23,6 @@ export class UpgradeProcess extends Process{
         },
         range: 3
       })
-      this.suspend = creep.name + '-upgrade-move'
     }else{
       creep.upgradeController(creep.room.controller!)
     }

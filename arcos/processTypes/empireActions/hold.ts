@@ -1,10 +1,9 @@
-import {HoldProcess} from '../creepActions/hold'
 import {Process} from '../../os/process'
-
 import {Utils} from '../../lib/utils'
 
 export class HoldRoomProcess extends Process{
-  type = 'holdRoom'
+  type = AOS_HOLD_ROOM_PROCESS
+  metaData: MetaData[AOS_HOLD_ROOM_PROCESS]
 
   run(){
     let flag = Game.flags[this.metaData.flag]
@@ -14,7 +13,7 @@ export class HoldRoomProcess extends Process{
       return
     }
 
-    let creep = Game.creeps[this.metaData.creep]
+    let creep = Game.creeps[this.metaData.creep!]
 
     if(!creep){
       // Spawn a new Creep
@@ -31,7 +30,7 @@ export class HoldRoomProcess extends Process{
       }
     }else{
       // Use the existing creep
-      this.fork(HoldProcess, 'hold-' + creep.name, 30, {
+      this.fork(AOS_HOLD_PROCESS, 'hold-' + creep.name, 30, {
         flag: flag.name,
         creep: creep.name
       })

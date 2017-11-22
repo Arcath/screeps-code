@@ -1,11 +1,8 @@
 import {LifetimeProcess} from '../../os/process'
 
-import {BuildProcess} from '../creepActions/build'
-import {HarvestProcess} from '../creepActions/harvest'
-import {UpgradeProcess} from '../creepActions/upgrade'
-
 export class RemoteBuilderLifetimeProcess extends LifetimeProcess{
-  type = 'rblf'
+  type = AOS_REMOTE_BUILDER_LIFETIME_PROCESS
+  metaData: MetaData[AOS_REMOTE_BUILDER_LIFETIME_PROCESS]
 
   run(){
     let creep = this.getCreep()
@@ -18,25 +15,41 @@ export class RemoteBuilderLifetimeProcess extends LifetimeProcess{
     }
 
     if(_.sum(creep.carry) === 0){
-      let source = site.pos.findClosestByRange(this.kernel.data.roomData[site.pos.roomName].sources)
+      if(creep.room.storage){
+        this.fork(AOS_COLLECT_PROCESS, 'collect-' + creep.name, this.priority - 1, {
+          creep: creep.name,
+          target: creep.room.storage.id,
+          resource: RESOURCE_ENERGY
+        })
 
-      this.fork(HarvestProcess, 'harvest-' + creep.name, this.priority - 1, {
-        creep: creep.name,
-        source: source.id
-      })
+        return
+      }else{
+        let source = site.pos.findClosestByRange(this.kernel.data.roomData[site.pos.roomName].sources)
 
-      return
+        this.fork(AOS_HARVEST_PROCESS, 'harvest-' + creep.name, this.priority - 1, {
+          creep: creep.name,
+          source: source.id
+        })
+
+        return
+      }
     }
 
-    if(creep.room.controller!.level < 2 || creep.room.controller!.ticksToDowngrade < 4000){
-      this.fork(UpgradeProcess, 'upgrade-' + creep.name, this.priority - 1, {
+    if(
+      creep.room.controller!.level < 2
+      ||
+      creep.room.controller!.ticksToDowngrade < 4000
+      ||
+      creep.room.controller!.ticksToDowngrade < (CONTROLLER_DOWNGRADE[creep.room.controller!.level] - 5000)
+    ){
+      this.fork(AOS_UPGRADE_PROCESS, 'upgrade-' + creep.name, this.priority - 1, {
         creep: creep.name
       })
 
       return
     }
 
-    this.fork(BuildProcess, 'build-' + creep.name, this.priority - 1, {
+    this.fork(AOS_BUILD_PROCESS, 'build-' + creep.name, this.priority - 1, {
       creep: creep.name,
       site: site.id
     })

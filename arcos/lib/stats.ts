@@ -43,10 +43,16 @@ export const Stats = {
         Memory.stats['rooms.' + roomName + '.rcl.level'] = room.controller.level
         Memory.stats['rooms.' + roomName + '.rcl.progress'] = room.controller.progress
         Memory.stats['rooms.' + roomName + '.rcl.progressTotal'] = room.controller.progressTotal
+        Memory.stats['rooms.' + roomName + '.rcl.percentage'] = (room.controller.progress / room.controller.progressTotal) * 100
         Memory.stats['rooms.' + roomName + '.ramparts.target'] = Utils.rampartHealth(kernel, roomName)
+
+        Memory.stats['rooms.' + roomName + '.spawn.energy'] = room.energyAvailable
+        Memory.stats['rooms.' + roomName + '.spawn.energyTotal'] = room.energyCapacityAvailable
 
         if(room.storage){
           Memory.stats['rooms.' + roomName + '.storage.energy'] = room.storage.store.energy
+        }else{
+          Memory.stats['rooms.' + roomName + '.storage.energy'] = 0
         }
       }
     })

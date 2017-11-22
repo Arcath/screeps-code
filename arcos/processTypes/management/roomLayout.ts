@@ -1,9 +1,9 @@
 import {Process} from '../../os/process'
-
 import {Bunker} from '../../lib/classes/bunker'
 
 export class RoomLayoutProcess extends Process{
-  type = "roomLayout"
+  type = AOS_ROOM_LAYOUT_PROCESS
+  metaData: MetaData[AOS_ROOM_LAYOUT_PROCESS]
 
   run(){
     let room = Game.rooms[this.metaData.roomName]

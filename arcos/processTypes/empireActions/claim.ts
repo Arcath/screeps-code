@@ -1,19 +1,12 @@
 import {Process} from '../../os/process'
-import {MoveProcess} from '../creepActions/move'
 import {Utils} from '../../lib/utils'
 
-interface ClaimProcessMetaData{
-  creep: string
-  targetRoom: string
-  flagName: string
-}
-
 export class ClaimProcess extends Process{
-  metaData: ClaimProcessMetaData
-  type = 'claim'
+  metaData: MetaData[AOS_CLAIM_PROCESS]
+  type = AOS_CLAIM_PROCESS
 
   run(){
-    let creep = Game.creeps[this.metaData.creep]
+    let creep = Game.creeps[this.metaData.creep!]
 
     let flag = Game.flags[this.metaData.flagName]
 
@@ -26,9 +19,12 @@ export class ClaimProcess extends Process{
 
     if(!creep){
       let creepName = 'claim-' + this.metaData.targetRoom + '-' + Game.time
+      if(!this.metaData.spawnRoom){
+        this.metaData.spawnRoom = Utils.nearestRoom(this.metaData.targetRoom, 650)
+      }
       let spawned = Utils.spawn(
         this.kernel,
-        Utils.nearestRoom(this.metaData.targetRoom, 550),
+        this.metaData.spawnRoom,
         'claimer',
         creepName,
         {}
@@ -44,13 +40,11 @@ export class ClaimProcess extends Process{
     let room = Game.rooms[this.metaData.targetRoom]
 
     if(!room){
-      this.kernel.addProcess(MoveProcess, 'move-' + creep.name, this.priority - 1, {
+      this.fork(AOS_MOVE_PROCESS, 'move-' + creep.name, this.priority - 1, {
         creep: creep.name,
         pos: flag.pos,
         range: 1
       })
-
-      this.suspend = 'move-' + creep.name
     }else{
       creep.claimController(creep.room.controller!)
       this.completed = true

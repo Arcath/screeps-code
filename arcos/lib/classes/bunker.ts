@@ -297,6 +297,22 @@ export class Bunker{
     "creeps": {
       "linker": {"x": 1, "y": 3},
       "terminator": {"x": -1, "y": 3}
+    },
+    "labs": {
+      "reactions": [
+        {"x":-3,"y":2},
+        {"x":-3,"y":3},
+        {"x":-2,"y":3},
+        {"x":-4,"y":4},
+        {"x":-2,"y":4},
+        {"x":-4,"y":5}
+      ],
+      "boosts": [
+        {"x":-4,"y":2},
+        {"x":-5,"y":3},
+        {"x":-5,"y":4},
+        {"x":-3,"y":5}
+      ]
     }
   }
 
@@ -306,7 +322,13 @@ export class Bunker{
     if(Game.rooms[basePos.roomName]){
       let room = Game.rooms[basePos.roomName]
 
-      if(Memory.bunkers[room.name].bunker && Memory.bunkers[room.name].bunker.creeps){
+      if(
+        Memory.bunkers[room.name].bunker
+        &&
+        Memory.bunkers[room.name].bunker.creeps
+        &&
+        Memory.bunkers[room.name].bunker.labs
+      ){
         this.bunkerMap = Memory.bunkers[room.name].bunker
       }else{
         this.buildMap()
@@ -317,7 +339,7 @@ export class Bunker{
 
   buildMap(){
     let proxy = this
-    _.forEach(Object.keys(this.bunkerMap.buildings), function(structureType){
+    _.forEach(Object.keys(this.bunkerMap.buildings), function(structureType: BunkerStructures){
       _.forEach(proxy.bunkerMap.buildings[structureType].pos, function(pos){
         pos.x = pos.x + proxy.basePos.x
         pos.y = pos.y + proxy.basePos.y
@@ -328,13 +350,65 @@ export class Bunker{
       proxy.bunkerMap.creeps[creepType].x = proxy.bunkerMap.creeps[creepType].x + proxy.basePos.x
       proxy.bunkerMap.creeps[creepType].y = proxy.bunkerMap.creeps[creepType].y + proxy.basePos.y
     })
+
+    _.forEach(this.bunkerMap.labs.reactions, function(pos){
+      pos.x = pos.x + proxy.basePos.x
+      pos.y = pos.y + proxy.basePos.y
+    })
+
+    _.forEach(this.bunkerMap.labs.boosts, function(pos){
+      pos.x = pos.x + proxy.basePos.x
+      pos.y = pos.y + proxy.basePos.y
+    })
+  }
+
+  lookAtBunker(room: Room){
+    return room.lookForAtArea(
+      LOOK_STRUCTURES,
+      this.basePos.y - 6,
+      this.basePos.x - 6,
+      this.basePos.y + 6,
+      this.basePos.x + 6
+    )
   }
 
   build(room: Room){
     let proc = this
     let structureTypes = Object.keys(this.bunkerMap.buildings)
 
-    _.forEach(structureTypes, function(structureType){
+    let bunkerArea = this.lookAtBunker(room)
+
+    _.forEach(structureTypes, function(structureType: BunkerStructures){
+      _.forEach(proc.bunkerMap.buildings[structureType].pos, function(posEntry){
+        let build = true
+
+        if(bunkerArea[posEntry.y] && bunkerArea[posEntry.y][posEntry.x]){
+          let results = bunkerArea[posEntry.y][posEntry.x]
+          _.forEach(results, function(result){
+            if(result.structure && result.structure.structureType === structureType){
+              build = false
+            }
+          })
+        }
+
+        if(build){
+          if(
+            (structureType != STRUCTURE_RAMPART || room.controller!.level >= 3)
+            &&
+            (structureType != STRUCTURE_ROAD || room.controller!.level >= 3)
+          ){
+            if(Object.keys(Game.constructionSites).length < 90 || structureType === STRUCTURE_SPAWN){
+              let pos = new RoomPosition(posEntry.x, posEntry.y, room.name)
+              pos.createConstructionSite(structureType)
+            }
+          }
+        }
+      })
+    })
+
+
+
+    /*_.forEach(structureTypes, function(structureType: BunkerStructures){
       _.forEach(proc.bunkerMap.buildings[structureType].pos, function(posEntry){
         let looks = room.lookAt(posEntry.x, posEntry.y)
         let structures = _.filter(looks, function(entry){
@@ -353,11 +427,13 @@ export class Bunker{
             &&
             (structureType != STRUCTURE_ROAD || room.controller!.level >= 3)
           ){
-            let pos = new RoomPosition(posEntry.x, posEntry.y, room.name)
-            pos.createConstructionSite(structureType)
+            if(Object.keys(Game.constructionSites).length < 90 || structureType === STRUCTURE_SPAWN){
+              let pos = new RoomPosition(posEntry.x, posEntry.y, room.name)
+              pos.createConstructionSite(structureType)
+            }
           }
         }
       })
-    })
+    })*/
   }
 }

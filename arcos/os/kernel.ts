@@ -1,17 +1,22 @@
 import {Process} from './process'
 
+import {BoostProcess} from '../processTypes/creepActions/boost'
 import {BuildProcess} from '../processTypes/creepActions/build'
 import {BuilderLifetimeProcess} from '../processTypes/lifetimes/builder'
 import {ClaimProcess} from '../processTypes/empireActions/claim'
 import {CollectProcess} from '../processTypes/creepActions/collect'
+import {CourrierLifetimeProcess} from '../processTypes/lifetimes/courrier'
 import {DeliverProcess} from '../processTypes/creepActions/deliver'
 import {DistroLifetimeProcess} from '../processTypes/lifetimes/distro'
 import {EnergyManagementProcess} from '../processTypes/management/energy'
+import {FlagWatcherProcess} from '../processTypes/flagWatcher'
 import {InitProcess} from '../processTypes/system/init'
 import {HarvestProcess} from '../processTypes/creepActions/harvest'
 import {HarvesterLifetimeProcess} from '../processTypes/lifetimes/harvester'
 import {HoldRoomProcess} from '../processTypes/empireActions/hold'
 import {HoldProcess} from '../processTypes/creepActions/hold'
+import {LabManagementProcess} from '../processTypes/management/labs'
+import {LoanDataProcess} from '../processTypes/system/loanData'
 import {MineralHarvestProcess} from '../processTypes/creepActions/mineralHarvest'
 import {MineralharvesterLifetimeProcess} from '../processTypes/lifetimes/mineralHarvester'
 import {MineralManagementProcess} from '../processTypes/management/mineral'
@@ -30,23 +35,30 @@ import {SpawnRemoteBuilderProcess} from '../processTypes/system/spawnRemoteBuild
 import {SuspensionProcess} from '../processTypes/system/suspension'
 import {TowerDefenseProcess} from '../processTypes/buildingProcesses/towerDefense'
 import {TowerRepairProcess} from '../processTypes/buildingProcesses/towerRepair'
+import {TransporterLifetimeProcess} from '../processTypes/lifetimes/transporter'
 import {UpgradeProcess} from '../processTypes/creepActions/upgrade'
 import {UpgraderLifetimeProcess} from '../processTypes/lifetimes/upgrader'
 
 import {Stats} from '../lib/stats'
 
-const processTypes = <{[type: string]: any}>{
+export const processTypes = <{[type: string]: any}>{
+  'boost': BoostProcess,
   'build': BuildProcess,
   'blf': BuilderLifetimeProcess,
   'claim': ClaimProcess,
   'collect': CollectProcess,
+  'courrierLifetime': CourrierLifetimeProcess,
   'deliver': DeliverProcess,
   'dlf': DistroLifetimeProcess,
   'em': EnergyManagementProcess,
+  'flagWatcher': FlagWatcherProcess,
   'harvest': HarvestProcess,
   'hlf': HarvesterLifetimeProcess,
   'holdRoom': HoldRoomProcess,
   'hold': HoldProcess,
+  'init': InitProcess,
+  'labManagement': LabManagementProcess,
+  'loanData': LoanDataProcess,
   'mh': MineralHarvestProcess,
   'mhlf': MineralharvesterLifetimeProcess,
   'mineralManagement': MineralManagementProcess,
@@ -65,6 +77,7 @@ const processTypes = <{[type: string]: any}>{
   'suspend': SuspensionProcess,
   'td': TowerDefenseProcess,
   'towerRepair': TowerRepairProcess,
+  'transporterLifetime': TransporterLifetimeProcess,
   'upgrade': UpgradeProcess,
   'ulf': UpgraderLifetimeProcess
 }
@@ -74,6 +87,9 @@ interface KernelData{
     [name: string]: RoomData
   }
   usedSpawns: string[]
+  costMatrixes: {
+    [roomName: string]: CostMatrix
+  }
 }
 
 interface ProcessTable{
@@ -82,7 +98,7 @@ interface ProcessTable{
 
 export class Kernel{
   /** The CPU Limit for this tick */
-  limit = Game.cpu.limit * 0.9
+  limit: number
   /** The process table */
   processTable: ProcessTable = {}
   /** IPC Messages */
@@ -92,7 +108,8 @@ export class Kernel{
 
   data = <KernelData>{
     roomData: {},
-    usedSpawns: []
+    usedSpawns: [],
+    costMatrixes: {}
   }
 
   execOrder: {}[] = []
@@ -103,9 +120,40 @@ export class Kernel{
     if(!Memory.arcos)
       Memory.arcos = {}
 
+    this.setCPULimit()
+
     this.loadProcessTable()
 
-    this.addProcess(InitProcess, 'init', 99, {})
+    this.addProcess(AOS_INIT_PROCESS, 'init', 99, {})
+  }
+
+  sigmoid(x: number){
+    return 1.0 / (1.0 + Math.exp(-x))
+  }
+
+  sigmoidSkewed(x: number){
+    return this.sigmoid((x * 12.0) - 6.0)
+  }
+
+  /** Sets the CPU limit for the tick */
+  setCPULimit(){
+    let bucketCeiling = 9500
+    let bucketFloor = 2000
+    let cpuMin = 0.6
+
+    if(Game.cpu.bucket > bucketCeiling){
+      this.limit = Game.cpu.tickLimit - 10
+    }else if(Game.cpu.bucket < 1000){
+      this.limit = Game.cpu.limit * 0.4
+    }else if(Game.cpu.bucket < bucketFloor){
+      this.limit = Game.cpu.limit * cpuMin
+    }else{
+      let bucketRange = bucketCeiling - bucketFloor
+      let depthInRange = (Game.cpu.bucket - bucketFloor) / bucketRange
+      let minAssignable = Game.cpu.limit * cpuMin
+      let maxAssignable = Game.cpu.tickLimit - 15
+      this.limit = Math.round(minAssignable + this.sigmoidSkewed(depthInRange) * (maxAssignable - minAssignable))
+    }
   }
 
   /** Check if the current cpu usage is below the limit for this tick */
@@ -123,7 +171,6 @@ export class Kernel{
     let kernel = this
     _.forEach(Memory.arcos.processTable, function(entry){
       if(processTypes[entry.type]){
-        //kernel.processTable.push(new processTypes[entry.type](entry, kernel))
         kernel.processTable[entry.name] = new processTypes[entry.type](entry, kernel)
       }else{
         kernel.processTable[entry.name] = new Process(entry, kernel)
@@ -180,9 +227,22 @@ export class Kernel{
     process.ticked = true
   }
 
-  /** Add a process to the process table */
-  addProcess(processClass: any, name: string, priority: number, meta: {}, parent?: string | undefined){
-    let process = new processClass({
+  /**
+    Add a process to the process table
+    @param processClass The process class to use for this process
+    @param name The name of this process, must be unique.
+    @param priority The priority of this process. The higher the priority the more likely it is to be run.
+    @param meta The meta data for this process. Needs to be JSONable so plain types only.
+    @param parent (Optional) The name of the parent process.
+  */
+  addProcess<T extends ProcessTypes>(
+    processClass: T,
+    name: string,
+    priority: number,
+    meta: MetaData[T],
+    parent?: string | undefined
+  ){
+    let process = new processTypes[processClass]({
       name: name,
       priority: priority,
       metaData: meta,
@@ -194,7 +254,12 @@ export class Kernel{
   }
 
   /** Add a process to the process table if it does not exist */
-  addProcessIfNotExist(processClass: any, name: string, priority: number, meta: {}){
+  addProcessIfNotExist<T extends ProcessTypes>(
+    processClass: T,
+    name: string,
+    priority: number,
+    meta: MetaData[T]
+  ){
     if(!this.hasProcess(name)){
       this.addProcess(processClass, name, priority, meta)
     }
@@ -221,7 +286,18 @@ export class Kernel{
 
   /** get a process by name */
   getProcessByName(name: string){
+    console.log('[DEPRACATED] lookup for ' + name + ' use getProcess(type, name) instead')
     return this.processTable[name]
+  }
+
+  /** Get a typed process */
+  getProcess<T extends ProcessTypes>(processType: T, name: string){
+    let proc = this.getProcessByName(name)
+    if(proc && proc.type === processType){
+      return <ProcessWithTypedMetaData<T>>proc
+    }else{
+      return false
+    }
   }
 
   /** wait for the given process to complete and then runs cb */
@@ -253,7 +329,7 @@ export class Kernel{
   }
 
   /** Get processes by type */
-  getProcessesByType(type: string){
+  getProcessesByType(type: ProcessTypes){
     return _.filter(this.processTable, function(process){
       return (process.type === type)
     })

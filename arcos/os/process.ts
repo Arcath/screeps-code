@@ -1,5 +1,6 @@
 import {Kernel} from './kernel'
 
+/** Main Process Class */
 export class Process{
   /** Has the process been run this tick? */
   ticked = false
@@ -66,7 +67,7 @@ export class Process{
   }
 
   /** Create a new process on the kernel with this process as its parent and suspend the current process until it completes */
-  fork(processType: any, name: string, priority: number, meta: any){
+  fork<T extends ProcessTypes>(processType: T, name: string, priority: number, meta: MetaData[T]){
     this.kernel.addProcess(processType, name, priority, meta, this.name)
 
     this.suspend = name
@@ -113,6 +114,8 @@ export class Process{
 }
 
 export class LifetimeProcess extends Process{
+  metaData: CreepMetaData
+
   /** Returns the creep if it is alive, or completes the process */
   getCreep(): Creep | false{
     if(Game.creeps[this.metaData.creep]){

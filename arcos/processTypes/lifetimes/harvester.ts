@@ -1,13 +1,8 @@
 import {LifetimeProcess} from '../../os/process'
 
-import {BuildProcess} from '../creepActions/build'
-import {CollectProcess} from '../creepActions/collect'
-import {DeliverProcess} from '../creepActions/deliver'
-import {HarvestProcess} from '../creepActions/harvest'
-import {UpgradeProcess} from '../creepActions/upgrade'
-
 export class HarvesterLifetimeProcess extends LifetimeProcess{
-  type = 'hlf'
+  type = AOS_HARVESTER_LIFETIME_PROCESS
+  metaData: MetaData[AOS_HARVESTER_LIFETIME_PROCESS]
 
   run(){
     let creep = this.getCreep()
@@ -24,9 +19,14 @@ export class HarvesterLifetimeProcess extends LifetimeProcess{
           }
         })[0]
 
-        if(link){
+        let linker
+        let emProc = this.kernel.getProcess(AOS_ENERGY_MANAGEMENT_PROCESS, 'em-' + creep.room.name)
+        if(emProc){
+          linker = Game.creeps[emProc.metaData.linker!]
+        }
+        if(link && linker){
           if(container.store.energy > creep.carryCapacity){
-            this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
+            this.fork(AOS_COLLECT_PROCESS, 'collect-' + creep.name, this.priority - 1, {
               creep: creep.name,
               resource: RESOURCE_ENERGY,
               target: container.id
@@ -37,7 +37,7 @@ export class HarvesterLifetimeProcess extends LifetimeProcess{
         }
       }
 
-      this.fork(HarvestProcess, 'harvest-' + creep.name, this.priority - 1, {
+      this.fork(AOS_HARVEST_PROCESS, 'harvest-' + creep.name, this.priority - 1, {
         source: this.metaData.source,
         creep: creep.name
       })
@@ -47,9 +47,16 @@ export class HarvesterLifetimeProcess extends LifetimeProcess{
 
     // Creep has been harvesting and has energy in it
     let source = <Source>Game.getObjectById(this.metaData.source)
-    let constructionSites = <ConstructionSite[]>source.pos.findInRange(FIND_CONSTRUCTION_SITES, 1)
+    let constructionSites = <ConstructionSite[]>source.pos.findInRange(FIND_CONSTRUCTION_SITES, 2)
+    constructionSites = _.filter(constructionSites, function(site){
+      return (
+        site.structureType === STRUCTURE_CONTAINER
+        ||
+        site.structureType === STRUCTURE_LINK
+      )
+    })
     if(constructionSites.length > 0){
-      this.fork(BuildProcess, 'build-' + creep.name, this.priority - 1, {
+      this.fork(AOS_BUILD_PROCESS, 'build-' + creep.name, this.priority - 1, {
         creep: creep.name,
         site: constructionSites[0].id
       })
@@ -66,9 +73,10 @@ export class HarvesterLifetimeProcess extends LifetimeProcess{
         }
       })[0]
 
-      if(link){
+      let linker = Game.creeps[this.kernel.getProcessByName('em-' + creep.room.name).metaData.linker]
+      if(link && linker){
         if(link.energy < link.energyCapacity){
-          this.fork(DeliverProcess, 'deliver-' + creep.name, this.priority - 1, {
+          this.fork(AOS_DELIVER_PROCESS, 'deliver-' + creep.name, this.priority - 1, {
             target: link.id,
             creep: creep.name,
             resource: RESOURCE_ENERGY
@@ -97,7 +105,7 @@ export class HarvesterLifetimeProcess extends LifetimeProcess{
       }
 
       if(_.sum(container.store) < container.storeCapacity){
-        this.fork(DeliverProcess, 'deliver-' + creep.name, this.priority - 1, {
+        this.fork(AOS_DELIVER_PROCESS, 'deliver-' + creep.name, this.priority - 1, {
           target: container.id,
           creep: creep.name,
           resource: RESOURCE_ENERGY
@@ -141,9 +149,11 @@ export class HarvesterLifetimeProcess extends LifetimeProcess{
         &&
         this.kernel.getProcessByName('em-' + creep.room.name).metaData.distroCreeps[this.kernel.data.roomData[creep.room.name].sourceContainerMaps[this.metaData.source].id]
       )
+      ||
+      creep.room.controller!.ticksToDowngrade < 500
     ){
       // If there is no where to deliver to
-      this.kernel.addProcess(UpgradeProcess, creep.name + '-upgrade', this.priority, {
+      this.kernel.addProcess(AOS_UPGRADE_PROCESS, creep.name + '-upgrade', this.priority, {
         creep: creep.name
       })
 
@@ -154,7 +164,7 @@ export class HarvesterLifetimeProcess extends LifetimeProcess{
     // Find the nearest target
     let target = <Structure>creep.pos.findClosestByPath(deliverTargets)
 
-    this.fork(DeliverProcess, creep.name + '-deliver', this.priority, {
+    this.fork(AOS_DELIVER_PROCESS, creep.name + '-deliver', this.priority, {
       creep: creep.name,
       target: target.id,
       resource: RESOURCE_ENERGY

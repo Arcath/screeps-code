@@ -1,11 +1,10 @@
 import {LifetimeProcess} from '../../os/process'
 import {Utils} from '../../lib/utils'
 
-import {CollectProcess} from '../creepActions/collect'
-import {RepairProcess} from '../creepActions/repair'
 
 export class RepairerLifetimeProcess extends LifetimeProcess{
-  type = 'rlf'
+  type = AOS_REPAIRER_LIFETIME_PROCESS
+  metaData: MetaData[AOS_REPAIRER_LIFETIME_PROCESS]
 
   run(){
     let creep = this.getCreep()
@@ -16,7 +15,7 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
       let target = Utils.withdrawTarget(creep, this)
 
       if(target){
-        this.fork(CollectProcess, 'collect-' + creep.name, this.priority - 1, {
+        this.fork(AOS_COLLECT_PROCESS, 'collect-' + creep.name, this.priority - 1, {
           creep: creep.name,
           target: target.id,
           resource: RESOURCE_ENERGY
@@ -30,7 +29,7 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
     }
 
     // If the creep has been refilled
-    let repairableObjects = <StructureRoad[]>[].concat(
+    let repairableObjects = <RepairTarget[]>[].concat(
       <never[]>this.kernel.data.roomData[this.metaData.roomName].containers,
       <never[]>this.roomData().ramparts
     )
@@ -50,7 +49,7 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
     })
 
     if(repairTargets.length === 0){
-      let repairableObjects = <StructureRoad[]>[].concat(
+      let repairableObjects = <RepairTarget[]>[].concat(
         <never[]>this.kernel.data.roomData[this.metaData.roomName].roads
       )
 
@@ -68,9 +67,12 @@ export class RepairerLifetimeProcess extends LifetimeProcess{
     }
 
     if(repairTargets.length > 0){
-      let target = creep.pos.findClosestByPath(repairTargets)
+      //let target = creep.pos.findClosestByPath(repairTargets)
 
-      this.fork(RepairProcess, 'repair-' + creep.name, this.priority - 1, {
+      let sorted = _.sortBy(repairTargets, 'hits')
+      let target = sorted[0]
+
+      this.fork(AOS_REPAIR_PROCESS, 'repair-' + creep.name, this.priority - 1, {
         creep: creep.name,
         target: target.id
       })

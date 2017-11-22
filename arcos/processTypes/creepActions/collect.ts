@@ -1,15 +1,8 @@
-import {MoveProcess} from './move'
 import {Process} from '../../os/process'
 
-interface CollectProcessMetaData{
-  creep: string
-  target: string,
-  resource: string
-}
-
 export class CollectProcess extends Process{
-  metaData: CollectProcessMetaData
-  type = 'collect'
+  metaData: MetaData[AOS_COLLECT_PROCESS]
+  type = AOS_COLLECT_PROCESS
 
   run(){
     let creep = Game.creeps[this.metaData.creep]
@@ -29,7 +22,7 @@ export class CollectProcess extends Process{
     }
 
     if(!creep.pos.isNearTo(target)){
-      this.kernel.addProcess(MoveProcess, creep.name + '-collect-move', this.priority + 1, {
+      this.fork(AOS_MOVE_PROCESS, creep.name + '-collect-move', this.priority + 1, {
         creep: creep.name,
         pos: {
           x: target.pos.x,
@@ -38,7 +31,6 @@ export class CollectProcess extends Process{
         },
         range: 1
       })
-      this.suspend = creep.name + '-collect-move'
     }else{
       creep.withdraw(target, this.metaData.resource)
       this.completed = true

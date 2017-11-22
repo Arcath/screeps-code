@@ -1,8 +1,8 @@
-import {MoveProcess} from './move'
 import {Process} from '../../os/process'
 
 export class HoldProcess extends Process{
-  type = 'hold'
+  type = AOS_HOLD_PROCESS
+  metaData: MetaData[AOS_HOLD_PROCESS]
 
   run(){
     let creep = Game.creeps[this.metaData.creep]
@@ -30,7 +30,7 @@ export class HoldProcess extends Process{
     }
 
     if(!creep.pos.isNearTo(flag.pos)){
-      this.fork(MoveProcess, 'move-' + creep.name, 30, {
+      this.fork(AOS_MOVE_PROCESS, 'move-' + creep.name, 30, {
         creep: creep.name,
         pos: flag.pos,
         range: 1

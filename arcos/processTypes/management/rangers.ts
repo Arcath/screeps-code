@@ -1,9 +1,9 @@
 import {Process} from '../../os/process'
-import {RangerLifetimeProcess} from '../lifetimes/ranger'
 import {Utils} from '../../lib/utils'
 
 export class RangerManagementProcess extends Process{
-  type = 'rangerManagement'
+  type = AOS_RANGER_MANAGEMENT_PROCESS
+  metaData: MetaData[AOS_RANGER_MANAGEMENT_PROCESS]
 
   run(){
     this.metaData.rangers = Utils.clearDeadCreeps(this.metaData.rangers)
@@ -33,7 +33,7 @@ export class RangerManagementProcess extends Process{
 
       if(spawned){
         this.metaData.rangers.push(creepName)
-        this.kernel.addProcess(RangerLifetimeProcess, creepName + '-lifetime', this.priority - 1, {
+        this.kernel.addProcess(AOS_RANGER_LIFETIME_PROCESS, creepName + '-lifetime', this.priority - 1, {
           creep: creepName,
           flag: this.metaData.flag
         })

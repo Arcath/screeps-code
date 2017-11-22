@@ -1,14 +1,8 @@
 import {Process} from '../../os/process'
-import {MoveProcess} from './move'
-
-interface HarvestMetaData{
-  source: string
-  creep: string
-}
 
 export class HarvestProcess extends Process{
-  metaData: HarvestMetaData
-  type = 'harvest'
+  metaData: MetaData[AOS_HARVEST_PROCESS]
+  type = AOS_HARVEST_PROCESS
 
   run(){
     let creep = Game.creeps[this.metaData.creep]
@@ -30,7 +24,7 @@ export class HarvestProcess extends Process{
     }
 
     if(!creep.pos.inRangeTo(targetPos, targetRange)){
-      this.kernel.addProcess(MoveProcess, creep.name + '-harvest-move', this.priority + 1, {
+      this.fork(AOS_MOVE_PROCESS, creep.name + '-harvest-move', this.priority + 1, {
         creep: creep.name,
         pos: {
           x: targetPos.x,
@@ -39,7 +33,6 @@ export class HarvestProcess extends Process{
         },
         range: targetRange
       })
-      this.suspend = creep.name + '-harvest-move'
     }else{
       if(creep.harvest(source) === ERR_NOT_ENOUGH_RESOURCES){
         this.suspend = source.ticksToRegeneration
