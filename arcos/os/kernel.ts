@@ -141,6 +141,12 @@ export class Kernel{
     let bucketFloor = 2000
     let cpuMin = 0.6
 
+    if(Game.cpu.limit === undefined){
+      // We are in the simulator
+      this.limit = 1000
+      return
+    }
+
     if(Game.cpu.bucket > bucketCeiling){
       this.limit = Game.cpu.tickLimit - 10
     }else if(Game.cpu.bucket < 1000){

@@ -37,13 +37,13 @@ var emoji_language = {
 
   'pickup': [],
 
-  'rangedAttack': [],
+  'rangedAttack': <string[]>[],
 
-  'rangedHeal': [],
+  'rangedHeal': <string[]>[],
 
-  'rangedMassAttack': [],
+  'rangedMassAttack': <string[]>[],
 
-  'repair': [],
+  'repair': <string[]>[],
 
   'reserveController': [
     '🔒🔒🔒',
@@ -74,4 +74,4 @@ emoji_language.rangedMassAttack = emoji_language.attack
 emoji_language.rangedHeal = emoji_language.heal
 emoji_language.repair = emoji_language.build
 
-module.exports = emoji_language
+export const CreepTalkEmoji = emoji_language

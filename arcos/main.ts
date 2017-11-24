@@ -46,8 +46,11 @@ global.STATE_LOAD = 'load'
 global.STATE_READ = 'read'
 
 import {Kernel} from './os/kernel'
+import {CreepTalk} from './vendor/creepTalk'
+import {CreepTalkEmoji} from './vendor/creepTalk_emoji'
 
 module.exports.loop = function(){
+  console.log('[ARCOS] Begin Tick ' + Game.time)
   // Load Memory from the global object if it is there and up to date.
   if(global.lastTick && global.LastMemory && Game.time === (global.lastTick + 1)){
     delete global.Memory
@@ -61,9 +64,9 @@ module.exports.loop = function(){
   global.lastTick = Game.time
 
   // Load CreepTalk
-  require('./vendor/creepTalk')({
-    'public': true,
-    'language': require('./vendor/creepTalk_emoji')
+  new CreepTalk({
+    public: true,
+    language: CreepTalkEmoji
   })
 
   // Create a new Kernel

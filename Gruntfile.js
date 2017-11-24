@@ -48,6 +48,5 @@ module.exports = function(grunt){
     }
   })
 
-  grunt.registerTask('publish', ['shell:typescript', 'copy:vendor', 'shell:mocha', 'shell:webpack', 'file_append', 'screeps'])
-  grunt.registerTask('test', ['shell:typescript', 'copy:vendor', 'shell:mocha'])
+  grunt.registerTask('test', ['shell:typescript', 'shell:mocha'])
 }

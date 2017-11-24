@@ -456,3 +456,20 @@ interface RepairTarget{
   hitsMax: number
   id: string
 }
+
+interface Creep{
+  [name: string]: any
+
+  talk(group: string, public: boolean, languagePack: CreepTalkLanguage): void
+}
+
+interface CreepTalkOptions{
+  language: string | CreepTalkLanguage
+  public?: boolean
+}
+
+interface CreepTalkLanguage{
+  [action: string]: CreepTalkLanguageEntry
+}
+
+type CreepTalkLanguageEntry = string | string[]
