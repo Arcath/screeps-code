@@ -26,7 +26,7 @@ module.exports = function(grunt){
     shell: {
       webpack: path.join('.', 'node_modules', '.bin', 'webpack'),
       typescript: path.join('.', 'node_modules', '.bin', 'tsc'),
-      mocha: path.join('.', 'node_modules', '.bin', 'mocha') + ' -c tests/*_tests.js'
+      mocha: path.join('.', 'node_modules', '.bin', 'mocha') + ' -r ts-node/register -c tests/*.spec.ts'
     },
     file_append: {
       versioning: {

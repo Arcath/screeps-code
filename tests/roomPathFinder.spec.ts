@@ -1,23 +1,33 @@
-global.CARRY = 'carry'
-global.CLAIM = 'claim'
-global.MOVE = 'move'
-global.RANGED_ATTACK = 'ranged_attack'
-global.TOUGH = 'tough'
-global.WORK = 'work'
-global.HEAL = 'heal'
+/// <reference types="typed-screeps" />
+/// <reference path="../arcos/typings.d.ts" />
+
+const gl: any = global
+
+gl._ = require('lodash')
+
+gl.CARRY = 'carry'
+gl.CLAIM = 'claim'
+gl.MOVE = 'move'
+gl.RANGED_ATTACK = 'ranged_attack'
+gl.TOUGH = 'tough'
+gl.WORK = 'work'
+gl.HEAL = 'heal'
 
 const RoomPathFinder = require('../lib/lib/roomPathFinder').RoomPathFinder
 const Utils = require('../lib/lib/utils').Utils
 
-const expect = require('chai').expect
+import {expect} from 'chai'
 
-const roomNameToXY = function(name){
+const roomNameToXY = function(name: string){
     name = name.toUpperCase();
     var match = name.match(/^(\w)(\d+)(\w)(\d+)$/);
     if(!match) {
         return [undefined, undefined];
     }
-    var [,hor,x,ver,y] = match;
+    var [,hor,xS,ver,yS] = match;
+
+    let x = parseInt(xS)
+    let y = parseInt(yS)
 
     if(hor == 'W') {
         x = -x-1;
@@ -36,21 +46,24 @@ const roomNameToXY = function(name){
 
 describe('Room Path Finder', function(){
   before(function(){
-      global.roomMaps = require('./data/map.json')
+      gl.roomMaps = require('./data/map.json')
 
-      global.Game = {
+      gl.Game = {
         map: {
-          describeExits: function(roomName){
-            if(global.roomMaps.exits[roomName]){
-              return global.roomMaps.exits[roomName]
+          describeExits: function(roomName: string){
+            if(gl.roomMaps.exits[roomName]){
+              return gl.roomMaps.exits[roomName]
             }else{
               throw roomName + '\'s exits are not on file'
             }
           },
 
-          getRoomLinearDistance: function(room1, room2){
+          getRoomLinearDistance: function(room1: string, room2: string){
             var [x1,y1] = roomNameToXY(room1);
             var [x2,y2] = roomNameToXY(room2);
+            if(x1 === undefined || x2 === undefined || y1 === undefined || y2 === undefined){
+              return 0
+            }
             var dx = Math.abs(x2-x1);
             var dy = Math.abs(y2-y1);
 
@@ -80,14 +93,14 @@ describe('Room Path Finder', function(){
         }
       }
 
-      global._ = require('lodash')
+      gl._ = require('lodash')
   })
 
   it('should get linear distance correctly', function(done){
-    _.forEach(Object.keys(global.roomMaps.distance), function(key){
+    _.forEach(Object.keys(gl.roomMaps.distance), function(key){
       var rooms = key.split('-')
 
-      expect(Game.map.getRoomLinearDistance(rooms[0], rooms[1])).to.equal(global.roomMaps.distance[key])
+      expect(Game.map.getRoomLinearDistance(rooms[0], rooms[1])).to.equal(gl.roomMaps.distance[key])
     })
     done()
   })

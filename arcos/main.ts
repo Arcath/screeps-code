@@ -80,3 +80,7 @@ module.exports.loop = function(){
   // Tear down the OS
   kernel.teardown()
 }
+
+module.exports.loaded = function(){
+  return true
+}

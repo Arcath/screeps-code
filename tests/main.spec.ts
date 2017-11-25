@@ -1,17 +1,17 @@
 const Main = require('../lib/main')
 const processTypes = require('../lib/os/kernel').processTypes
-const expect = require('chai').expect
+import {expect} from 'chai'
 
 const fs = require('fs')
 const path = require('path')
 
-global._ = require('lodash')
+const gl: any = global
 
-const walkSync = function(dir, filelist, base) {
+gl._ = require('lodash')
+
+const walkSync = function(dir: string, filelist: string[] = [], base: string = '') {
   var files = fs.readdirSync(dir);
-  filelist = filelist || [];
-  base = base || ''
-  files.forEach(function(file) {
+  files.forEach(function(file: string) {
     if (fs.statSync(path.join(dir, file)).isDirectory()) {
       filelist = walkSync(path.join(dir, file), filelist, file);
     }
@@ -24,13 +24,15 @@ const walkSync = function(dir, filelist, base) {
 
 describe('Main', function(){
   it('should define all process types as AOS_* variables on global and in the kernel', function(){
+    expect(Main.loaded()).to.equal(true)
+
     expect(AOS_INIT_PROCESS).to.equal('init')
 
-    var types = []
-    var used = []
+    var types: string[] = []
+    var used: string[] = []
     _.forEach(Object.keys(global), function(key){
       if(key[0] === 'A' && key[1] === 'O' && key[2] == 'S'){
-        types.push(global[key])
+        types.push((<any>global)[key])
       }
     })
 
