@@ -13,7 +13,7 @@ export class Process{
   /** An object of meta data. Should be serializeable into JSON */
   metaData: any
   /** Process type, used to re-infalte on the next tick */
-  type: string
+  type: ProcessTypes
   /** The kernel that started this process. */
   kernel: Kernel
   /**

@@ -20,11 +20,11 @@ export class RangerLifetimeProcess extends LifetimeProcess{
 
     let hostiles = Utils.filterHostileCreeps(creep.room.find(FIND_HOSTILE_CREEPS))
 
-    if(!this.metaData.rangedBoosted && creep.room.controller && creep.room.controller.my && hostiles.length > 0){
+    /*if(!this.metaData.rangedBoosted && creep.room.controller && creep.room.controller.my && hostiles.length > 0){
       if(this.kernel.hasProcess('labs-' + creep.room.name)){
-        let proc = this.kernel.getProcessByName('labs-' + creep.room.name)
+        let proc = this.kernel.getProcess(AOS_LAB_MANAGEMENT_PROCESS, 'labs-' + creep.room.name)
 
-        if(proc.metaData.boosts[RESOURCE_CATALYZED_KEANIUM_ALKALIDE]){
+        if(proc && proc.metaData.boosts[RESOURCE_CATALYZED_KEANIUM_ALKALIDE]){
           this.fork(AOS_BOOST_PROCESS, 'boost-' + creep.name, this.priority - 1, {
             creep: creep.name,
             lab: proc.metaData.boosts[RESOURCE_CATALYZED_KEANIUM_ALKALIDE]
@@ -33,7 +33,7 @@ export class RangerLifetimeProcess extends LifetimeProcess{
           this.metaData.rangedBoosted = true
         }
       }
-    }
+    }*/
 
     if(creep.room.name != flag.pos.roomName && hostiles.length === 0){
       this.fork(AOS_MOVE_PROCESS, 'move-' + creep.name, this.priority - 1, {

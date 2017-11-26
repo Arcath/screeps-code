@@ -27,7 +27,7 @@ export class InitProcess extends Process{
         })
       //}
 
-      if(!proc.kernel.getProcessByName('em-' + room.name)){
+      if(!proc.kernel.hasProcess('em-' + room.name)){
         proc.kernel.addProcess(AOS_ENERGY_MANAGEMENT_PROCESS, 'em-' + room.name, 50, {
           roomName: room.name
         })

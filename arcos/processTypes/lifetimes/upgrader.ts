@@ -11,11 +11,12 @@ export class UpgraderLifetimeProcess extends LifetimeProcess{
 
     if(_.sum(creep.carry) === 0){
       let upgraderLink = this.kernel.data.roomData[creep.room.name].upgraderLink
+      let emProcess = this.kernel.getProcess(AOS_ENERGY_MANAGEMENT_PROCESS, 'em-' + creep.room.name)
 
-      if(upgraderLink){
+      if(upgraderLink && emProcess){
         if(upgraderLink.energy < creep.carryCapacity){
           let requests = _.filter(
-            this.kernel.getProcessByName('em-' + creep.room.name).metaData.linkRequests,
+            emProcess.metaData.linkRequests!,
             function(request: {
               link: string
             }){
@@ -31,7 +32,7 @@ export class UpgraderLifetimeProcess extends LifetimeProcess{
               creep.room.controller!.ticksToDowngrade < (CONTROLLER_DOWNGRADE[creep.room.controller!.level] - 3000)
             )
           ){
-            this.kernel.getProcessByName('em-' + creep.room.name).metaData.linkRequests.push({
+            emProcess.metaData.linkRequests!.push({
               link: upgraderLink!.id,
               send: true,
               stage: 0

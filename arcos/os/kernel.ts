@@ -292,7 +292,7 @@ export class Kernel{
 
   /** get a process by name */
   getProcessByName(name: string){
-    console.log('[DEPRACATED] lookup for ' + name + ' use getProcess(type, name) instead')
+    console.log('<span style="color:#e74c3c;">[DEPRACATED]</span> lookup for ' + name + ' use getProcess(type, name) instead')
     return this.processTable[name]
   }
 
@@ -322,7 +322,7 @@ export class Kernel{
 
   /** output a message to console */
   log(proc: Process, message: any){
-    console.log('{' + Game.time + '}[' + proc.name + '] ' + message)
+    console.log('<span style="color:#3498db">{' + Game.time + '}[' + proc.name + ']</span> ' + message)
   }
 
   /** Remove the process if it exists */

@@ -347,13 +347,17 @@ export class EnergyManagementProcess extends Process{
 
         let sourceRoom = rooms[0]
 
-        let sourceRoomProc = <EnergyManagementProcess>this.kernel.getProcessByName('em-' + sourceRoom.name)
+        let sourceRoomProc = this.kernel.getProcess(AOS_ENERGY_MANAGEMENT_PROCESS, 'em-' + sourceRoom.name)
 
-        let transfer = _.filter(sourceRoomProc.metaData.terminalTransfers!, function(transfer){
-          return (transfer.id === 'send-' + proc.metaData.roomName)
-        })[0]
+        let transfer: any = false
 
-        if(!transfer){
+        if(sourceRoomProc){
+          transfer = _.filter(sourceRoomProc.metaData.terminalTransfers!, function(transfer){
+            return (transfer.id === 'send-' + proc.metaData.roomName)
+          })[0]
+        }
+
+        if(!transfer && sourceRoomProc){
           sourceRoomProc.metaData.terminalTransfers!.push({
             id: 'send-' + this.metaData.roomName,
             in: true,

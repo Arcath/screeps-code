@@ -73,7 +73,11 @@ export class HarvesterLifetimeProcess extends LifetimeProcess{
         }
       })[0]
 
-      let linker = Game.creeps[this.kernel.getProcessByName('em-' + creep.room.name).metaData.linker]
+      let emProcess = this.kernel.getProcess(AOS_ENERGY_MANAGEMENT_PROCESS, 'em-' + creep.room.name)
+      let linker: Creep | boolean = false
+      if(emProcess){
+        linker = Game.creeps[emProcess.metaData.linker!]
+      }
       if(link && linker){
         if(link.energy < link.energyCapacity){
           this.fork(AOS_DELIVER_PROCESS, 'deliver-' + creep.name, this.priority - 1, {
@@ -84,22 +88,24 @@ export class HarvesterLifetimeProcess extends LifetimeProcess{
 
           return
         }else{
-          let requests = _.filter(
-            this.kernel.getProcessByName('em-' + creep.room.name).metaData.linkRequests,
-            function(request: {
-              link: string
-            }){
-              return (request.link === link.id)
+          if(emProcess){
+            let requests = _.filter(
+              emProcess.metaData.linkRequests!,
+              function(request: {
+                link: string
+              }){
+                return (request.link === link.id)
+              }
+            )
+            if(requests.length === 0){
+              this.kernel.getProcessByName('em-' + creep.room.name).metaData.linkRequests.push({
+                link: link.id,
+                send: false,
+                stage: 0
+              })
+  
+              return
             }
-          )
-          if(requests.length === 0){
-            this.kernel.getProcessByName('em-' + creep.room.name).metaData.linkRequests.push({
-              link: link.id,
-              send: false,
-              stage: 0
-            })
-
-            return
           }
         }
       }
