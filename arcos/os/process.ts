@@ -13,7 +13,7 @@ export class Process{
   /** An object of meta data. Should be serializeable into JSON */
   metaData: any
   /** Process type, used to re-infalte on the next tick */
-  type: ProcessTypes
+  type: string
   /** The kernel that started this process. */
   kernel: Kernel
   /**
@@ -38,7 +38,7 @@ export class Process{
     this.suspend = entry.suspend
 
     if(entry.parent){
-      this.parent = this.kernel.getProcessByName(entry.parent)
+      this.parent = this.kernel.processTable[entry.parent]
     }
   }
 

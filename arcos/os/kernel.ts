@@ -30,6 +30,7 @@ import {RepairProcess} from '../processTypes/creepActions/repair'
 import {RepairerLifetimeProcess} from '../processTypes/lifetimes/repairer'
 import {RoomDataProcess} from '../processTypes/roomData'
 import {RoomLayoutProcess} from '../processTypes/management/roomLayout'
+import {SourceMapProcess} from '../processTypes/system/sourceMap'
 import {StructureManagementProcess} from '../processTypes/management/structure'
 import {SpawnRemoteBuilderProcess} from '../processTypes/system/spawnRemoteBuilder'
 import {SuspensionProcess} from '../processTypes/system/suspension'
@@ -72,6 +73,7 @@ export const processTypes = <{[type: string]: any}>{
   'rlf': RepairerLifetimeProcess,
   'roomData': RoomDataProcess,
   'roomLayout': RoomLayoutProcess,
+  'sourceMap': SourceMapProcess,
   'sm': StructureManagementProcess,
   'spawnRemoteBuilder': SpawnRemoteBuilderProcess,
   'suspend': SuspensionProcess,
@@ -219,7 +221,14 @@ export class Kernel{
     try{
       process.run(this)
     }catch (e){
-      console.log('process ' + process.name + ' failed with error ' + e)
+      if(process.type === AOS_SOURCE_MAP_PROCESS){
+        console.log('<span style="color:#e74c3c">SOURCE MAP PROCESS FAILED</span> \n ' + e)
+      }else{
+        this.addProcess(AOS_SOURCE_MAP_PROCESS, process.name + '-error', 90, {
+          error: e,
+          processName: process.name
+        })
+      }
       faulted = true
     }
 
@@ -292,7 +301,7 @@ export class Kernel{
 
   /** get a process by name */
   getProcessByName(name: string){
-    console.log('<span style="color:#e74c3c;">[DEPRACATED]</span> lookup for ' + name + ' use getProcess(type, name) instead')
+   //console.log('<span style="color:#e74c3c;">[DEPRACATED]</span> lookup for ' + name + ' use getProcess(type, name) instead')
     return this.processTable[name]
   }
 
@@ -339,5 +348,15 @@ export class Kernel{
     return _.filter(this.processTable, function(process){
       return (process.type === type)
     })
+  }
+
+  /** Get a processes type */
+  getProcessType(processName: string){
+    let proc = this.processTable[processName]
+    if(proc){
+      return <ProcessTypes>proc.type
+    }else{
+      return false
+    }
   }
 }

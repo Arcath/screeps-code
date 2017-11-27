@@ -1,3 +1,5 @@
+/// <reference types="@types/source-map" />
+
 type AOS_BOOST_PROCESS = 'boost'
 type AOS_BUILD_PROCESS = 'build'
 type AOS_BUILDER_LIFETIME_PROCESS = 'blf'
@@ -28,6 +30,7 @@ type AOS_REPAIR_PROCESS = 'repair'
 type AOS_REPAIRER_LIFETIME_PROCESS = 'rlf'
 type AOS_ROOM_DATA_PROCESS = 'roomData'
 type AOS_ROOM_LAYOUT_PROCESS = 'roomLayout'
+type AOS_SOURCE_MAP_PROCESS = 'sourceMap'
 type AOS_SPAWN_REMOTE_BUILDER_PROCESS = 'spawnRemoteBuilder'
 type AOS_STRUCTURE_MANAGEMENT_PROCESS = 'sm'
 type AOS_SUSPENSION_PROCESS = 'suspend'
@@ -70,6 +73,7 @@ declare const AOS_REPAIR_PROCESS = 'repair'
 declare const AOS_REPAIRER_LIFETIME_PROCESS = 'rlf'
 declare const AOS_ROOM_DATA_PROCESS = 'roomData'
 declare const AOS_ROOM_LAYOUT_PROCESS = 'roomLayout'
+declare const AOS_SOURCE_MAP_PROCESS = 'sourceMap'
 declare const AOS_SPAWN_REMOTE_BUILDER_PROCESS = 'spawnRemoteBuilder'
 declare const AOS_STRUCTURE_MANAGEMENT_PROCESS = 'sm'
 declare const AOS_SUSPENSION_PROCESS = 'suspend'
@@ -117,6 +121,7 @@ type ProcessTypes =
   AOS_REPAIRER_LIFETIME_PROCESS |
   AOS_ROOM_DATA_PROCESS |
   AOS_ROOM_LAYOUT_PROCESS |
+  AOS_SOURCE_MAP_PROCESS |
   AOS_SPAWN_REMOTE_BUILDER_PROCESS |
   AOS_STRUCTURE_MANAGEMENT_PROCESS |
   AOS_SUSPENSION_PROCESS |
@@ -278,6 +283,10 @@ type MetaData = {
   roomLayout: RoomMetaData
   spawnRemoteBuilder: RoomMetaData & {
     site: string
+  },
+  sourceMap: {
+    error: Error | string
+    processName: string
   }
   sm: RoomMetaData & {
     spareCreeps?: string[]
@@ -309,6 +318,9 @@ declare namespace NodeJS{
     roomData: {
       [key: string]: RoomData
     }
+
+    SMConsumer: sourceMap.SourceMapConsumer
+
     AOS_BOOST_PROCESS: AOS_BOOST_PROCESS
     AOS_BUILD_PROCESS: AOS_BUILD_PROCESS
     AOS_BUILDER_LIFETIME_PROCESS: AOS_BUILDER_LIFETIME_PROCESS
@@ -339,6 +351,7 @@ declare namespace NodeJS{
     AOS_REPAIRER_LIFETIME_PROCESS: AOS_REPAIRER_LIFETIME_PROCESS
     AOS_ROOM_DATA_PROCESS: AOS_ROOM_DATA_PROCESS
     AOS_ROOM_LAYOUT_PROCESS: AOS_ROOM_LAYOUT_PROCESS
+    AOS_SOURCE_MAP_PROCESS: AOS_SOURCE_MAP_PROCESS
     AOS_SPAWN_REMOTE_BUILDER_PROCESS: AOS_SPAWN_REMOTE_BUILDER_PROCESS
     AOS_STRUCTURE_MANAGEMENT_PROCESS: AOS_STRUCTURE_MANAGEMENT_PROCESS
     AOS_SUSPENSION_PROCESS: AOS_SUSPENSION_PROCESS
