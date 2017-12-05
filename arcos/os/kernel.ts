@@ -30,6 +30,7 @@ import {RepairProcess} from '../processTypes/creepActions/repair'
 import {RepairerLifetimeProcess} from '../processTypes/lifetimes/repairer'
 import {RoomDataProcess} from '../processTypes/roomData'
 import {RoomLayoutProcess} from '../processTypes/management/roomLayout'
+import {ShardMoverProcess} from '../processTypes/system/shardMover'
 import {SourceMapProcess} from '../processTypes/system/sourceMap'
 import {StructureManagementProcess} from '../processTypes/management/structure'
 import {SpawnRemoteBuilderProcess} from '../processTypes/system/spawnRemoteBuilder'
@@ -73,6 +74,7 @@ export const processTypes = <{[type: string]: any}>{
   'rlf': RepairerLifetimeProcess,
   'roomData': RoomDataProcess,
   'roomLayout': RoomLayoutProcess,
+  'shardMover': ShardMoverProcess,
   'sourceMap': SourceMapProcess,
   'sm': StructureManagementProcess,
   'spawnRemoteBuilder': SpawnRemoteBuilderProcess,

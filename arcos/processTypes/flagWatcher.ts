@@ -1,4 +1,5 @@
 import {Process} from '../os/process'
+import {Utils} from '../lib/utils'
 
 export class FlagWatcherProcess extends Process{
   type = AOS_FLAG_WATCHER_PROCESS
@@ -28,6 +29,21 @@ export class FlagWatcherProcess extends Process{
         flag: flag.name
       }
     )
+  }
+
+  newShard(flag: Flag){
+    if(Object.keys(Game.creeps).length === 1){
+      this.kernel.addProcessIfNotExist(
+        AOS_CLAIM_PROCESS,
+        'claim-' + flag.name,
+        20,
+        {
+          targetRoom: flag.pos.roomName,
+          flagName: flag.name,
+          creep: Object.keys(Game.creeps)[0]
+        }
+      )
+    }
   }
 
   remoteMiningFlag(flag: Flag){
@@ -79,6 +95,60 @@ export class FlagWatcherProcess extends Process{
     flag.remove()
   }
 
+  shardMove(flag: Flag){
+    let creepType = 'no'
+    switch(flag.secondaryColor){
+      case COLOR_RED:
+        creepType = 'claimer'
+      break
+      case COLOR_YELLOW:
+        creepType = 'worker'
+      break
+    }
+
+    if(creepType !== 'no'){
+      let creepName = 'is-' + Game.time
+
+      let spawnRoom = Utils.nearestRoom(flag.pos.roomName, 650)
+      this.log(spawnRoom)
+
+      let spawned = Utils.spawn(
+        this.kernel,
+        spawnRoom,
+        creepType,
+        creepName,
+        {}
+      )
+
+      if(spawned){
+        this.kernel.addProcess(AOS_SHARD_MOVER_PROCESS, 'sm-' + creepName, 70, {
+          creep: creepName,
+          destination: {
+            roomName: flag.pos.roomName,
+            x: flag.pos.x,
+            y: flag.pos.y
+          }
+        })
+
+        flag.remove()
+      }
+    }
+  }
+
+  buildIt(flag: Flag){
+    if(Object.keys(Game.creeps).length === 1){
+      this.kernel.addProcessIfNotExist(
+        AOS_REMOTE_BUILDER_LIFETIME_PROCESS,
+        'rblf-' + flag.name,
+        20,
+        {
+          creep: Object.keys(Game.creeps)[0],
+          site: flag.name
+        }
+      )
+    }
+  }
+
   run(){
     this.completed = true
 
@@ -94,6 +164,9 @@ export class FlagWatcherProcess extends Process{
             case COLOR_RED:
               proc.claimFlag(flag)
             break
+            case COLOR_WHITE:
+              proc.newShard(flag)
+            break
           }
         break
         case COLOR_YELLOW:
@@ -108,6 +181,12 @@ export class FlagWatcherProcess extends Process{
               proc.setLinkerPos(flag)
             break
           }
+        break
+        case COLOR_GREEN:
+          proc.shardMove(flag)
+        break
+        case COLOR_BROWN:
+          proc.buildIt(flag)
         break
       }
     })

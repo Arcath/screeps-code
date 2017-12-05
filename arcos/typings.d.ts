@@ -30,6 +30,7 @@ type AOS_REPAIR_PROCESS = 'repair'
 type AOS_REPAIRER_LIFETIME_PROCESS = 'rlf'
 type AOS_ROOM_DATA_PROCESS = 'roomData'
 type AOS_ROOM_LAYOUT_PROCESS = 'roomLayout'
+type AOS_SHARD_MOVER_PROCESS = 'shardMover'
 type AOS_SOURCE_MAP_PROCESS = 'sourceMap'
 type AOS_SPAWN_REMOTE_BUILDER_PROCESS = 'spawnRemoteBuilder'
 type AOS_STRUCTURE_MANAGEMENT_PROCESS = 'sm'
@@ -73,6 +74,7 @@ declare const AOS_REPAIR_PROCESS = 'repair'
 declare const AOS_REPAIRER_LIFETIME_PROCESS = 'rlf'
 declare const AOS_ROOM_DATA_PROCESS = 'roomData'
 declare const AOS_ROOM_LAYOUT_PROCESS = 'roomLayout'
+declare const AOS_SHARD_MOVER_PROCESS = 'shardMover'
 declare const AOS_SOURCE_MAP_PROCESS = 'sourceMap'
 declare const AOS_SPAWN_REMOTE_BUILDER_PROCESS = 'spawnRemoteBuilder'
 declare const AOS_STRUCTURE_MANAGEMENT_PROCESS = 'sm'
@@ -121,6 +123,7 @@ type ProcessTypes =
   AOS_REPAIRER_LIFETIME_PROCESS |
   AOS_ROOM_DATA_PROCESS |
   AOS_ROOM_LAYOUT_PROCESS |
+  AOS_SHARD_MOVER_PROCESS |
   AOS_SOURCE_MAP_PROCESS |
   AOS_SPAWN_REMOTE_BUILDER_PROCESS |
   AOS_STRUCTURE_MANAGEMENT_PROCESS |
@@ -281,6 +284,13 @@ type MetaData = {
   rlf: CreepMetaData & RoomMetaData
   roomData: RoomMetaData
   roomLayout: RoomMetaData
+  shardMover: CreepMetaData & {
+    destination: {
+      roomName: string
+      x: number
+      y: number
+    }
+  },
   spawnRemoteBuilder: RoomMetaData & {
     site: string
   },
@@ -351,6 +361,7 @@ declare namespace NodeJS{
     AOS_REPAIRER_LIFETIME_PROCESS: AOS_REPAIRER_LIFETIME_PROCESS
     AOS_ROOM_DATA_PROCESS: AOS_ROOM_DATA_PROCESS
     AOS_ROOM_LAYOUT_PROCESS: AOS_ROOM_LAYOUT_PROCESS
+    AOS_SHARD_MOVER_PROCESS: AOS_SHARD_MOVER_PROCESS
     AOS_SOURCE_MAP_PROCESS: AOS_SOURCE_MAP_PROCESS
     AOS_SPAWN_REMOTE_BUILDER_PROCESS: AOS_SPAWN_REMOTE_BUILDER_PROCESS
     AOS_STRUCTURE_MANAGEMENT_PROCESS: AOS_STRUCTURE_MANAGEMENT_PROCESS
