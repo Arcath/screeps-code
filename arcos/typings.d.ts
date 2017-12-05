@@ -218,6 +218,7 @@ type MetaData = {
   hold: CreepMetaData & FlagMetaData
   holdRoom: FlagMetaData & {
     creep?: string
+    spawnRoom?: string
   }
   hlf: CreepMetaData & {
     source: string

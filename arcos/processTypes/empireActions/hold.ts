@@ -17,9 +17,14 @@ export class HoldRoomProcess extends Process{
 
     if(!creep){
       // Spawn a new Creep
+
+      if(!this.metaData.spawnRoom || Game.time % 1000 === 0){
+        this.metaData.spawnRoom = Utils.nearestRoom(flag.pos.roomName, 1300)
+      }
+
       let spawned = Utils.spawn(
         this.kernel,
-        Utils.nearestRoom(flag.pos.roomName, 1300),
+        this.metaData.spawnRoom,
         'hold',
         'h-' + flag.pos.roomName + '-' + Game.time,
         {}

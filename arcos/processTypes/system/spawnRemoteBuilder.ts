@@ -6,6 +6,10 @@ export class SpawnRemoteBuilderProcess extends Process{
   metaData: MetaData[AOS_SPAWN_REMOTE_BUILDER_PROCESS]
 
   run(){
+    if(Object.keys(Game.spawns).length === 0){
+      return
+    }
+
     let site = this.metaData.site
 
     if(!site){
