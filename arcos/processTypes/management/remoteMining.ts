@@ -21,6 +21,11 @@ export class RemoteMiningManagementProcess extends Process{
     let miningCreep = Game.creeps[this.metaData.miningCreep!]
     let deliverRoom = flag.name.split('-')[0]
 
+    if(!Game.rooms[deliverRoom]){
+      this.completed = true
+      return
+    }
+
     if(!miningCreep){
       let spawned = Utils.spawn(
         this.kernel,

@@ -16,6 +16,11 @@ export class LabManagementProcess extends Process{
   boosts: {[boost: string]: string} = {}
 
   run(){
+    if(!this.room()){
+      this.completed = true
+      return
+    }
+
     this.ensureMetaData()
     this.checkLabs()
     this.checkLevels()
@@ -100,7 +105,6 @@ export class LabManagementProcess extends Process{
     _.forEach(this.metaData.boostLabs!, function(labId){
       let boost = proc.boostPriority[i]
       let lab = <StructureLab>Game.getObjectById<StructureLab>(labId)
-      proc.log(boost)
       if(boost){
         new RoomVisual(proc.metaData.roomName).text(boost, lab!.pos.x, lab!.pos.y, {color: '#9b59b6', font: 0.4})
 
@@ -109,7 +113,6 @@ export class LabManagementProcess extends Process{
             if(proc.room().terminal){
               if(proc.room().terminal!.store[boost]){
                 // Move boost to lab
-                proc.log('pickup ' + boost + ' from terminal')
                 proc.pickups.push([boost, lab.id])
               }else{
                 // Buy boost
@@ -124,13 +127,11 @@ export class LabManagementProcess extends Process{
                 let sorted = _.sortBy(orders, 'price')
 
                 if(sorted[0]){
-                  let result = Game.market.deal(
+                  Game.market.deal(
                     sorted[0].id,
                     (lab.mineralCapacity - lab.mineralAmount),
                     proc.metaData.roomName
                   )
-
-                  proc.log('res: ' + result)
                 }
               }
             }
@@ -145,8 +146,6 @@ export class LabManagementProcess extends Process{
   runCreep(creep: Creep){
     if(!this.metaData.creepProcess){
       // No Creep Process
-
-      this.log('creep needs process')
 
       if(this.pickups.length > 0 && creep.carry.energy === 0){
         if(!creep.carry[this.pickups[0][0]]){

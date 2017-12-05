@@ -64,15 +64,13 @@ export class EnergyManagementProcess extends Process{
 
         let spawnRoom = proc.metaData.roomName
 
-        if(proc.room().energyCapacityAvailable < 800 && proc.roomData().spawns.length > 0){
-          let nearestRoom = Utils.nearestRoom(proc.metaData.roomName, 800, 10)
+        /*if(proc.room().energyCapacityAvailable < 800 && proc.roomData().spawns.length > 0){
+          let nearestRoom = Utils.nearestRoom(proc.metaData.roomName, 800, 5)
 
           if(nearestRoom != ''){
             spawnRoom = nearestRoom
           }
-        }
-
-        proc.log('spawning in ' + spawnRoom)
+        }*/
 
         let spawned = Utils.spawn(
           proc.kernel,
@@ -668,7 +666,8 @@ export class EnergyManagementProcess extends Process{
 
         if(spawned){
           this.kernel.addProcess(AOS_COURRIER_LIFETIME_PROCESS, 'courrierLifetime-' + creepName, 60, {
-            creep: creepName
+            creep: creepName,
+            roomName: this.metaData.roomName
           })
 
           this.metaData.courrier = creepName

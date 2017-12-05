@@ -175,7 +175,7 @@ type MetaData = {
     spawnRoom?: string
   }
   collect: ResourceMoveMetaData
-  courrierLifetime: CreepMetaData
+  courrierLifetime: CreepMetaData & RoomMetaData
   deliver: ResourceMoveMetaData
   dlf: CreepMetaData & {
     sourceContainer: string

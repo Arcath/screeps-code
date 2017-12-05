@@ -96,11 +96,13 @@ export const Utils = {
     _.forEach(Game.rooms, function(room){
       if(room.controller && room.controller.my && room.name != sourceRoom){
         if(room.energyCapacityAvailable >= minSpawnEnergy){
-          let path = new RoomPathFinder(sourceRoom, room.name).results()
-
-          if(path.length < bestDistance){
-            bestDistance = path.length
-            bestRoom = room.name
+          if(Game.map.getRoomLinearDistance(sourceRoom, room.name) < 10){
+            let path = new RoomPathFinder(sourceRoom, room.name).results()
+            
+            if(path.length < bestDistance){
+              bestDistance = path.length
+              bestRoom = room.name
+            }
           }
         }
       }
