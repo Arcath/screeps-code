@@ -14,6 +14,10 @@ export class MoveProcess extends Process{
       return
     }
 
+    if(creep.spawning){
+      return
+    }
+
     /*let triggers = _.filter(creep.body, function(part){
       return (part.type === HEAL || part.type === RANGED_ATTACK || part.type === ATTACK)
     })
@@ -25,8 +29,8 @@ export class MoveProcess extends Process{
         return
       }
     //}
-
-    this.oldRun()
+    
+    this.newRun()
   }
 
   newRun(){
@@ -68,36 +72,39 @@ export class MoveProcess extends Process{
   }
 
   move(creep: Creep, target: RoomPosition){
-    let path: string
-    let stuck = this.isStuck(creep)
-    let newPath = false
-
-    if(!this.metaData.path && !stuck){
-      this.log('generating path because "' + JSON.stringify(this.metaData.path)+ '" is falsey and stuck is ' + stuck)
-      path = this.generatePath(creep.pos, target, true)
-      newPath = true
-    }else{
-      if(stuck){
-        this.log('generating path because there is one but the creep is stuck')
-        path = this.generatePath(creep.pos, target, false)
-        newPath = true
+    if(this.metaData.path){
+      // There is a path to move along.
+      if(!this.samePos(creep.pos, this.inflatePos(this.metaData.lastPos!))){
+        // The creep has moved since the last tick.
+        // Reduce the path by 1
+        this.metaData.path = this.metaData.path.substr(1)
+        // Set stuck to 0
+        this.metaData.stuck = 0
       }else{
-        path = this.metaData.path!
+        // The creep did not move after the last tick.
+        // Add 1 to the stuck timer
+        this.metaData.stuck! += 1
+        if(this.metaData.stuck! > 3){
+          // The creep has been stuck for 3 ticks
+          // Generate a new path that avoids creeps
+          this.metaData.path = this.generatePath(creep.pos, target, false)
+        }
       }
+    }else{
+      // There is no path.
+      this.metaData.path = this.generatePath(creep.pos, target, true)
+      // Set stuck to 0 as this is a new path.
+      this.metaData.stuck = 0
     }
 
-    this.drawPath(creep, path)
+    // Set last pos to the creeps current pos
+    this.metaData.lastPos = this.deflatePos(creep.pos)
 
-    if(this.metaData.stuck === 0){
-      this.log('shortening path because stuck is ' + this.metaData.stuck)
-      this.metaData.path = path.substr(1)
-    }else if(newPath){
-      this.metaData.path = path
-    }
+    // Draw the path
+    this.drawPath(creep, this.metaData.path)
 
-    this.metaData.lastPos = [creep.pos.x, creep.pos.y, creep.pos.roomName]
-
-    let nextDirection = <DirectionConstant>parseInt(path.substr(0,1))
+    // Move the creep along the path
+    let nextDirection = <DirectionConstant>parseInt(this.metaData.path.substr(0,1))
     creep.move(nextDirection)
   }
 
@@ -194,7 +201,6 @@ export class MoveProcess extends Process{
   }
 
   generatePath(start: RoomPosition, end: RoomPosition, ignoreCreeps: boolean): string{
-    this.log('generating path')
     let allowedRooms: string[]
     if(start.roomName != end.roomName){
       let roomPath = new RoomPathFinder(start.roomName, end.roomName)
@@ -212,7 +218,10 @@ export class MoveProcess extends Process{
       }
     }
 
-    let  result = PathFinder.search(start, end, {
+    let result = PathFinder.search(start, {
+      pos: end,
+      range: this.metaData.range
+    }, {
       roomCallback: roomCallback,
       plainCost: 2,
       swampCost: 5
@@ -228,26 +237,11 @@ export class MoveProcess extends Process{
 
     if(room){
       this.addStructuresToMatrix(room, matrix)
-
-      this.log(JSON.stringify(ignoreCreeps))
+    
       if(!ignoreCreeps){
-        this.log('ignore creeps')
         matrix = matrix.clone()
         this.addCreepsToMatrix(room, matrix)
       }
-    }
-
-    let i = 0
-    let j = 0
-    let visual = new RoomVisual(roomName)
-
-    while(i < 50){
-      while(j < 50){
-        visual.text(matrix.get(i, j).toString(), i, j, {color: 'white', font: 0.5})
-        j++
-      }
-      j = 0
-      i++
     }
 
     return matrix
