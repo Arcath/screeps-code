@@ -1,7 +1,13 @@
 import {Process} from '../../os/process'
 import {SourceMapConsumer} from "source-map"
 
-const consumer = new SourceMapConsumer(require('main.js.map'))
+let consumer = new SourceMapConsumer({version: '3', sources: [], names: [], mappings: ''})
+
+try{
+  consumer = new SourceMapConsumer(require('main.js.map'))
+}catch (e){
+  console.log('Could not load source map!')
+}
 
 export class SourceMapProcess extends Process{
   type: AOS_SOURCE_MAP_PROCESS = AOS_SOURCE_MAP_PROCESS
