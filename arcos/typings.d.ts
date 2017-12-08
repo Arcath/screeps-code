@@ -15,6 +15,7 @@ type AOS_HARVESTER_LIFETIME_PROCESS = 'hlf'
 type AOS_HOLD_PROCESS = 'hold'
 type AOS_HOLD_ROOM_PROCESS = 'holdRoom'
 type AOS_INIT_PROCESS = 'init'
+type AOS_INTER_SHARD_PROCESS = 'interShard'
 type AOS_LAB_MANAGEMENT_PROCESS = 'labManagement'
 type AOS_LOAN_DATA_PROCESS = 'loanData'
 type AOS_MINERAL_HARVEST_PROCESS = 'mh'
@@ -43,6 +44,8 @@ type AOS_UPGRADER_LIFETIME_PROCESS = 'ulf'
 
 type STATE_LOAD = 'load'
 type STATE_READ = 'read'
+type STATE_WRITE = 'write'
+type STATE_CONFIRMED = 'confirmed'
 
 declare const AOS_BOOST_PROCESS = 'boost'
 declare const AOS_BUILD_PROCESS = 'build'
@@ -59,6 +62,7 @@ declare const AOS_HARVESTER_LIFETIME_PROCESS = 'hlf'
 declare const AOS_HOLD_PROCESS = 'hold'
 declare const AOS_HOLD_ROOM_PROCESS = 'holdRoom'
 declare const AOS_INIT_PROCESS = 'init'
+declare const AOS_INTER_SHARD_PROCESS = 'interShard'
 declare const AOS_LAB_MANAGEMENT_PROCESS = 'labManagement'
 declare const AOS_LOAN_DATA_PROCESS = 'loanData'
 declare const AOS_MINERAL_HARVEST_PROCESS = 'mh'
@@ -87,6 +91,8 @@ declare const AOS_UPGRADER_LIFETIME_PROCESS = 'ulf'
 
 declare const STATE_LOAD = 'load'
 declare const STATE_READ = 'read'
+declare const STATE_WRITE = 'write'
+declare const STATE_CONFIRMED = 'confirmed'
 
 /** Alliance Name (LOAN Data Key) */
 declare const AOS_ALLIANCE: string
@@ -107,6 +113,7 @@ type ProcessTypes =
   AOS_HARVESTER_LIFETIME_PROCESS |
   AOS_HOLD_PROCESS |
   AOS_HOLD_ROOM_PROCESS |
+  AOS_INTER_SHARD_PROCESS |
   AOS_INIT_PROCESS |
   AOS_LAB_MANAGEMENT_PROCESS |
   AOS_LOAN_DATA_PROCESS |
@@ -224,6 +231,20 @@ type MetaData = {
     source: string
   }
   init: {}
+  interShard: {
+    state: STATE_READ | STATE_WRITE
+    data?: {
+      type: string
+      metaData: string
+      target: string
+    }
+    shardData?: {
+      [shard: string]: {
+        roomCount: number
+      }
+    }
+    lastShard?: number
+  }
   labManagement: RoomMetaData & {
     creep?: string
     creepProcess?: string | false
@@ -347,6 +368,7 @@ declare namespace NodeJS{
     AOS_HOLD_PROCESS: AOS_HOLD_PROCESS
     AOS_HOLD_ROOM_PROCESS: AOS_HOLD_ROOM_PROCESS
     AOS_INIT_PROCESS: AOS_INIT_PROCESS
+    AOS_INTER_SHARD_PROCESS: AOS_INTER_SHARD_PROCESS
     AOS_LAB_MANAGEMENT_PROCESS: AOS_LAB_MANAGEMENT_PROCESS
     AOS_LOAN_DATA_PROCESS: AOS_LOAN_DATA_PROCESS
     AOS_MINERAL_HARVEST_PROCESS: AOS_MINERAL_HARVEST_PROCESS
@@ -374,6 +396,8 @@ declare namespace NodeJS{
     AOS_UPGRADER_LIFETIME_PROCESS: AOS_UPGRADER_LIFETIME_PROCESS
     STATE_LOAD: STATE_LOAD
     STATE_READ: STATE_READ
+    STATE_WRITE: STATE_WRITE
+    STATE_CONFIRMED: STATE_CONFIRMED
     AOS_ALLIANCE: string
     AOS_NO_AGRESS: string[]
   }

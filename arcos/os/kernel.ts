@@ -11,6 +11,7 @@ import {DistroLifetimeProcess} from '../processTypes/lifetimes/distro'
 import {EnergyManagementProcess} from '../processTypes/management/energy'
 import {FlagWatcherProcess} from '../processTypes/flagWatcher'
 import {InitProcess} from '../processTypes/system/init'
+import {InterShardProcess} from '../processTypes/system/intershard'
 import {HarvestProcess} from '../processTypes/creepActions/harvest'
 import {HarvesterLifetimeProcess} from '../processTypes/lifetimes/harvester'
 import {HoldRoomProcess} from '../processTypes/empireActions/hold'
@@ -59,6 +60,7 @@ export const processTypes = <{[type: string]: any}>{
   'holdRoom': HoldRoomProcess,
   'hold': HoldProcess,
   'init': InitProcess,
+  'interShard': InterShardProcess,
   'labManagement': LabManagementProcess,
   'loanData': LoanDataProcess,
   'mh': MineralHarvestProcess,

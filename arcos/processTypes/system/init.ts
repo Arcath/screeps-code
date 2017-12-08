@@ -20,6 +20,12 @@ export class InitProcess extends Process{
       })
     }
 
+    if(!this.kernel.hasProcess('intershard')){
+      this.kernel.addProcess(AOS_INTER_SHARD_PROCESS, 'intershard', 10, {
+        state: STATE_READ
+      })
+    }
+
     _.forEach(Game.rooms, function(room){
       //if(room.controller && room.controller.my){
         proc.kernel.addProcess(global.AOS_ROOM_DATA_PROCESS, 'roomData-' + room.name, 99, {

@@ -111,6 +111,11 @@ export class Process{
   log(message: string){
     this.kernel.log(this, message)
   }
+
+  /** Get IPC messages for this process */
+  getIpc(){
+    return this.kernel.getIpc(this.name)
+  }
 }
 
 export class LifetimeProcess extends Process{

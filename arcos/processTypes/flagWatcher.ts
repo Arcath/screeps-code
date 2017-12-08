@@ -136,6 +136,11 @@ export class FlagWatcherProcess extends Process{
   }
 
   buildIt(flag: Flag){
+    if(!Game.getObjectById(flag.name)){
+      flag.remove()
+      return
+    }
+
     if(Object.keys(Game.creeps).length === 1){
       this.kernel.addProcessIfNotExist(
         AOS_REMOTE_BUILDER_LIFETIME_PROCESS,
