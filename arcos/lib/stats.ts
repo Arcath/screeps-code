@@ -19,6 +19,7 @@ export const Stats = {
     Memory.stats['processes.counts.run'] = kernel.execOrder.length
     Memory.stats['processes.counts.suspend'] = kernel.suspendCount
     Memory.stats['processes.counts.missed'] = (Object.keys(kernel.processTable).length - kernel.execOrder.length - kernel.suspendCount)
+    Memory.stats['processes.counts.faulted'] = 0
 
     if(Memory.stats['processes.counts.missed'] < 0){
       Memory.stats['processes.counts.missed'] = 0
@@ -32,9 +33,16 @@ export const Stats = {
     Memory.stats['processes.types.init'] = 0
     Memory.stats['processes.types.flagWatcher'] = 0
 
-    _.forEach(kernel.execOrder, function(execed: {type: string, cpu: number}){
+    _.forEach(kernel.execOrder, function(execed: {type: string, cpu: number, faulted: boolean}){
       Memory.stats['processes.types.' + execed.type] += execed.cpu
+
+      if(execed.faulted){
+        Memory.stats['processes.counts.faulted'] += 1
+      }
     })
+
+    Memory.stats['processes.types.scheduler'] = kernel.schedulerUsage
+    Memory.stats['processes.types.kernel-scheduler'] = 0
 
     _.forEach(Object.keys(kernel.data.roomData), function(roomName){
       let room = Game.rooms[roomName]

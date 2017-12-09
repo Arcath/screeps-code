@@ -34,11 +34,6 @@ export class InterShardProcess extends Process{
   }
 
   run(){
-    if(Game.shard.name === 'shard1'){
-      this.log(JSON.stringify(this.metaData))
-      this.log(RawMemory.interShardSegment)
-    }
-
     if(!RawMemory.interShardSegment){
       RawMemory.interShardSegment = JSON.stringify({})
     }

@@ -30,7 +30,7 @@ export class MoveProcess extends Process{
       }
     //}
     
-    this.newRun()
+    this.oldRun()
   }
 
   newRun(){

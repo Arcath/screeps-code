@@ -107,6 +107,10 @@ export class Kernel{
   limit: number
   /** The process table */
   processTable: ProcessTable = {}
+
+  /** Sorted array of processes that need to run */
+  toRunProcesses?: string[]
+
   /** IPC Messages */
   ipc: IPCMessage[] = []
 
@@ -120,6 +124,7 @@ export class Kernel{
 
   execOrder: {}[] = []
   suspendCount = 0
+  schedulerUsage = 0
 
   /**  Creates a new kernel ensuring that memory exists and re-loads the process table from the last. */
   constructor(){
@@ -175,7 +180,13 @@ export class Kernel{
 
   /** Is there any processes left to run */
   needsToRun(){
-    return (!!this.getHighestProcess())
+    if(this.toRunProcesses && this.toRunProcesses.length > 0){
+      return true
+    }else{
+      return _.filter(this.processTable, function(process){
+        return (!process.ticked && process.suspend === false)
+      }).length > 0
+    }
   }
 
   /** Load the process table from Memory */
@@ -191,7 +202,7 @@ export class Kernel{
   }
 
   /** Tear down the OS ready for the end of the tick */
-  teardown(){
+  teardown(stats = true){
     let list: SerializedProcess[] = []
     _.forEach(this.processTable, function(entry){
       if(!entry.completed)
@@ -202,18 +213,31 @@ export class Kernel{
     //  console.log(this.execOrder.length)
     //}
 
-    Stats.build(this)
+    if(stats){
+      Stats.build(this)
+    }
 
     Memory.arcos.processTable = list
   }
 
   /** Returns the highest priority process in the process table */
   getHighestProcess(){
-    let toRunProcesses = _.filter(this.processTable, function(entry){
-      return (!entry.ticked && entry.suspend === false )
-    })
+    let cpu = Game.cpu.getUsed()
 
-    return _.sortBy(toRunProcesses, 'priority').reverse()[0]
+    if(!this.toRunProcesses || this.toRunProcesses.length === 0){
+      let toRunProcesses = _.filter(this.processTable, function(entry){
+        return (!entry.ticked && entry.suspend === false )
+      })
+
+      let sorted = _.sortBy(toRunProcesses, 'priority').reverse()
+      this.toRunProcesses = _.map(sorted, 'name')
+    }
+
+    let name = this.toRunProcesses.shift()!
+
+    this.schedulerUsage += Game.cpu.getUsed() - cpu
+
+    return this.processTable[name!]
   }
 
   /** Run the highest priority process in the process table */
@@ -270,6 +294,7 @@ export class Kernel{
     }, this)
 
     this.processTable[name] = process
+    this.toRunProcesses = []
   }
 
   /** Add a process to the process table if it does not exist */
