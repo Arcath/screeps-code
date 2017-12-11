@@ -65,6 +65,7 @@ export class HarvesterLifetimeProcess extends LifetimeProcess{
     }
 
     if(this.kernel.data.roomData[creep.room.name].sourceContainerMaps[this.metaData.source]){
+      let emProcess = this.kernel.getProcess(AOS_ENERGY_MANAGEMENT_PROCESS, 'em-' + creep.room.name)      
       let container = this.kernel.data.roomData[creep.room.name].sourceContainerMaps[this.metaData.source]
 
       let link = <StructureLink>container.pos.findInRange(FIND_STRUCTURES, 1, {
@@ -73,7 +74,6 @@ export class HarvesterLifetimeProcess extends LifetimeProcess{
         }
       })[0]
 
-      let emProcess = this.kernel.getProcess(AOS_ENERGY_MANAGEMENT_PROCESS, 'em-' + creep.room.name)
       let linker: Creep | boolean = false
       if(emProcess){
         linker = Game.creeps[emProcess.metaData.linker!]
@@ -110,7 +110,8 @@ export class HarvesterLifetimeProcess extends LifetimeProcess{
         }
       }
 
-      if(_.sum(container.store) < container.storeCapacity){
+      let hauler = (emProcess && emProcess.metaData.distroCreeps![container.id])
+      if(_.sum(container.store) < container.storeCapacity && hauler){
         this.fork(AOS_DELIVER_PROCESS, 'deliver-' + creep.name, this.priority - 1, {
           target: container.id,
           creep: creep.name,
