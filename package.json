@@ -18,7 +18,7 @@
     "source-list-map": "^2.0.0",
     "source-map": "^0.6.1",
     "table": "^4.0.2",
-    "typed-screeps": "git+https://github.com/screepers/typed-screeps.git#2.0.0"
+    "typed-screeps": "^2.0.0"
   },
   "devDependencies": {
     "@types/source-map": "^0.5.2",
