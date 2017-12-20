@@ -320,7 +320,7 @@ export class EnergyManagementProcess extends Process{
 
       // Buy Energy if needed
       let needOrder = false
-      if(this.room().storage!.store.energy < 100000){
+      if(this.room().storage!.store.energy < 100000 && Game.market.credits > 10000){
         needOrder = true
       }
 
@@ -338,7 +338,7 @@ export class EnergyManagementProcess extends Process{
 
       let energyOrder
 
-      if(roomsWithEnergy.length > 0 && needOrder){
+      if(roomsWithEnergy.length > 100 && needOrder){
         let rooms = _.sortBy(roomsWithEnergy, function(room){
           return Game.map.getRoomLinearDistance(proc.metaData.roomName, room.name)
         })
