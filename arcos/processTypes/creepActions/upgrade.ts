@@ -24,7 +24,16 @@ export class UpgradeProcess extends Process{
         range: 3
       })
     }else{
-      creep.upgradeController(creep.room.controller!)
+      let signText = 'ArcOS Controlled Room https://arcath.net/category/screeps'
+      if(!creep.room.controller!.sign || creep.room.controller!.sign.text !== signText){
+        if(!creep.pos.inRangeTo(creep.room.controller!, 1)){
+          creep.moveTo(creep.room.controller!)
+        }else{
+          creep.signController(creep.room.controller!, signText)
+        }
+      }else{
+        creep.upgradeController(creep.room.controller!)
+      }
     }
   }
 }

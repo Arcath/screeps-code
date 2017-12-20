@@ -37,7 +37,12 @@ export class HoldProcess extends Process{
       })
       return
     }else{
-      creep.reserveController(creep.room.controller!)
+      let signText = 'ArcOS Reserved Room https://arcath.net/category/screeps'
+      if((creep.room.controller!.reservation && creep.room.controller!.reservation.ticksToEnd > 100) && (!creep.room.controller!.sign || creep.room.controller!.sign.text !== signText)){
+        creep.signController(creep.room.controller!, signText)
+      }else{
+        creep.reserveController(creep.room.controller!)
+      }
     }
   }
 }
