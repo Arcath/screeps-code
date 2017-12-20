@@ -15,7 +15,21 @@ export class HarvestProcess extends Process{
 
     let source = <Source>Game.getObjectById(this.metaData.source)
 
-    let targetPos = source.pos
+    let targetPos: RoomPosition
+
+    if(!source){
+      // Most Likely a remote miner that can't get vision on the room
+      if(this.parent && this.parent.type === AOS_REMOTE_MINER_LIFETIME_PROCESS){
+        //Confirm that the parent is a remote miner lifetime
+        let flag = Game.flags[this.parent.metaData.flag]
+        targetPos = flag.pos
+      }else{
+        return
+      }
+    }else{
+      targetPos = source.pos
+    }
+
     let targetRange = 1
 
     if(this.kernel.data.roomData[source.room.name].sourceContainerMaps[source.id]){
