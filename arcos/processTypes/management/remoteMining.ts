@@ -46,11 +46,12 @@ export class RemoteMiningManagementProcess extends Process{
       })
     }
 
-    let container = <StructureContainer>_.filter(flag.pos.findInRange(FIND_STRUCTURES, 1), function(structure: Structure){
-      return structure.structureType === STRUCTURE_CONTAINER
-    })[0]
+    if(this.metaData.containerId){
+      if(Game.rooms[flag.pos.roomName] && !Game.getObjectById(this.metaData.containerId)){
+        this.metaData.containerId = undefined
+        return
+      }
 
-    if(container){
       let transportCreep = Game.creeps[this.metaData.transportCreep!]
       if(!transportCreep){
         let spawned = Utils.spawn(
@@ -66,9 +67,20 @@ export class RemoteMiningManagementProcess extends Process{
 
           this.kernel.addProcessIfNotExist(AOS_TRANSPORTER_LIFETIME_PROCESS, 'tlf-' + flag.pos.roomName + '-' + Game.time, this.priority, {
             creep: 't-' + flag.pos.roomName + '-' + Game.time,
-            sourceContainer: container.id,
+            sourceContainer: this.metaData.containerId,
             destinationContainer: Game.rooms[deliverRoom].storage!.id
           })
+        }
+      }
+    }else{
+      // Meta Datas Container ID is empty
+      if(Game.rooms[flag.pos.roomName]){
+        // We can get the room of the flag
+        let container = _.filter(flag.pos.findInRange(FIND_STRUCTURES, 1), (structure) => {
+          return structure.structureType === STRUCTURE_CONTAINER
+        })[0]
+        if(container){
+          this.metaData.containerId = container.id
         }
       }
     }

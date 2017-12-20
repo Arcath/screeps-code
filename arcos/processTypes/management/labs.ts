@@ -16,7 +16,7 @@ export class LabManagementProcess extends Process{
   boosts: {[boost: string]: string} = {}
 
   run(){
-    if(!this.room()){
+    if(!this.room() || !Memory.bunkers[this.metaData.roomName].bunkerBase){
       this.completed = true
       return
     }

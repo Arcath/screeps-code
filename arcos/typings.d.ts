@@ -299,6 +299,7 @@ type MetaData = {
   rmmp: FlagMetaData & {
     miningCreep?: string
     transportCreep?: string
+    containerId?: string
   }
   repair: CreepMetaData & {
     target: string

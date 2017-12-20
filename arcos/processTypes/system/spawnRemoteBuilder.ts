@@ -12,7 +12,7 @@ export class SpawnRemoteBuilderProcess extends Process{
 
     let site = this.metaData.site
 
-    if(!site){
+    if(!Game.getObjectById(site)){
       this.completed = true
       return
     }
