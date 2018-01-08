@@ -13,7 +13,7 @@
     "baseUrl": "./arcos/",
     "outDir": "./lib/",
     "allowUnusedLabels": true,
-    "types": ["@types/lodash", "typed-screeps", "@types/node", "@types/mocha", "@types/chai", "@types/source-map"]
+    "types": ["@types/lodash", "typed-screeps", "@types/node", "@types/mocha", "@types/chai"]
   },
   "compileOnSave": false,
   "include": [
