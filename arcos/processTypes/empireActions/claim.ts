@@ -10,6 +10,11 @@ export class ClaimProcess extends Process{
 
     let flag = Game.flags[this.metaData.flagName]
 
+    if(!creep && Object.keys(Game.creeps).length === 1){
+      creep = Game.creeps[Object.keys(Game.creeps)[0]]
+      this.metaData.creep = Object.keys(Game.creeps)[0]
+    }
+
 
     if(!flag){
       this.completed = true
