@@ -300,7 +300,7 @@ export class EnergyManagementProcess extends Process{
     }
 
     // Check Energy and maybe buy it from the market
-    if(this.room().terminal){
+    if(this.room().controller!.level >= 6 && this.room().terminal){
       if(this.room().terminal!.store.energy < 5000){
         let matches = _.filter(this.metaData.terminalTransfers!, function(transfer){
           return (transfer.id === 'terminalRefill')
