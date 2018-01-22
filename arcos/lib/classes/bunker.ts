@@ -405,35 +405,5 @@ export class Bunker{
         }
       })
     })
-
-
-
-    /*_.forEach(structureTypes, function(structureType: BunkerStructures){
-      _.forEach(proc.bunkerMap.buildings[structureType].pos, function(posEntry){
-        let looks = room.lookAt(posEntry.x, posEntry.y)
-        let structures = _.filter(looks, function(entry){
-          if(entry.type === 'structure'){
-            return (entry.structure && entry.structure.structureType === structureType)
-          }else if(entry.type === 'constructionSite'){
-            return (entry.constructionSite && entry.constructionSite.structureType === structureType)
-          }else{
-            return false
-          }
-        })
-
-        if(structures.length === 0){
-          if(
-            (structureType != STRUCTURE_RAMPART || room.controller!.level >= 3)
-            &&
-            (structureType != STRUCTURE_ROAD || room.controller!.level >= 3)
-          ){
-            if(Object.keys(Game.constructionSites).length < 90 || structureType === STRUCTURE_SPAWN){
-              let pos = new RoomPosition(posEntry.x, posEntry.y, room.name)
-              pos.createConstructionSite(structureType)
-            }
-          }
-        }
-      })
-    })*/
   }
 }
