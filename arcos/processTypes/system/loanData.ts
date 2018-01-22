@@ -9,9 +9,14 @@ export class LoanDataProcess extends Process{
       RawMemory.setActiveForeignSegment('LeagueOfAutomatedNations', 99)
       this.metaData.state = STATE_READ
     }else if(this.metaData.state === STATE_READ){
+      if(RawMemory.foreignSegment === undefined){
+        this.metaData.state = STATE_LOAD
+        return
+      }
       Memory.loanData = JSON.parse(RawMemory.foreignSegment.data)
       this.metaData.state = STATE_LOAD
       this.suspend = 100
+      this.log('Loaded LOAN data')
     }
   }
 }
