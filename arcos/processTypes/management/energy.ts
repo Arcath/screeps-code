@@ -42,58 +42,12 @@ export class EnergyManagementProcess extends Process{
     }
 
     let proc = this
-    let sources = this.kernel.data.roomData[this.metaData.roomName].sources
 
     /** If there are no enemies outside the bunker safe will be true */
     let safe =  true
     if(this.room().find(FIND_HOSTILE_CREEPS).length > 0 && this.room().controller!.safeMode === undefined){
       safe = false
     }
-
-    _.forEach(sources, function(source){
-      if(!proc.metaData.harvestCreeps![source.id])
-        proc.metaData.harvestCreeps![source.id] = []
-
-      let creepNames = Utils.clearDeadCreeps(proc.metaData.harvestCreeps![source.id])
-      proc.metaData.harvestCreeps![source.id] = creepNames
-      let creeps = Utils.inflateCreeps(creepNames)
-      let workRate = Utils.workRate(creeps, 2)
-
-      if(workRate < (source.energyCapacity / 300) && safe){
-        let creepName = 'em-' + proc.metaData.roomName + '-' + Game.time
-
-        let spawnRoom = proc.metaData.roomName
-
-        /*if(proc.room().energyCapacityAvailable < 800 && proc.roomData().spawns.length > 0){
-          let nearestRoom = Utils.nearestRoom(proc.metaData.roomName, 800, 5)
-
-          if(nearestRoom != ''){
-            spawnRoom = nearestRoom
-          }
-        }*/
-
-        let spawned = Utils.spawn(
-          proc.kernel,
-          spawnRoom,
-          'harvester',
-          creepName,
-          {}
-        )
-
-        if(spawned){
-          proc.metaData.harvestCreeps![source.id].push(creepName)
-        }
-      }
-
-      _.forEach(creeps, function(creep){
-        if(!proc.kernel.hasProcess('hlf-' + creep.name)){
-          proc.kernel.addProcess(AOS_HARVESTER_LIFETIME_PROCESS, 'hlf-' + creep.name, 49, {
-            creep: creep.name,
-            source: source.id
-          })
-        }
-      })
-    })
 
     _.forEach(this.kernel.data.roomData[this.metaData.roomName].sourceContainers, function(container){
       if(proc.metaData.distroCreeps![container.id]){

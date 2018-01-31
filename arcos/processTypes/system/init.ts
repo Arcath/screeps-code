@@ -1,5 +1,7 @@
 import {Process} from '../../os/process'
 
+import {isMyRoom} from '@open-screeps/is-my-room'
+
 export class InitProcess extends Process{
   type = AOS_INIT_PROCESS
   metaData: MetaData[AOS_INIT_PROCESS]
@@ -27,20 +29,26 @@ export class InitProcess extends Process{
     }
 
     _.forEach(Game.rooms, function(room){
-      //if(room.controller && room.controller.my){
-        proc.kernel.addProcess(global.AOS_ROOM_DATA_PROCESS, 'roomData-' + room.name, 99, {
+      if(isMyRoom(room)){
+        proc.kernel.addProcessIfNotExist(AOS_COLONY_PROCESS, 'colony-' + room.name, 90, {
           roomName: room.name
         })
-      //}
 
-      if(!proc.kernel.hasProcess('em-' + room.name)){
-        proc.kernel.addProcess(AOS_ENERGY_MANAGEMENT_PROCESS, 'em-' + room.name, 50, {
-          roomName: room.name
-        })
+        if(!proc.kernel.hasProcess('em-' + room.name)){
+          proc.kernel.addProcess(AOS_ENERGY_MANAGEMENT_PROCESS, 'em-' + room.name, 50, {
+            roomName: room.name
+          })
+        }
+  
+        if(!proc.kernel.hasProcess('sm-' + room.name)){
+          proc.kernel.addProcess(AOS_STRUCTURE_MANAGEMENT_PROCESS, 'sm-' + room.name, 48, {
+            roomName: room.name
+          })
+        }
       }
 
-      if(!proc.kernel.hasProcess('sm-' + room.name)){
-        proc.kernel.addProcess(AOS_STRUCTURE_MANAGEMENT_PROCESS, 'sm-' + room.name, 48, {
+      if(true){
+        proc.kernel.addProcess(global.AOS_ROOM_DATA_PROCESS, 'roomData-' + room.name, 99, {
           roomName: room.name
         })
       }
@@ -49,6 +57,7 @@ export class InitProcess extends Process{
     this.kernel.addProcess(AOS_SUSPENSION_PROCESS, 'suspension-master', 99, {master: true})
     this.kernel.addProcess(AOS_FLAG_WATCHER_PROCESS, 'flag-watcher', 98, {})
 
+    this.kernel.loadMemory()
     this.completed = true
   }
 }

@@ -1,4 +1,5 @@
 import {Kernel} from './kernel'
+import { ColonyProcess } from 'processTypes/colony/colony';
 
 /** Main Process Class */
 export class Process{
@@ -20,6 +21,7 @@ export class Process{
   Should the process be suspended?
 
   If `false` the process will be run.
+  If `true` the process is suspending until something manually un suspends it.
   If a number the suspend counter will be reduced until it reaches 0 and then will be set back to false.
   If a string this process is suspended untill the named process is finished.
   */
@@ -129,5 +131,23 @@ export class LifetimeProcess extends Process{
       this.completed = true
       return false
     }
+  }
+}
+
+export class ColonySubProcess extends Process{
+  metaData: ColonySubProcessMetaData
+
+  _colonyProcess: ColonyProcess
+
+  /** Returns the current colony process */
+  colonyProcess(){
+    if(!this._colonyProcess){
+      let proc = this.kernel.getProcess(AOS_COLONY_PROCESS, this.metaData.colonyProcessName)
+      if(proc){
+        this._colonyProcess = <ColonyProcess>proc
+      }
+    }
+
+    return this._colonyProcess
   }
 }

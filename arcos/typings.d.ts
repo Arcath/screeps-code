@@ -1,10 +1,11 @@
-/// <reference types="@types/source-map" />
+/// <reference path="../node_modules/source-map/source-map.d.ts" />
 
 type AOS_BOOST_PROCESS = 'boost'
 type AOS_BUILD_PROCESS = 'build'
 type AOS_BUILDER_LIFETIME_PROCESS = 'blf'
 type AOS_CLAIM_PROCESS = 'claim'
 type AOS_COLLECT_PROCESS = 'collect'
+type AOS_COLONY_PROCESS = 'colony'
 type AOS_COURRIER_LIFETIME_PROCESS = 'courrierLifetime'
 type AOS_DELIVER_PROCESS = 'deliver'
 type AOS_DISTRO_LIFETIME_PROCESS = 'dlf'
@@ -32,7 +33,9 @@ type AOS_REPAIRER_LIFETIME_PROCESS = 'rlf'
 type AOS_ROOM_DATA_PROCESS = 'roomData'
 type AOS_ROOM_LAYOUT_PROCESS = 'roomLayout'
 type AOS_SHARD_MOVER_PROCESS = 'shardMover'
+type AOS_SOURCE_PROCESS = 'source'
 type AOS_SOURCE_MAP_PROCESS = 'sourceMap'
+type AOS_SPAWN_QUEUE_PROCESS = 'spawnQueue'
 type AOS_SPAWN_REMOTE_BUILDER_PROCESS = 'spawnRemoteBuilder'
 type AOS_STRUCTURE_MANAGEMENT_PROCESS = 'sm'
 type AOS_SUSPENSION_PROCESS = 'suspend'
@@ -46,12 +49,15 @@ type STATE_LOAD = 'load'
 type STATE_READ = 'read'
 type STATE_WRITE = 'write'
 type STATE_CONFIRMED = 'confirmed'
+type STATE_WAIT = 'wait'
+type STATE_SPAWNING = 'spawning'
 
 declare const AOS_BOOST_PROCESS = 'boost'
 declare const AOS_BUILD_PROCESS = 'build'
 declare const AOS_BUILDER_LIFETIME_PROCESS = 'blf'
 declare const AOS_CLAIM_PROCESS = 'claim'
 declare const AOS_COLLECT_PROCESS = 'collect'
+declare const AOS_COLONY_PROCESS = 'colony'
 declare const AOS_COURRIER_LIFETIME_PROCESS = 'courrierLifetime'
 declare const AOS_DELIVER_PROCESS = 'deliver'
 declare const AOS_DISTRO_LIFETIME_PROCESS = 'dlf'
@@ -79,7 +85,9 @@ declare const AOS_REPAIRER_LIFETIME_PROCESS = 'rlf'
 declare const AOS_ROOM_DATA_PROCESS = 'roomData'
 declare const AOS_ROOM_LAYOUT_PROCESS = 'roomLayout'
 declare const AOS_SHARD_MOVER_PROCESS = 'shardMover'
+declare const AOS_SOURCE_PROCESS = 'source'
 declare const AOS_SOURCE_MAP_PROCESS = 'sourceMap'
+declare const AOS_SPAWN_QUEUE_PROCESS = 'spawnQueue'
 declare const AOS_SPAWN_REMOTE_BUILDER_PROCESS = 'spawnRemoteBuilder'
 declare const AOS_STRUCTURE_MANAGEMENT_PROCESS = 'sm'
 declare const AOS_SUSPENSION_PROCESS = 'suspend'
@@ -93,6 +101,8 @@ declare const STATE_LOAD = 'load'
 declare const STATE_READ = 'read'
 declare const STATE_WRITE = 'write'
 declare const STATE_CONFIRMED = 'confirmed'
+declare const STATE_WAIT =  'wait'
+declare const STATE_SPAWNING = 'spawning'
 
 /** Alliance Name (LOAN Data Key) */
 declare const AOS_ALLIANCE: string
@@ -104,6 +114,7 @@ type ProcessTypes =
   AOS_BUILDER_LIFETIME_PROCESS |
   AOS_CLAIM_PROCESS |
   AOS_COLLECT_PROCESS |
+  AOS_COLONY_PROCESS |
   AOS_COURRIER_LIFETIME_PROCESS |
   AOS_DELIVER_PROCESS |
   AOS_DISTRO_LIFETIME_PROCESS |
@@ -131,7 +142,9 @@ type ProcessTypes =
   AOS_ROOM_DATA_PROCESS |
   AOS_ROOM_LAYOUT_PROCESS |
   AOS_SHARD_MOVER_PROCESS |
+  AOS_SOURCE_PROCESS |
   AOS_SOURCE_MAP_PROCESS |
+  AOS_SPAWN_QUEUE_PROCESS |
   AOS_SPAWN_REMOTE_BUILDER_PROCESS |
   AOS_STRUCTURE_MANAGEMENT_PROCESS |
   AOS_SUSPENSION_PROCESS |
@@ -147,6 +160,7 @@ type StateConstant =
 
 type ProcessWithTypedMetaData<T extends ProcessTypes> = {
   metaData: MetaData[T]
+  completed: boolean
 }
 
 type BlankMetaData = {}
@@ -164,6 +178,9 @@ type ResourceMoveMetaData = CreepMetaData & {
 }
 type FlagMetaData = {
   flag: string
+}
+type ColonySubProcessMetaData = {
+  colonyProcessName: string
 }
 
 type MetaData = {
@@ -185,6 +202,7 @@ type MetaData = {
     spawnRoom?: string
   }
   collect: ResourceMoveMetaData
+  colony: RoomMetaData
   courrierLifetime: CreepMetaData & RoomMetaData
   deliver: ResourceMoveMetaData
   dlf: CreepMetaData & {
@@ -293,8 +311,8 @@ type MetaData = {
   rblf: CreepMetaData & {
     site: string
   }
-  rmlf: CreepMetaData & FlagMetaData & {
-    deliverRoom: string
+  rmlf: CreepMetaData & {
+    source: string
   }
   rmmp: FlagMetaData & {
     miningCreep?: string
@@ -314,9 +332,15 @@ type MetaData = {
       y: number
     }
   },
+  spawnQueue: ColonySubProcessMetaData
   spawnRemoteBuilder: RoomMetaData & {
     site: string
   },
+  source: ColonySubProcessMetaData & {
+    source: string
+    creeps?: string[]
+    nextName?: string
+  }
   sourceMap: {
     error: Error | string
     processName: string
@@ -352,13 +376,14 @@ declare namespace NodeJS{
       [key: string]: RoomData
     }
 
-    SMConsumer: sourceMap.SourceMapConsumer
+    SMConsumer: SourceMapConsumer
 
     AOS_BOOST_PROCESS: AOS_BOOST_PROCESS
     AOS_BUILD_PROCESS: AOS_BUILD_PROCESS
     AOS_BUILDER_LIFETIME_PROCESS: AOS_BUILDER_LIFETIME_PROCESS
     AOS_CLAIM_PROCESS: AOS_CLAIM_PROCESS
     AOS_COLLECT_PROCESS: AOS_COLLECT_PROCESS
+    AOS_COLONY_PROCESS: AOS_COLONY_PROCESS
     AOS_COURRIER_LIFETIME_PROCESS: AOS_COURRIER_LIFETIME_PROCESS
     AOS_DELIVER_PROCESS: AOS_DELIVER_PROCESS
     AOS_DISTRO_LIFETIME_PROCESS: AOS_DISTRO_LIFETIME_PROCESS
@@ -386,7 +411,9 @@ declare namespace NodeJS{
     AOS_ROOM_DATA_PROCESS: AOS_ROOM_DATA_PROCESS
     AOS_ROOM_LAYOUT_PROCESS: AOS_ROOM_LAYOUT_PROCESS
     AOS_SHARD_MOVER_PROCESS: AOS_SHARD_MOVER_PROCESS
+    AOS_SOURCE_PROCESS: AOS_SOURCE_PROCESS
     AOS_SOURCE_MAP_PROCESS: AOS_SOURCE_MAP_PROCESS
+    AOS_SPAWN_QUEUE_PROCESS: AOS_SPAWN_QUEUE_PROCESS
     AOS_SPAWN_REMOTE_BUILDER_PROCESS: AOS_SPAWN_REMOTE_BUILDER_PROCESS
     AOS_STRUCTURE_MANAGEMENT_PROCESS: AOS_STRUCTURE_MANAGEMENT_PROCESS
     AOS_SUSPENSION_PROCESS: AOS_SUSPENSION_PROCESS
@@ -399,6 +426,8 @@ declare namespace NodeJS{
     STATE_READ: STATE_READ
     STATE_WRITE: STATE_WRITE
     STATE_CONFIRMED: STATE_CONFIRMED
+    STATE_WAIT: STATE_WAIT
+    STATE_SPAWNING: STATE_SPAWNING
     AOS_ALLIANCE: string
     AOS_NO_AGRESS: string[]
   }
@@ -414,6 +443,7 @@ interface SerializedProcess{
   metaData: object
   suspend: string | number | boolean
   parent: string | undefined
+  type: string
 }
 
 interface RoomData{
@@ -523,3 +553,41 @@ interface CreepTalkLanguage{
 }
 
 type CreepTalkLanguageEntry = string | string[]
+
+type SpawnQueueEntry = {
+  name: string
+  type: string
+  priority: number
+  key: string
+}
+
+interface SpawnMemory{
+  key: string
+}
+
+interface Memory{
+  arcos: {
+    processTable: SerializedProcess[]
+    posCache: {
+      [id: string]: {
+        x: number
+        y: number
+        roomName: string
+      }
+    }
+    colonies: {
+      [coreRoom: string]: {
+        spawnQueue?: SpawnQueueEntry[]
+        bunkerBase?: {
+          x: number
+          y: number
+          roomName: string
+        }
+        sourceContainers?: {[sourceId: string]: string}
+        sourceLinks?: {[sourceId: string]: string}
+        rooms?: string[]
+        sources?: string[]
+      }
+    }
+  }
+}

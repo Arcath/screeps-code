@@ -324,7 +324,7 @@ export class MoveProcess extends Process{
         let proc = this
 
         creep.moveTo(target, {
-          costCallback: function(roomName, costMatrix){
+          costCallback: function(roomName: string, costMatrix: CostMatrix){
             if(!Memory.costMatrix){ Memory.costMatrix = {} }
             if(!Memory.costMatrix[roomName]){
               let regex = /[W|E]([0-9]*)[S|N]([0-9]*)/g

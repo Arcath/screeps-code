@@ -10,10 +10,9 @@ export default {
   input: "arcos/main.ts",
   output: {
     file: "dist/main.js",
+    sourcemap: true,
     format: "cjs"
   },
-
-  sourcemap: true,
 
   plugins: [
     clean(),

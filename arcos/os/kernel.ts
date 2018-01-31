@@ -1,10 +1,14 @@
 import {Process} from './process'
 
+import {Empire} from '../classes/empire'
+import {POSCache} from '../classes/pos-cache'
+
 import {BoostProcess} from '../processTypes/creepActions/boost'
 import {BuildProcess} from '../processTypes/creepActions/build'
 import {BuilderLifetimeProcess} from '../processTypes/lifetimes/builder'
 import {ClaimProcess} from '../processTypes/empireActions/claim'
 import {CollectProcess} from '../processTypes/creepActions/collect'
+import {ColonyProcess} from '../processTypes/colony/colony'
 import {CourrierLifetimeProcess} from '../processTypes/lifetimes/courrier'
 import {DeliverProcess} from '../processTypes/creepActions/deliver'
 import {DistroLifetimeProcess} from '../processTypes/lifetimes/distro'
@@ -32,8 +36,10 @@ import {RepairerLifetimeProcess} from '../processTypes/lifetimes/repairer'
 import {RoomDataProcess} from '../processTypes/roomData'
 import {RoomLayoutProcess} from '../processTypes/management/roomLayout'
 import {ShardMoverProcess} from '../processTypes/system/shardMover'
+import {SourceProcess} from '../processTypes/colony/source'
 import {SourceMapProcess} from '../processTypes/system/sourceMap'
 import {StructureManagementProcess} from '../processTypes/management/structure'
+import {SpawnQueueProcess} from '../processTypes/colony/spawnQueue'
 import {SpawnRemoteBuilderProcess} from '../processTypes/system/spawnRemoteBuilder'
 import {SuspensionProcess} from '../processTypes/system/suspension'
 import {TowerDefenseProcess} from '../processTypes/buildingProcesses/towerDefense'
@@ -50,6 +56,7 @@ export const processTypes = <{[type: string]: any}>{
   'blf': BuilderLifetimeProcess,
   'claim': ClaimProcess,
   'collect': CollectProcess,
+  'colony': ColonyProcess,
   'courrierLifetime': CourrierLifetimeProcess,
   'deliver': DeliverProcess,
   'dlf': DistroLifetimeProcess,
@@ -77,8 +84,10 @@ export const processTypes = <{[type: string]: any}>{
   'roomData': RoomDataProcess,
   'roomLayout': RoomLayoutProcess,
   'shardMover': ShardMoverProcess,
+  'source': SourceProcess,
   'sourceMap': SourceMapProcess,
   'sm': StructureManagementProcess,
+  'spawnQueue': SpawnQueueProcess,
   'spawnRemoteBuilder': SpawnRemoteBuilderProcess,
   'suspend': SuspensionProcess,
   'td': TowerDefenseProcess,
@@ -122,6 +131,11 @@ export class Kernel{
     costMatrixes: {}
   }
 
+  memory: {
+    posCache: POSCache
+    empire: Empire
+  }
+
   execOrder: {}[] = []
   suspendCount = 0
   schedulerUsage = 0
@@ -129,13 +143,23 @@ export class Kernel{
   /**  Creates a new kernel ensuring that memory exists and re-loads the process table from the last. */
   constructor(){
     if(!Memory.arcos)
-      Memory.arcos = {}
+      Memory.arcos = {colonies: {}, processTable: [], posCache: {}}
 
     this.setCPULimit()
 
     this.loadProcessTable()
 
     this.addProcess(AOS_INIT_PROCESS, 'init', 99, {})
+  }
+
+  /**
+   * Loads the various data handling classes into the kernel
+   */
+  loadMemory(){
+    this.memory = {
+      posCache: new POSCache(),
+      empire: new Empire()
+    }
   }
 
   sigmoid(x: number){

@@ -7,47 +7,26 @@ export class RemoteMinerLifetimeProcess extends LifetimeProcess{
   run(){
     let creep = this.getCreep()
 
-    if(!creep){ return }
-
-    let flag = Game.flags[this.metaData.flag]
-
-    if(!flag){
+    if(!creep){
       this.completed = true
       return
     }
 
-    if(creep.room.name === flag.pos.roomName){
-      if(creep.room.find(FIND_HOSTILE_CREEPS).length > 0){
-        if(!Memory.remoteRoomStatus){
-          Memory.remoteRoomStatus = {}
-        }
-
-        Memory.remoteRoomStatus[creep.room.name] = false
-      }else{
-        if(!Memory.remoteRoomStatus){
-          Memory.remoteRoomStatus = {}
-        }
-
-        Memory.remoteRoomStatus[creep.room.name] = true
-      }
+    let sourcePos = this.kernel.memory.posCache.get(this.metaData.source)
+    if(!sourcePos){
+      // We don't know the source POS, it should be scouted soon.
+      return
     }
 
-    if(_.sum(creep.carry) === 0){
-      if(!creep.pos.isNearTo(flag)){
-        this.fork(AOS_MOVE_PROCESS, 'move-' + creep.name, this.priority - 1, {
-          creep: creep.name,
-          pos: {
-            x: flag.pos.x,
-            y: flag.pos.y,
-            roomName: flag.pos.roomName
-          },
-          range: 1
-        })
-      }
+    let colony = this.kernel.memory.empire.getColony(sourcePos.roomName)
+    if(!colony){
+      return
+    } 
 
+    if(_.sum(creep.carry) === 0){
       this.fork(AOS_HARVEST_PROCESS, 'harvest-' + creep.name, this.priority - 1, {
         creep: creep.name,
-        source: flag.memory.source
+        source: this.metaData.source
       })
 
       return
@@ -80,10 +59,10 @@ export class RemoteMinerLifetimeProcess extends LifetimeProcess{
       }
     }
 
-    if(Game.rooms[this.metaData.deliverRoom].storage){
+    if(colony.coreRoom.storage){
       this.fork(AOS_DELIVER_PROCESS, 'deliver-' + creep.name, this.priority - 1, {
         creep: creep.name,
-        target: Game.rooms[this.metaData.deliverRoom].storage!.id,
+        target: colony.coreRoom.storage.id,
         resource: RESOURCE_ENERGY
       })
     }

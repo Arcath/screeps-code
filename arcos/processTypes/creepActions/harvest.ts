@@ -13,28 +13,51 @@ export class HarvestProcess extends Process{
       return
     }
 
-    let source = <Source>Game.getObjectById(this.metaData.source)
-
     let targetPos: RoomPosition
+    let targetRange: number
 
-    if(!source){
-      // Most Likely a remote miner that can't get vision on the room
-      if(this.parent && this.parent.type === AOS_REMOTE_MINER_LIFETIME_PROCESS){
-        //Confirm that the parent is a remote miner lifetime
-        let flag = Game.flags[this.parent.metaData.flag]
-        targetPos = flag.pos
-      }else{
-        return
-      }
-    }else{
-      targetPos = source.pos
+    // Load the source pos from the POS cache
+    let sourcePos = this.kernel.memory.posCache.get(this.metaData.source)
+
+    if(!sourcePos){
+      // we don't know the POS of the source we can't move on from here.
+      // Hopefully something will scout it shortly
+      return
     }
 
-    let targetRange = 1
+    // Get the colony for this source
+    let colony = this.kernel.memory.empire.getColony(sourcePos.roomName)
 
-    if(this.kernel.data.roomData[source.room.name].sourceContainerMaps[source.id]){
-      targetPos = this.kernel.data.roomData[source.room.name].sourceContainerMaps[source.id].pos
-      targetRange = 0
+    if(colony){
+      // If the colony exists
+      let sourceContainer = colony.sourceContainer(this.metaData.source)
+      if(sourceContainer === false){
+        // If there is no source container
+        targetPos = sourcePos
+        targetRange = 1
+      }else if(typeof sourceContainer === 'string'){
+        // It exists but we can't see it.
+        let containerPos = this.kernel.memory.posCache.get(sourceContainer)
+        if(containerPos){
+          // We had the pos cached.
+          targetPos = containerPos
+          targetRange = 0
+        }else{
+          // No Cache
+          targetPos = sourcePos
+          targetRange = 1
+        }
+      }else{
+        // We have vision on the source container
+        // Record it to the pos cache.
+        this.kernel.memory.posCache.set(sourceContainer)
+        targetPos = sourceContainer.pos
+        targetRange = 0
+      }
+    }else{
+      // No colony
+      targetPos = sourcePos
+      targetRange = 1
     }
 
     if(!creep.pos.inRangeTo(targetPos, targetRange)){
@@ -48,8 +71,11 @@ export class HarvestProcess extends Process{
         range: targetRange
       })
     }else{
-      if(creep.harvest(source) === ERR_NOT_ENOUGH_RESOURCES){
-        this.suspend = source.ticksToRegeneration
+      // We must be right next to the source at this point
+      let source = Game.getObjectById<Source>(this.metaData.source)
+
+      if(creep.harvest(source!) === ERR_NOT_ENOUGH_RESOURCES){
+        this.suspend = source!.ticksToRegeneration
       }
     }
   }

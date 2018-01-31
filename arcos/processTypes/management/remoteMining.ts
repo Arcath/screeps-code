@@ -18,32 +18,18 @@ export class RemoteMiningManagementProcess extends Process{
       flag.memory.source = sources[0].id
     }
 
-    let miningCreep = Game.creeps[this.metaData.miningCreep!]
     let deliverRoom = flag.name.split('-')[0]
+
+    let colony = this.kernel.memory.empire.getColony(deliverRoom)
+    if(colony){
+      if(!colony.hasRoom(flag.pos.roomName)){
+        colony.addRoom(flag.pos.roomName)
+      }
+    }
 
     if(!Game.rooms[deliverRoom]){
       this.completed = true
       return
-    }
-
-    if(!miningCreep){
-      let spawned = Utils.spawn(
-        this.kernel,
-        deliverRoom,
-        'worker',
-        'rm-' + flag.pos.roomName + '-' + Game.time,
-        {}
-      )
-
-      if(spawned){
-        this.metaData.miningCreep = 'rm-' + flag.pos.roomName + '-' + Game.time
-      }
-    }else{
-      this.kernel.addProcessIfNotExist(AOS_REMOTE_MINER_LIFETIME_PROCESS, 'rmlf-' + miningCreep.name, this.priority, {
-        creep: miningCreep.name,
-        flag: flag.name,
-        deliverRoom: deliverRoom
-      })
     }
 
     if(this.metaData.containerId){

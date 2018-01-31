@@ -9,19 +9,55 @@ interface WeightList{
 import {Kernel} from '../os/kernel'
 
 export const CreepBuilder = {
+  build(creepType: string, spendCap: number){
+    let body = <BodyPartConstant[]>[].concat(<never[]>CreepBuilder.typeStarts[creepType])
+    let add = true
+    let extendIndex = 0
+    let creepCost = 0
+
+    while(add){
+      creepCost = CreepBuilder.bodyCost(body)
+
+      let nextPart = CreepBuilder.typeExtends[creepType][extendIndex]
+
+      if(
+        creepCost + BODYPART_COST[nextPart] > spendCap
+        ||
+        body.length === CreepBuilder.typeLengths[creepType]
+      ){
+        add = false
+      }else{
+        body.push(CreepBuilder.typeExtends[creepType][extendIndex])
+        extendIndex += 1
+        if(extendIndex === CreepBuilder.typeExtends[creepType].length){
+          extendIndex = 0
+        }
+      }
+    }
+
+    return {
+      body: _.sortBy(body, function(part){
+        return CreepBuilder.partWeight[part]
+      }),
+      cost: creepCost
+    }
+  },
+
   design: function(creepType: string, room: Room, kernel: Kernel){
     let body = <BodyPartConstant[]>[].concat(<never[]>CreepBuilder.typeStarts[creepType])
     let spendCap
 
     let creepCount = 0
     let proc = kernel.getProcessByName('em-' + room.name)
-    _.forEach(Object.keys(proc.metaData.harvestCreeps), function(sourceId: string){
-      creepCount += proc.metaData.harvestCreeps[sourceId].length
-    })
+    if(proc){
+      _.forEach(Object.keys(proc.metaData.harvestCreeps), function(sourceId: string){
+        creepCount += proc.metaData.harvestCreeps[sourceId].length
+      })
+    }
     let emergancy = (creepType === 'harvester' && creepCount === 0)
 
     if(room.storage){
-      if(!proc.metaData.distroCreeps[room.storage.id] && creepType === 'mover'){
+      if(proc && !proc.metaData.distroCreeps[room.storage.id] && creepType === 'mover'){
         emergancy = true
       }
     }
@@ -91,7 +127,9 @@ export const CreepBuilder = {
     'ranger': [RANGED_ATTACK, TOUGH, MOVE, MOVE],
     'worker': [WORK, CARRY, MOVE, MOVE],
     'transporter': [CARRY, MOVE],
-    'upgrader': [WORK, CARRY, MOVE, MOVE]
+    'upgrader': [WORK, CARRY, MOVE, MOVE],
+    'scout': [MOVE],
+    'remoteHarvester': [WORK, WORK, CARRY, MOVE, MOVE, MOVE]
   },
 
   typeExtends: <PartList>{
@@ -104,7 +142,9 @@ export const CreepBuilder = {
     'ranger': [RANGED_ATTACK, TOUGH, MOVE, MOVE, HEAL],
     'worker': [WORK, CARRY, MOVE, MOVE],
     'transporter': [CARRY, MOVE],
-    'upgrader': [WORK, CARRY, MOVE]
+    'upgrader': [WORK, CARRY, MOVE],
+    'scout': [],
+    'remoteHarvester': [WORK, MOVE]
   },
 
   typeLengths: <{[name: string]: number}>{
@@ -117,6 +157,8 @@ export const CreepBuilder = {
     'ranger': 35,
     'worker': 16,
     'transporter': 28,
-    'upgrader': 24
+    'upgrader': 24,
+    'scout': 1,
+    'remoteHarvester': 14
   }
 }

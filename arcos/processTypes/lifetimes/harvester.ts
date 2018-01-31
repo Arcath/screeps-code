@@ -87,26 +87,6 @@ export class HarvesterLifetimeProcess extends LifetimeProcess{
           })
 
           return
-        }else{
-          if(emProcess){
-            let requests = _.filter(
-              emProcess.metaData.linkRequests!,
-              function(request: {
-                link: string
-              }){
-                return (request.link === link.id)
-              }
-            )
-            if(requests.length === 0){
-              this.kernel.getProcessByName('em-' + creep.room.name).metaData.linkRequests.push({
-                link: link.id,
-                send: false,
-                stage: 0
-              })
-  
-              return
-            }
-          }
         }
       }
 

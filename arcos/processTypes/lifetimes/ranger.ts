@@ -49,6 +49,73 @@ export class RangerLifetimeProcess extends LifetimeProcess{
       return
     }
 
+    if(creep.hits < creep.hitsMax){
+      creep.heal(creep)
+    }
+
+    let hostileStructures = creep.room.find(FIND_HOSTILE_STRUCTURES)
+    if(hostileStructures.length > 0 && creep.room.name === flag.pos.roomName){
+      let creepPos = creep.pos
+      let spawns = _.filter(hostileStructures, (structure) => {
+        return (
+          structure.structureType === STRUCTURE_SPAWN
+          &&
+          !PathFinder.search(creepPos, {
+            pos: structure.pos,
+            range: 1
+          }).incomplete
+        )
+      })
+
+      if(spawns.length > 0){
+        let spawn = creep.pos.findClosestByRange(spawns)
+        if(creep.pos.findInRange(hostiles, 3).length > 1){
+          creep.rangedMassAttack()
+        }else{
+          if(!creep.pos.inRangeTo(spawn.pos, 1)){
+            creep.moveTo(spawn)
+          }else{
+            creep.rangedAttack(spawn)
+          }
+        }
+
+        return
+      }
+
+      let towers = _.filter(hostileStructures, (structure) => {
+        return (
+          structure.structureType === STRUCTURE_TOWER
+          &&
+          structure.energy > 0
+        )
+      })
+
+      if(towers.length > 0){
+        let tower = creep.pos.findClosestByRange(towers)
+
+        if(creep.pos.findInRange(hostiles, 3).length > 1){
+          creep.rangedMassAttack()
+        }else{
+          if(!creep.pos.inRangeTo(tower.pos, 1)){
+            creep.moveTo(tower)
+          }else{
+            creep.rangedAttack(tower)
+          }
+        }
+
+        return
+      }
+
+      if(hostiles.length === 0){
+        let structure = creep.pos.findClosestByRange(hostileStructures)
+        if(!creep.pos.inRangeTo(structure.pos, 1)){
+          creep.moveTo(structure)
+        }else{
+          creep.rangedAttack(structure)
+        }
+      }
+    }
+
 
     if(hostiles.length > 0){
       let nearestHostile = <Creep>creep.pos.findClosestByRange(hostiles)
@@ -64,10 +131,6 @@ export class RangerLifetimeProcess extends LifetimeProcess{
       if(!creep.pos.inRangeTo(flag.pos, 2)){
         creep.moveTo(flag)
       }
-    }
-
-    if(creep.hits < creep.hitsMax){
-      creep.heal(creep)
     }
   }
 }
